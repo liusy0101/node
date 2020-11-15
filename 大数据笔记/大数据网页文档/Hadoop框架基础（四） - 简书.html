@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<!--[if IE 6]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 7]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 8]><html class="ie ie8"><![endif]-->
+<!--[if IE 9]><html class="ie ie9"><![endif]-->
+<!--[if !IE]><!-->
+<html><!--<![endif]--><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+
+  <!-- Start of Baidu Transcode -->
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta name="applicable-device" content="pc,mobile">
+  <meta name="MobileOptimized" content="width">
+  <meta name="HandheldFriendly" content="true">
+  <meta name="mobile-agent" content="format=html5;url=http://www.jianshu.com/p/0ad52ec23309">
+  <!-- End of Baidu Transcode -->
+
+    <meta name="description" content="** Hadoop框架基础（四） 上一节虽然大概了解了一下mapreduce，徒手抓了海胆，不对，徒手写了mapreduce代码，也运行了出来。但是没有做更深入的理解和探讨。 那么…… 本节目标： * 深入了解mapreduce过程 * 成功部署Hadoop集群 ** mapreduce原理 想要了解mapreduce原理，我们必须搞清楚处理数据时的每一个重要阶段，首先，贴上一张官方的图： ...">
+
+  <meta name="360-site-verification" content="604a14b53c6b871206001285921e81d8">
+  <meta property="wb:webmaster" content="294ec9de89e7fadb">
+  <meta property="qc:admins" content="104102651453316562112116375">
+  <meta property="qc:admins" content="11635613706305617">
+  <meta property="qc:admins" content="1163561616621163056375">
+  <meta name="google-site-verification" content="cV4-qkUJZR6gmFeajx_UyPe47GW9vY6cnCrYtCHYNh4">
+  <meta name="google-site-verification" content="HF7lfF8YEGs1qtCE-kPml8Z469e2RHhGajy6JPVy5XI">
+  <meta http-equiv="mobile-agent" content="format=html5; url=http://www.jianshu.com/p/0ad52ec23309">
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-title" content="简书">
+
+    <!--  Meta for Smart App Banner -->
+  <meta name="apple-itunes-app" content="app-id=888237539, app-argument=jianshu://notes/9973741">
+  <!-- End -->
+
+  <!--  Meta for Twitter Card -->
+  <meta content="summary" property="twitter:card">
+  <meta content="@jianshucom" property="twitter:site">
+  <meta content="Hadoop框架基础（四）" property="twitter:title">
+  <meta content="** Hadoop框架基础（四） 上一节虽然大概了解了一下mapreduce，徒手抓了海胆，不对，徒手写了mapreduce代码，也运行了出来。但是没有做更深入的理解和探讨。 那么…… 本节目标： * 深入了解mapreduce过程 * 成功部署Hadoop集群 ** mapreduce原理 想要了解mapreduce原理，我们必须搞清楚处理数据时的每一个重要阶段，首先，贴上一张官方的图： 我们依次讨论每一个过程以及该过程对应的作用： 我先在这里假设一个情景，我现在有一个10G大小的words.txt，里面存放的是N多个英文单词。 这10G大小的文件分为若干个128M的文件块block分..." property="twitter:description">
+  <meta content="http://www.jianshu.com/p/0ad52ec23309" property="twitter:url">
+  <!-- End -->
+
+  <!--  Meta for OpenGraph -->
+  <meta property="fb:app_id" content="865829053512461">
+  <meta property="og:site_name" content="简书">
+  <meta property="og:title" content="Hadoop框架基础（四）">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="http://www.jianshu.com/p/0ad52ec23309">
+  <meta property="og:description" content="** Hadoop框架基础（四） 上一节虽然大概了解了一下mapreduce，徒手抓了海胆，不对，徒手写了mapreduce代码，也运行了出来。但是没有做更深入的理解和探讨。 那么…… 本节目标...">
+  <!-- End -->
+
+  <!--  Meta for Facebook Applinks -->
+  <meta property="al:ios:url" content="jianshu://notes/9973741">
+  <meta property="al:ios:app_store_id" content="888237539">
+  <meta property="al:ios:app_name" content="简书">
+
+  <meta property="al:android:url" content="jianshu://notes/9973741">
+  <meta property="al:android:package" content="com.jianshu.haruki">
+  <meta property="al:android:app_name" content="简书">
+  <!-- End -->
+
+
+    <title>Hadoop框架基础（四） - 简书</title>
+
+  <meta name="csrf-param" content="authenticity_token">
+<meta name="csrf-token" content="CjCC7MCXsn0657YbcmIG8DI7g/H5O6C0DhBTdQYVewInoqAYEPvO9zvOWTP8LXIa99UPoYkQoPtR5bv2zSZ5tw==">
+
+  <link rel="stylesheet" media="all" href="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-60bef14f05f21a4581be.css">
+  
+  <link rel="stylesheet" media="all" href="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-60bef14f05f21a4581be.css">
+
+  <link href="http://cdn2.jianshu.io/assets/favicons/favicon-783beb88ed621ceab614de960376ac0c.ico" rel="icon">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/57-47624b2e2161e8eb144462c85db0a5ff.png" sizes="57x57">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/72-c00cde7cf98fc49e50cbb3ee1dcd5804.png" sizes="72x72">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/76-e8af0bdeaf1ba31e303b1fde8b5e66c4.png" sizes="76x76">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/114-f4c78569bbf1977e8382a5fd90c9237a.png" sizes="114x114">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/120-cf10c3711dba269522743729efe66bbc.png" sizes="120x120">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/152-7bd60457b5f3ecbf1343f0e6241be4f8.png" sizes="152x152">
+<link rel="stylesheet" href="blob:http://www.jianshu.com/bc764283-5e6b-4772-ac4a-f477bcccbb48"><link rel="stylesheet" href="blob:http://www.jianshu.com/0120bdf1-03be-42c6-a79c-8083a723b88c"></head>
+
+  <body class="reader-black-font" lang="zh-CN">
+    <!-- 全局顶部导航栏 -->
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="width-limit">
+    <!-- 左上方 Logo -->
+    <a class="logo" href="http://www.jianshu.com/"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/logo-58fd04f6f0de908401aa561cda6a0688.png" alt="Logo"></a>
+
+    <!-- 右上角 -->
+      <!-- 未登录显示登录/注册/写文章 -->
+      <a class="btn write-btn" target="_blank" href="http://www.jianshu.com/writer#/">
+        <i class="iconfont ic-write"></i>写文章
+</a>      <a class="btn sign-up" href="http://www.jianshu.com/sign_up">注册</a>
+      <a class="btn log-in" href="http://www.jianshu.com/sign_in">登录</a>
+
+    <!-- 如果用户登录，显示下拉菜单 -->
+
+    <div class="style-mode"><a class="style-mode-btn"><i class="iconfont ic-navigation-mode"></i></a> <div class="popover-modal" style="left: 0px; display: none;"><div class="meta"><i class="iconfont ic-navigation-night"></i><span>夜间模式</span></div> <div class="switch day-night-group"><a class="switch-btn">开</a> <a class="switch-btn active">关</a></div> <hr> <div class="switch font-family-group"><a class="switch-btn font-song">宋体</a> <a class="switch-btn font-hei active">黑体</a></div> <div class="switch"><a class="switch-btn active">简</a> <a class="switch-btn">繁</a></div></div></div>
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu" aria-expanded="false">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse" id="menu">
+        <ul class="nav navbar-nav">
+            <li class="">
+              <a href="http://www.jianshu.com/">
+                <span class="menu-text">首页</span><i class="iconfont ic-navigation-discover menu-icon"></i>
+</a>            </li>
+            <li class="">
+              <a class="app-download-btn" href="http://www.jianshu.com/apps"><span class="menu-text">下载App</span><i class="iconfont ic-navigation-download menu-icon"></i></a>
+            </li>
+          <li class="search">
+            <form target="_blank" action="/search" accept-charset="UTF-8" method="get"><input name="utf8" value="✓" type="hidden">
+              <input name="q" id="q" placeholder="搜索" class="search-input" type="text">
+              <a class="search-btn" href="javascript:void(null)"><i class="iconfont ic-search"></i></a>
+              <!-- <div id="navbar-trending-search"></div> -->
+</form>          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+    
+<div class="note">
+  <div class="post">
+    <div class="article">
+        <h1 class="title">Hadoop框架基础（四）</h1>
+
+        <!-- 作者区域 -->
+        <div class="author">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <div class="info">
+            <span class="tag">作者</span>
+            <span class="name"><a href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a></span>
+            <!-- 关注用户按钮 -->
+            <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+            <!-- 文章数据信息 -->
+            <div class="meta">
+              <!-- 如果文章更新时间大于发布时间，那么使用 tooltip 显示更新时间 -->
+                <span class="publish-time" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="最后编辑于 2017.07.18 14:05">2017.04.11 11:17*</span>
+              <span class="wordage">字数 4324</span>
+            <span class="views-count">阅读 65</span><span class="comments-count">评论 0</span><span class="likes-count">喜欢 3</span></div>
+          </div>
+          <!-- 如果是当前作者，加入编辑按钮 -->
+        </div>
+        <!-- -->
+
+        <!-- 文章内容 -->
+        <div data-note-content="" class="show-content">
+          <h2>** Hadoop框架基础（四）<br>
+</h2><p>上一节虽然大概了解了一下mapreduce，徒手抓了海胆，不对，徒手写了mapreduce代码，也运行了出来。但是没有做更深入的理解和探讨。</p><p>那么……</p><h2>本节目标：</h2><p><b>* 深入了解mapreduce过程</b></p><p><b>* 成功部署Hadoop集群</b></p><h2>** mapreduce原理</h2><p>想要了解mapreduce原理，我们必须搞清楚处理数据时的每一个重要阶段，首先，贴上一张官方的图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-22f9d67b9b46ae55.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-22f9d67b9b46ae55.png?imageMogr2/auto-orient/strip" data-image-slug="22f9d67b9b46ae55" data-width="779" data-height="453" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>我们依次讨论每一个过程以及该过程对应的作用：</p><p>我先在这里假设一个情景，我现在有一个10G大小的words.txt，里面存放的是N多个英文单词。</p><p>这10G大小的文件分为若干个128M的文件块block分布存储于若干个服务器。</p><p>好，现在我要统计这10G文件中的单词出现频率。</p><p><b>** input split</b></p><p>一个split会对应一个map任务。</p><p>一
+般来讲，split的个数和block的个数相同，当然也可以多个block属于同一个split，但是后者会产生大量的网络和磁盘IO，原因在于一个
+split对应一个map任务，一个map任务肯定跑在某一台机器上，如果某个split所包含的多个block分布于不同的机器，首先需要做的操作就是
+把其他机器的block拷贝到运行map任务的机器上，这会耗费一定时间，所以，默认情况下，一个block对应一个split，源码中设定如下：</p><p><b>mapreduce.input.fileinputformat.split.minsize == 0</b><br></p><p><b>mapreduce.input.fileinputformat.split.maxsize == 10000</b></p><p><b>splitSize=max(minSize,min(maxSize, blockSize))</b>，此为默认split大小</p><p>如果要修改，则如下方式：</p><p>recordSize表示一个记录的大小，分块要保证数据的完整性，所以：</p><p>int blockSize = Integer.parseInt(x); //x表示你希望的split大小<br></p><p>int splitSize = blockSize / recordSize * recordSize;</p><p>conf.setLong("mapred.max.split.size",splitSize);</p><p>conf.setLong("mapred.min.split.size",splitSize);</p><p><b>** map</b></p><p>此时输入的到map中的数据形式大致为：</p><p>&lt;0, cat one hadoop element...&gt; &nbsp;---&gt; 调用一次map</p><p>&lt;30, dog two one hadoop....&gt;&nbsp; ---&gt; 调用一次map</p><p>……</p><p>省
+略号表示后边还有，其中0,30表示的是偏移量，每次从当前split中读取1行数据，比如第一次读取第一行，偏移量为0~29，第二次是第二行数据，偏
+移量是30~?，以此类推。每次读取都执行一次map任务，并调用一次map方法。map阶段结束，输出结果形式大致为：</p><p>&lt;cat , 1&gt; &nbsp;&lt;one, 1&gt; &nbsp;&lt;hadoop, 1&gt; &nbsp;&lt;element, 1&gt; ……等等</p><hr><h4>从此进入shuffle阶段</h4><p><b>** buffer in memory</b></p><p>这是一个状态描述，表明此刻在内存中开始操作，buffer在这里是内存中的一个环形数组。</p><p>之所以用环形数组来存放数据，是因为这样可以最大化的利用存储空间。</p><p>这个环形数组中存放数据分为两个类别：</p><p><b>1、元数据区（Kvmeta）：</b></p><p>里面存放的每组数据都包含：</p><p>** value的起始位置</p><p>** key的起始位置</p><p>** partition值</p><p>** value的长度</p><p><b>2、数据区（Kvbuffer）：</b></p><p>里面存放的每组数据都包含：<br></p><p><b>** </b>key值，例如&lt;cat ,1&gt;中的cat</p><p>** value值，例如&lt;cat, 1&gt;中的1</p><p><b>注意：</b></p><p><b>* 以上两个区域的分界点为0，即0以上存储数据区内容，0以下存储元数据区的内容。</b></p><p><b>* 这个环形<b>buffer虽然实际为一个字节数组，但抽象为一个IntBuffer，无论哪个区域中的数据，每组数据中的每个元素都占用4个字节，也就是每组中的每个元素的存储，数组下标都将移动4位(因为一个int为4个字节)。</b></b></p><p><b><b><b>* partition</b></b><br></b></p><p>分区的意义在于把一系列相似的单词分为同一个区。即单词归类处理，这样不同机器上的不同map任务输出的单词可以依据分区递交给相同的reduce做处理。</p><p><b>注意：</b></p><p><b>* 相关类： HashPartitioner</b></p><p><b>* 这里的“相似”，指的是：键（此例中为单词）的hash值在某一个范围内</b></p><p><b><b>* sort</b><br></b></p><p>map
+排序阶段，在buffer中把数据按照partion和key两个关键字做升序排序，这个排序只需要移动“元数据区”中的每组数据顺序即可。排序结果是
+“元数据区”中的每组数据按照partition分区聚集在一起，同一个partition分区内的key按照字典顺序排序。</p><p><b><b>* combine(可选)</b><br></b></p><p>结
+合阶段，可以在map阶段简化数据输出，减少后边spill溢写过程中，spill溢写文件的大小，例如：可以将&lt;cat, 1&gt; 
+&lt;cat, 1&gt;这样的数据在map阶段合并为&lt;cat, 2&gt;这样的数据作为map输出，默认没有开启。</p><p><b><b>* spill</b><br></b></p><p>溢写阶段，当内存中的环形存储结构占用率达到一定程度（默认占用80%时，则开始溢写），则将环形数据区中的所有内容，刷入到当前本地硬盘能够存的下这些数据的目录中，以使内容腾出空间供后边继续使用。</p><p>相
+同的partition分区的数据写入到同一个文件中，类似：“spill10.out”，“spill11.out”这样的文件，每一个
+partition分区所产生的文件的存放位置和一些相关信息，存放在另一个“元数据”文件中，类似
+“spill10.out.index”，“spill11.out.index”（注意，这个元数据文件和刚才说的元数据区不是一码事）。</p><p>这个元数据文件包含：</p><p>** 起始位置</p><p>** 原始数据长度</p><p>** 压缩之后的数据长度<br></p><p>** crc32的校验数据</p><p>该文件的作用是：标记某个partition对应的文件在哪个目录，哪个索引中存放。</p><p><b>注意：</b></p><p><b>* spill10.out.index这样的文件不一定会产生，如果内存中放得下（针对这个文件数据的存放，内存只提供1M空间可用），就放在内存中。</b><br></p><p><b>* 内存占用达到80%，开始溢写，那么此时map任务还在进行，还在往内存里添加数据，新的数据的起始点（0点）为剩余空间的中间部分，然后数据区和元数据区分别往两边递增即可，溢写后释放内存后也不必改变什么，继续写入即可。</b></p><p><b>** map merge</b></p><p>map
+融合阶段，将溢写阶段产生的多个文件，根据所属分区，把具有相同partition分区的“元数据（从spill10.out.index这样的文件中读
+取的）”放置于同一个segment列表中，最后根据segment列表，把数据从spill溢写出来的文件一个一个中读取出来，写入到file.out
+文件中，同时将这一批段的数据索引（元数据分区等）写入到file.out.index文件中，最终生成两个文件，file.out和
+file.out.index，其中包含了多段数据，每段数据对应一个分区。</p><p><b><b>** compress (可选)</b><br></b></p><p>map压缩阶段，对map merge阶段产生的文件进行压缩处理，以便于在后边的网络传输过程中减少网络IO压力，提升效率。</p><p>至此，map端的shuffle过程结束。</p><p><b>** sort merge</b></p><p>reduce
+任务会根据分区数据段拉取每个map任务产生的数据，拉取后，因为可能涉及到多个map产生的数据，所以要进行排序，一边copy一边排序，最后把多个
+map产生的具有相同分区的数据合并为一个分区数据段，这个merge过程和map的merge算法过程一样。</p><p><br></p><h4>在此完成shuffle阶段</h4><hr><p><b>** reduce</b></p><p>对于本例而言，此时产生的某个分区中的某个单词形式大概如下：<br></p><p>&lt;cat, [1, 1, 1, 1, 1, 1]&gt;，在调用reduce方法时，进行values各个元素的叠加操作即可。</p><p><b>** output</b></p><p>统计完成后，输出数据到文件目录，文件格式为part-r-00000这样形式的文件，存放于HDFS中。文件中key和value默认的分隔符为：\t</p><h2>** Hadoop集群部署<br>
+</h2><p>之前我们在yarn框架中运行mapreduce任务，或者操作hdfs，其中的各种节点都是运行在一台虚拟机上的，现在我们要将
+hadoop部署在一个多台虚拟机构成的完全分布式集群中（全部都在一个机器节点上的叫做伪分布式，比如之前的方式）。部署前，我们先勾画一下各个节点的
+部署结构，如下图所示：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-c0b78997cc64e0e2.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-c0b78997cc64e0e2.png?imageMogr2/auto-orient/strip" data-image-slug="c0b78997cc64e0e2" data-width="639" data-height="185" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>描述：</p><p>3台机器共有进程：HDFS的datanode，yarn的nodemanager</p><p>其中，HDFS的namenode开在z01这台机器上，secondarynamenode开在z03这台机器上</p><p>YARN的resourcemanager开在z02这台机器上。</p><p>注：<b>SecondaryNameNode是用来协助NameNode整合fsimage和edits的。</b></p><h2>一、准备系统环境</h2><p>1、修改主机名<br></p><p># vi /etc/hostname</p><p>2、主机名和ip地址的映射<br></p><p># vi /etc/hosts，我的机器修改如图，注意，三台机器都要这么设置：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-a414d88771d1a9e1.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-a414d88771d1a9e1.png?imageMogr2/auto-orient/strip" data-image-slug="a414d88771d1a9e1" data-width="633" data-height="102" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>3、关闭防火墙和selinux</p><p>请跳转至Linux基础04查看相关方法。</p><p>4、创建普通用户<br></p><p># useradd 用户名，如果已经有普通用户，则无需再次创建</p><p># echo 666666 | passwd --stdin 用户名<br></p><p>5、配置静态IP和DNS<br></p><p>请参看Linux基础01内容</p><p>6、把后面两个虚拟机的系统启动级别改成“字符模式”（就是没有桌面，这样可以减少虚拟机负担，加速系统启动和运行）<br></p><p># cat /etc/inittab，内容如图所示：<br></p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-fd720b5168e7b7ce.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-fd720b5168e7b7ce.png?imageMogr2/auto-orient/strip" data-image-slug="fd720b5168e7b7ce" data-width="699" data-height="293" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>根据文件中的提示，可以使用命令：</p><p>systemctl set-default multi-user.target，来设置无界面启动linux<br></p><p>systemctl set-default graphical.target，来设置有界面启动linux<br></p><p>7、卸载服务器JDK<br></p><p>请参看Linux基础02中的内容</p><h2>二、配置NTP时间服务器<br>
+</h2><p>对于我们当前这种案例，主要目标是把z01这台服务器设置为时间服务器，剩下的z02，z03这两台机器同步z01的时间，我们需要这样做的原因是因为，整个集群架构中的时间，要保持一致。</p><p><b>** 检查当前系统时区，使用命令：</b></p><p># date -R，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-0e7365df67bee854.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-0e7365df67bee854.png?imageMogr2/auto-orient/strip" data-image-slug="0e7365df67bee854" data-width="273" data-height="34" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>注意这里，如果显示的时区不是+0800，你可以删除localtime文件夹后，再关联一个正确时区的链接过去，命令如下：</p><p># rm -rf /etc/localtime<br></p><p># ln -s /usr/share/zoneinfo/Asia/Shanghai /etc/localtime</p><p><b>** 同步时间</b><br></p><p># ntpdate pool.ntp.org<br></p><p><b>** 检查软件包</b><br></p><p>查看ntp软件包是否已安装，使用命令：<br></p><p># rpm -qa | grep ntp，如图，红框中的内容：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-c4f2085a978560f2.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-c4f2085a978560f2.png?imageMogr2/auto-orient/strip" data-image-slug="c4f2085a978560f2" data-width="349" data-height="93" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>如果没有红框中的内容，则可以使用命令：</p><p># yum -y install ntp，来进行安装</p><p><b>** 修改ntp配置文件</b><br></p><p># vi /etc/ntp.conf</p><p>去掉下面这行前面的# ,并把网段修改成自己的网段：</p><p>restrict 192.168.122.0 mask 255.255.255.0 nomodify notrap</p><p>注释掉以下几行：<br></p><p>#server 0.centos.pool.ntp.org</p><p>#server 1.centos.pool.ntp.org</p><p>#server 2.centos.pool.ntp.org</p><p>把下面两行前面的#号去掉,如果没有这两行内容,需要手动添加<br></p><p>server&nbsp; 127.127.1.0&nbsp; &nbsp;  # local clock</p><p>fudge&nbsp;  127.127.1.0 stratum 10</p><p>最后，如图所示：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-71ae7623a34eb03b.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-71ae7623a34eb03b.png?imageMogr2/auto-orient/strip" data-image-slug="71ae7623a34eb03b" data-width="640" data-height="892" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 重启ntp服务</b><br></p><p># systemctl start&nbsp; ntpd.service，注意，如果是centOS7以下的版本，使用命令：service ntpd start</p><p># systemctl enable ntpd.service，注意，如果是centOS7以下的版本，使用命令：chkconfig ntpd on</p><p><b>** z03，z03去同步z01这台时间服务器时间</b></p><p>首先需要关闭这两台计算机的ntp服务</p><p># systemctl stop&nbsp; ntpd.service，centOS7以下，则：service ntpd stop</p><p># systemctl disable ntpd.service，centOS7以下，则：chkconfig ntpd off</p><p># systemctl status ntpd，查看ntp服务状态<br></p><p># pgrep ntpd，查看ntp服务进程id</p><p>同步第一台服务器z01的时间：</p><p># ntpdate z01，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-2cb91f2f52e57c48.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-2cb91f2f52e57c48.png?imageMogr2/auto-orient/strip" data-image-slug="2cb91f2f52e57c48" data-width="719" data-height="41" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 制定计划任务,周期性同步时间</b></p><p># crontab -e</p><p>*/10 * * * * /usr/sbin/ntpdate z01，如图所示：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-0a0b8f1e0047a8a7.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-0a0b8f1e0047a8a7.png?imageMogr2/auto-orient/strip" data-image-slug="0a0b8f1e0047a8a7" data-width="697" data-height="194" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>重启定时任务：</p><p># systemctl restart&nbsp; crond.service，centOS7以下使用：service crond restart，z03这台机器的配置同理</p><h3>三、配置无密钥登录<br>
+</h3><p>配置hadoop集群，首先需要配置集群中的各个主机的ssh无密钥访问</p><p>在z01上，通过如下命令，生成一对公私钥对<br></p><p>$ ssh-keygen -t rsa，一顿回车操作，这条命令执行完毕后（注意使用普通用户执行该命令），会在/home/z/.ssh/目录下生成两个文件：id_rsa 和 id_rsa.pub，如图所示：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-459bc1979fbd40d1.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-459bc1979fbd40d1.png?imageMogr2/auto-orient/strip" data-image-slug="459bc1979fbd40d1" data-width="596" data-height="351" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-2bdff8ce931d7d8b.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-2bdff8ce931d7d8b.png?imageMogr2/auto-orient/strip" data-image-slug="2bdff8ce931d7d8b" data-width="640" data-height="139" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><br></p><p>生成之后呢，把z01生成的公钥拷贝给z01,z02,z03这三台机器，对，没错，包含当前机器。</p><p>$ ssh-copy-id z01<br></p><p>$ ssh-copy-id z02</p><p>$ ssh-copy-id z03</p><p>完成后，z02机器如图（z03同理）：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-a964c930ffcb863e.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-a964c930ffcb863e.png?imageMogr2/auto-orient/strip" data-image-slug="a964c930ffcb863e" data-width="419" data-height="72" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>以上完成了z01生成私钥，公钥并把公钥拷贝给z01,z02,z03三台机器的过程，z02,z03这两台机器也需要进行如上操作。全部完成后，我们可以在任意一台机器上，无密钥的连接到另外一台机器，比如，我们在z01连接到z02这台机器，使用命令：</p><p>$ ssh z02，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-8011a90ae5a1949b.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-8011a90ae5a1949b.png?imageMogr2/auto-orient/strip" data-image-slug="8011a90ae5a1949b" data-width="464" data-height="57" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>这样就成功的在z01的机器登录到z02机器了。</p><h2>四、安装配置JDK<br>
+</h2><p>使用root用户，在后面两台机器上创建/opt/modules文件夹，并使该文件夹的所属改为普通用户。</p><p>接着便可以使用远程命令scp，把已经在z01中安装好的jdk目录拷贝给另外两台机器。</p><p>$ scp -r /opt/modules/jdk1.7.0_67/ z02:/opt/modules/</p><p>$ scp -r /opt/modules/jdk1.7.0_67/ z03:/opt/modules/</p><p>注意中间有空格分开。配置完成后，记得去z02,z03修改/etc/profile环境变量</p><h2>五、安装配置Hadoop<br>
+</h2><p><b>** 首先，需要先删除z01中的/opt/modules/hadoop-2.5.0/data目录，执行命令：</b></p><p>$ rm -rf /opt/modules/hadoop-2.5.0/data</p><p><b>** 在如下文件中，修改JAVA_HOME</b></p><p>hadoop-env.sh&nbsp; yarn-env.sh&nbsp; mapred-env.sh</p><p>export JAVA_HOME=/opt/modules/jdk1.8.0_121</p><p><b>** 修改HDFS默认地址、HDFS临时存储路径</b></p><p><b>涉及文件：core-site.xml</b></p><p>fs.defaultFS：hdfs://z01:8020<br></p><p>hadoop.tmp.dir：/opt/modules/hadoop-2.5.0/data<br></p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-cd620ba920d72093.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-cd620ba920d72093.png?imageMogr2/auto-orient/strip" data-image-slug="cd620ba920d72093" data-width="876" data-height="440" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 声明哪些服务器是datanode</b></p><p><b>涉及文件：<b>slaves</b></b></p><p>z01</p><p>z02</p><p>z03</p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-d00fd875124d514a.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-d00fd875124d514a.png?imageMogr2/auto-orient/strip" data-image-slug="d00fd875124d514a" data-width="299" data-height="137" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 修改数据存放的副本数，SecondaryNameNode节点地址</b></p><p><b>涉及文件：hdfs-site.xml</b></p><p>dfs.replication：3</p><p>dfs.namenode.secondary.http-address：z03:50090</p><p>dfs.namenode.http-address：z01:50070</p><p>dfs.permissions.enabled：false<br></p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-6682b8cdd09dd76d.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-6682b8cdd09dd76d.png?imageMogr2/auto-orient/strip" data-image-slug="6682b8cdd09dd76d" data-width="930" data-height="712" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>**resourcemanager节点配置，以及一些其他配置</b></p><p><b>涉及文件：yarn-site.xml</b></p><p>yarn.resourcemanager.hostname：z02<br></p><p>yarn.nodemanager.aux-services：mapreduce_shuffle<br></p><p>yarn.log-aggregation-enable：true<br></p><p>yarn.log-aggregation.retain-seconds：86400<br></p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-0bcfa72dbc251213.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-0bcfa72dbc251213.png?imageMogr2/auto-orient/strip" data-image-slug="0bcfa72dbc251213" data-width="905" data-height="654" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** jobhistory服务以及其他设置</b></p><p><b>涉及文件：mapred-site.xml</b></p><p>mapreduce.framework.name：yarn<br></p><p>mapreduce.jobhistory.address：z01:10020<br></p><p>mapreduce.jobhistory.webapp.address：z01:19888<br></p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-1ca8f1e935ffd362.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-1ca8f1e935ffd362.png?imageMogr2/auto-orient/strip" data-image-slug="1ca8f1e935ffd362" data-width="1008" data-height="584" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 配置好后，拷贝hadoop安装目录给其他服务器</b><br></p><p>$ rm -rf /opt/modules/hadoop-2.5.0/share/doc/，删除该文档目录，以减少远程拷贝的体积</p><p>$ scp -r /opt/modules/hadoop-2.5.0/ z02:/opt/modules/</p><p>$ scp -r/opt/modules/ hadoop-2.5.0/ z03:/opt/modules/</p><p>全部搞定后，接下来我们就可以启动这个分布式系统了</p><h2>六、启动Hadoop<br>
+</h2><p><b>** 在z01需要先格式化hdfs的namenode：</b></p><p>$ bin/hdfs namenode -format</p><p><b>** 使用start的脚本启动集群中所有的hdfs服务，包含namenode和datanode节点</b></p><p>$ sbin/start-dfs.sh</p><p><b>**
+ 
+在z02中启动yarn服务，包含resourcemanager和nodemanager，注意，如果resourcemanger和namenode
+服务不在同一台机器上，那么启动resourcemanager服务必须在所在的机器启动，这里参看我们之前设定的集群配置图，所以需要在z02机器上执
+行如下命令：</b></p><p>$ sbin/start-yarn.sh</p><p>启动完成后，分别查看z01,z02,z03机器的jps，如下图：</p><p>z01：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-702b4bc68bad8c1f.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-702b4bc68bad8c1f.png?imageMogr2/auto-orient/strip" data-image-slug="702b4bc68bad8c1f" data-width="307" data-height="109" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>z02：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-139f29a8165133f1.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-139f29a8165133f1.png?imageMogr2/auto-orient/strip" data-image-slug="139f29a8165133f1" data-width="237" data-height="152" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>z03：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-9bcde2dacfe47ed1.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-9bcde2dacfe47ed1.png?imageMogr2/auto-orient/strip" data-image-slug="9bcde2dacfe47ed1" data-width="268" data-height="130" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>在对比一下之前的集群配置图，是符合我们的期望的。</p><h1>** 总结</h1><p>本节主要深入讨论mapreduce的运算原理及过程，以及如何配置一个hadoop完全分布式集群。</p><hr><p>个人微博：http://weibo.com/seal13<br></p><p>QQ大数据技术交流群（广告勿入）：476966007</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-62ba58fe1377a8ce.png" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><hr><p><a href="http://www.jianshu.com/p/b39f71b1522b" target="_blank">下一节：Hadoop框架基础（五）</a></p>
+        </div>
+        <!--  -->
+
+        <div class="show-foot">
+          <a class="notebook" href="http://www.jianshu.com/nb/10277662">
+            <i class="iconfont ic-search-notebook"></i> <span>BigData</span>
+</a>          <div class="copyright" data-toggle="tooltip" data-html="true" data-original-title="转载请联系作者获得授权，并标注“简书作者”。">
+            © 著作权归作者所有
+          </div>
+          <div class="modal-wrap" data-report-note="">
+            <a id="report-modal">举报文章</a>
+          </div>
+        </div>
+    </div>
+
+    <!-- 文章底部作者信息 -->
+      <div class="follow-detail">
+        <div class="info">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+          <a class="title" href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a>
+            <i class="iconfont ic-man"></i>
+        <p>写了 69304 字，被 107 人关注，获得了 112 个喜欢</p></div>
+          <div class="signature">年轻人，应该了解处于风口浪尖的一切科技。</div>
+      </div>
+
+      <div class="support-author"></div>
+
+    <div class="meta-bottom">
+      <div class="like"><div class="btn like-group"><div class="btn-like"><a href="http://www.jianshu.com/sign_in"><i class="iconfont ic-like"></i>喜欢</a></div> <div class="modal-wrap"><a>3</a></div></div> <!----></div>
+      <div class="share-group">
+        <a class="share-circle" data-action="weixin-share" data-toggle="tooltip" data-original-title="分享到微信">
+          <i class="iconfont ic-wechat"></i>
+        </a>
+        <a class="share-circle" data-toggle="tooltip" href="javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/9973741/weibo/image_581f003b2204.jpg',%20'%E6%8E%A8%E8%8D%90%20@%E5%B0%BD%E9%99%85iActivity%20%E7%9A%84%E6%96%87%E7%AB%A0%E3%80%8AHadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%E3%80%8B%EF%BC%88%20%E5%88%86%E4%BA%AB%E8%87%AA%20@%E7%AE%80%E4%B9%A6%20%EF%BC%89','http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','%E9%A1%B5%E9%9D%A2%E7%BC%96%E7%A0%81gb2312|utf-8%E9%BB%98%E8%AE%A4gb2312'));" data-original-title="分享到微博">
+          <i class="iconfont ic-weibo"></i>
+        </a>
+          <a class="share-circle" data-toggle="tooltip" href="http://cwb.assets.jianshu.io/notes/images/9973741/weibo/image_581f003b2204.jpg" target="_blank" data-original-title="下载长微博图片">
+            <i class="iconfont ic-picture"></i>
+          </a>
+        <a class="share-circle more-share" tabindex="0" data-toggle="popover" data-placement="top" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="
+          &lt;ul class=&quot;share-list&quot;&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《Hadoop框架基础（四）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-zone&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《Hadoop框架基础（四）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-twitter&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-facebook&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-google&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('Hadoop框架基础（四）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-douban&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        " data-original-title="" title="">更多分享</a>
+      </div>
+    </div>
+    <div id="vue_comment"></div>
+  </div>
+
+  <div class="side-tool"><ul><li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="回到顶部" style="display: none;"><a class="function-button"><i class="iconfont ic-backtop"></i></a></li> <!----> <!----> <li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="分享文章"><a tabindex="0" role="button" data-toggle="popover" data-placement="left" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="&lt;ul class='share-list'&gt;
+                &lt;li&gt;&lt;a class=&quot;weixin-share&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-weixin&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到微信&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/9973741/weibo/image_581f003b2204.jpg', '推荐 @尽际iActivity 的文章《Hadoop框架基础（四）》（ 分享自 @简书 ）','http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','页面编码gb2312|utf-8默认gb2312'));&quot;&gt;&lt;i class='social-icon-sprite social-icon-weibo'&gt;&lt;/i&gt;&lt;span&gt;分享到微博&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;http://cwb.assets.jianshu.io/notes/images/9973741/weibo/image_581f003b2204.jpg&quot; target=&quot;_blank&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-picture&quot;&gt;&lt;/i&gt;&lt;span&gt;下载长微博图片&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《Hadoop框架基础（四）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-zone'&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《Hadoop框架基础（四）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-twitter'&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-facebook'&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-google'&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/0ad52ec23309?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('Hadoop框架基础（四）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class='social-icon-sprite social-icon-douban'&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;" data-original-title="" title="" class="function-button"><i class="iconfont ic-share"></i></a> <!----></li></ul></div>
+</div>
+<div class="note-bottom">
+  <div><div class="main"><div class="title">被以下专题收入，发现更多相似内容</div> <!----> <div class="include-collection"><!----> <a href="http://www.jianshu.com/c/d2f9d733c6c8?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/timg.jpg"><div class="name">Linux大数据教程</div></a><a href="http://www.jianshu.com/c/V2CqjW?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/6249340_194140034135_2.jpg"><div class="name">@IT·互联网</div></a><a href="http://www.jianshu.com/c/86ff829f995f?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/u_2582065815_2360012304_fm_21_gp_0.jpg"><div class="name">大数据核心技术&amp;科普</div></a><a href="http://www.jianshu.com/c/93d58e9169cb?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/keji.jpg"><div class="name">互联网科技</div></a> <!----></div></div> <!----> <!----></div>
+  <div data-vcomp="recommended-notes" data-note-id="9973741"></div>
+</div>
+
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/push.js"></script><script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/hm.js"></script><script async="" src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/analytics.js"></script><script type="application/json" data-name="page-data">{"user_signed_in":false,"locale":"zh-CN","os":"windows","read_mode":"day","read_font":"font2","note_show":{"is_author":false,"is_following_author":false,"is_liked_note":false,"uuid":"a5620b35-81a7-4c1d-ae9f-205c6261d307"},"note":{"id":9973741,"slug":"0ad52ec23309","user_id":4951489,"notebook_id":10277662,"commentable":true,"likes_count":3,"views_count":65,"public_wordage":4324,"comments_count":0,"total_rewards_count":0,"is_author":false,"author":{"nickname":"Z尽际","total_wordage":69304,"followers_count":107,"total_likes_count":112}}}</script>
+    
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/babel-polyfill-879c5f4bc085ce8a6153.js"></script>
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-base-60bef14f05f21a4581be.js"></script>
+<script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-480e049f44d3eb16dea8.js"></script>
+    
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E5%9B%9B%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-e304fd423c162fd5a868.js"></script>
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-35169517-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+<script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?0c0e9d9b1e7d617b3e6842e85b9fb068";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script>
+  (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+          bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else {
+          bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+  
+
+<!----><!----></body></html>

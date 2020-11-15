@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<!--[if IE 6]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 7]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 8]><html class="ie ie8"><![endif]-->
+<!--[if IE 9]><html class="ie ie9"><![endif]-->
+<!--[if !IE]><!-->
+<html><!--<![endif]--><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+
+  <!-- Start of Baidu Transcode -->
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta name="applicable-device" content="pc,mobile">
+  <meta name="MobileOptimized" content="width">
+  <meta name="HandheldFriendly" content="true">
+  <meta name="mobile-agent" content="format=html5;url=http://www.jianshu.com/p/44e0327798ad">
+  <!-- End of Baidu Transcode -->
+
+    <meta name="description" content="* HBase框架基础（一） 官方网址：http://hbase.apache.org/ * HBase是什么妖怪？ 要解释HBase，我们就先说一说经常接触到的RDBMS，即关系型数据库： ** mysql： *** 有开源社区版本的，有企业收费版本的 *** 遵循主从架构 *** 端口号：3306 ** sqlserver： *** 微软公司开发的产品，主要用于windows平台下的项目...">
+
+  <meta name="360-site-verification" content="604a14b53c6b871206001285921e81d8">
+  <meta property="wb:webmaster" content="294ec9de89e7fadb">
+  <meta property="qc:admins" content="104102651453316562112116375">
+  <meta property="qc:admins" content="11635613706305617">
+  <meta property="qc:admins" content="1163561616621163056375">
+  <meta name="google-site-verification" content="cV4-qkUJZR6gmFeajx_UyPe47GW9vY6cnCrYtCHYNh4">
+  <meta name="google-site-verification" content="HF7lfF8YEGs1qtCE-kPml8Z469e2RHhGajy6JPVy5XI">
+  <meta http-equiv="mobile-agent" content="format=html5; url=http://www.jianshu.com/p/44e0327798ad">
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-title" content="简书">
+
+    <!--  Meta for Smart App Banner -->
+  <meta name="apple-itunes-app" content="app-id=888237539, app-argument=jianshu://notes/11535160">
+  <!-- End -->
+
+  <!--  Meta for Twitter Card -->
+  <meta content="summary" property="twitter:card">
+  <meta content="@jianshucom" property="twitter:site">
+  <meta content="HBase框架基础（一）" property="twitter:title">
+  <meta content="* HBase框架基础（一） 官方网址：http://hbase.apache.org/ * HBase是什么妖怪？ 要解释HBase，我们就先说一说经常接触到的RDBMS，即关系型数据库： ** mysql： *** 有开源社区版本的，有企业收费版本的 *** 遵循主从架构 *** 端口号：3306 ** sqlserver： *** 微软公司开发的产品，主要用于windows平台下的项目 *** 端口号：1433 ** oracle： *** 超强的集群性能 *** 端口号：1521 再来说一说HBase这个非关系型数据库： ** HBase： *** 灵感来自于Google的Big..." property="twitter:description">
+  <meta content="http://www.jianshu.com/p/44e0327798ad" property="twitter:url">
+  <!-- End -->
+
+  <!--  Meta for OpenGraph -->
+  <meta property="fb:app_id" content="865829053512461">
+  <meta property="og:site_name" content="简书">
+  <meta property="og:title" content="HBase框架基础（一）">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="http://www.jianshu.com/p/44e0327798ad">
+  <meta property="og:description" content="* HBase框架基础（一） 官方网址：http://hbase.apache.org/ * HBase是什么妖怪？ 要解释HBase，我们就先说一说经常接触到的RDBMS，即关系型数据库： *...">
+  <!-- End -->
+
+  <!--  Meta for Facebook Applinks -->
+  <meta property="al:ios:url" content="jianshu://notes/11535160">
+  <meta property="al:ios:app_store_id" content="888237539">
+  <meta property="al:ios:app_name" content="简书">
+
+  <meta property="al:android:url" content="jianshu://notes/11535160">
+  <meta property="al:android:package" content="com.jianshu.haruki">
+  <meta property="al:android:app_name" content="简书">
+  <!-- End -->
+
+
+    <title>HBase框架基础（一） - 简书</title>
+
+  <meta name="csrf-param" content="authenticity_token">
+<meta name="csrf-token" content="NE8V9Gisa2fbHXnKCjHCJl+dmJJzQZ7hXNdE+ucwWbwZ3TcAuMAX7do0luKEfrbMmnMUwgNqnq4DIqx5LANbCQ==">
+
+  <link rel="stylesheet" media="all" href="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-60bef14f05f21a4581be.css">
+  
+  <link rel="stylesheet" media="all" href="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-60bef14f05f21a4581be.css">
+
+  <link href="http://cdn2.jianshu.io/assets/favicons/favicon-783beb88ed621ceab614de960376ac0c.ico" rel="icon">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/57-47624b2e2161e8eb144462c85db0a5ff.png" sizes="57x57">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/72-c00cde7cf98fc49e50cbb3ee1dcd5804.png" sizes="72x72">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/76-e8af0bdeaf1ba31e303b1fde8b5e66c4.png" sizes="76x76">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/114-f4c78569bbf1977e8382a5fd90c9237a.png" sizes="114x114">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/120-cf10c3711dba269522743729efe66bbc.png" sizes="120x120">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/152-7bd60457b5f3ecbf1343f0e6241be4f8.png" sizes="152x152">
+<link rel="stylesheet" href="blob:http://www.jianshu.com/5b8ca0d6-cc89-4e2b-9984-b37c4375dcda"><link rel="stylesheet" href="blob:http://www.jianshu.com/8d74062d-f58d-473c-b44f-4b168a0df248"></head>
+
+  <body class="reader-black-font" lang="zh-CN">
+    <!-- 全局顶部导航栏 -->
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="width-limit">
+    <!-- 左上方 Logo -->
+    <a class="logo" href="http://www.jianshu.com/"><img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/logo-58fd04f6f0de908401aa561cda6a0688.png" alt="Logo"></a>
+
+    <!-- 右上角 -->
+      <!-- 未登录显示登录/注册/写文章 -->
+      <a class="btn write-btn" target="_blank" href="http://www.jianshu.com/writer#/">
+        <i class="iconfont ic-write"></i>写文章
+</a>      <a class="btn sign-up" href="http://www.jianshu.com/sign_up">注册</a>
+      <a class="btn log-in" href="http://www.jianshu.com/sign_in">登录</a>
+
+    <!-- 如果用户登录，显示下拉菜单 -->
+
+    <div class="style-mode"><a class="style-mode-btn"><i class="iconfont ic-navigation-mode"></i></a> <div class="popover-modal" style="left: 0px; display: none;"><div class="meta"><i class="iconfont ic-navigation-night"></i><span>夜间模式</span></div> <div class="switch day-night-group"><a class="switch-btn">开</a> <a class="switch-btn active">关</a></div> <hr> <div class="switch font-family-group"><a class="switch-btn font-song">宋体</a> <a class="switch-btn font-hei active">黑体</a></div> <div class="switch"><a class="switch-btn active">简</a> <a class="switch-btn">繁</a></div></div></div>
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu" aria-expanded="false">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse" id="menu">
+        <ul class="nav navbar-nav">
+            <li class="">
+              <a href="http://www.jianshu.com/">
+                <span class="menu-text">首页</span><i class="iconfont ic-navigation-discover menu-icon"></i>
+</a>            </li>
+            <li class="">
+              <a class="app-download-btn" href="http://www.jianshu.com/apps"><span class="menu-text">下载App</span><i class="iconfont ic-navigation-download menu-icon"></i></a>
+            </li>
+          <li class="search">
+            <form target="_blank" action="/search" accept-charset="UTF-8" method="get"><input name="utf8" value="✓" type="hidden">
+              <input name="q" id="q" placeholder="搜索" class="search-input" type="text">
+              <a class="search-btn" href="javascript:void(null)"><i class="iconfont ic-search"></i></a>
+              <!-- <div id="navbar-trending-search"></div> -->
+</form>          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+    
+<div class="note">
+  <div class="post">
+    <div class="article">
+        <h1 class="title">HBase框架基础（一）</h1>
+
+        <!-- 作者区域 -->
+        <div class="author">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <div class="info">
+            <span class="tag">作者</span>
+            <span class="name"><a href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a></span>
+            <!-- 关注用户按钮 -->
+            <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+            <!-- 文章数据信息 -->
+            <div class="meta">
+              <!-- 如果文章更新时间大于发布时间，那么使用 tooltip 显示更新时间 -->
+                <span class="publish-time" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="最后编辑于 2017.06.07 15:40">2017.05.07 15:18*</span>
+              <span class="wordage">字数 3413</span>
+            <span class="views-count">阅读 154</span><span class="comments-count">评论 1</span><span class="likes-count">喜欢 8</span></div>
+          </div>
+          <!-- 如果是当前作者，加入编辑按钮 -->
+        </div>
+        <!-- -->
+
+        <!-- 文章内容 -->
+        <div data-note-content="" class="show-content">
+          <h1>* HBase框架基础（一）<br>
+</h1><p>官方网址：http://hbase.apache.org/</p><h2><b>* HBase是什么妖怪？</b></h2><p><b>要解释HBase，我们就先说一说经常接触到的RDBMS，即关系型数据库：</b></p><p><b>** mysql：</b></p><p>*** 有开源社区版本的，有企业收费版本的</p><p>*** 遵循主从架构</p><p>*** 端口号：3306</p><p><b>** sqlserver：</b></p><p>*** 微软公司开发的产品，主要用于windows平台下的项目</p><p>*** 端口号：1433</p><p><b>** oracle：&nbsp;</b></p><p>*** 超强的集群性能</p><p>*** 端口号：1521</p><p><b>再来说一说HBase这个非关系型数据库：</b></p><p><b>** HBase：</b></p><p>*** 灵感来自于Google的BigTable论文</p><p>*** 一般于Hadoop结合使用，是Hadoop项目的子项目</p><p>*** 基于key-value的形式存储数据</p><p>*** 高性能，高可靠，面向列，可伸缩的分布式存储系统</p><p>*** 没有sql语句，一般用API操作</p><p>*** 适用于单表数据量超大，且不能分表</p><p>*** 分布式架构,支持服务器在线添加和移除<br></p><p><b>接着说一说HBase和Hive的关系和区别：</b></p><p><b>** Hive：</b></p><p>*** 是数据仓库，不是数据库</p><p>*** 一般用于分析，并不会直接接入到在线业务</p><p>*** 实际上是将hql语句转化为mapreduce任务运行在yarn平台上</p><p><b>** HBase：</b></p><p>*** 面向列的非关系型数据库，分布式架构</p><p>*** 用于存储数据和检索数据，一般会直接接入在线业务</p><p>*** 不依赖于yarn和mapreduce</p><p><b>最后说一说RDBMS和HBase的区别：</b></p><p>*** RDBMS使用sql语句，HBase使用API</p><p>*** RDBMS基于行存储，HBase基于列存储且支持更好的压缩</p><p>*** RDBMS适用于存储结构化数据，HBase适用于存储结构化和非结构化数据</p><p>*** RDBMS支持事务处理，HBase不支持事务处理</p><p>*** RDBMS支持多表Join，HBase不支持多表Join</p><p>*** RDMBS更新表数据会自动更新索引文件，HBase需要手动建立索引，手动更新</p><p>*** RDMBS适用于业务逻辑复杂的存储环境，HBase不适合。</p><p>*** RDMBS不适合存储超大数据量的单表，HBase适合。</p><p>读完上边的内容，大概应该知道HBase是个什么妖怪了吧。</p><h2>* HBase基本进程<br>
+</h2><p><b>HMaster</b></p><p>HMaster节点有如下功能：</p><p>** 为HRegionServer分配HRegion</p><p>** 负责HRegionServer的负载均衡</p><p>** 发现失效的HRegionServer并重新分配其上的HRegion</p><p>** HDFS上的垃圾文件回收</p><p>** 处理Schema更新请求</p><p><b>HRegionServer</b></p><p>** 维护HMaster分配给他的HRegion，处理HRegion的IO请求</p><p>** 负责切分正在运行过程中变的过大的HRegion</p><h2>* HBase基本原理</h2><p>请看图：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-8dee031e87bde745.jpg" style="cursor: zoom-in;"><br><div class="image-caption">注：一般而言，Master和NameNode在一台服务器上，RegionServer与DataNode在同一个服务器上。</div>
+</div><p><b>Client：</b></p><p>包含访问HBase的接口，并维护cache来加快对HBase的访问。说白了，就是用来访问HBase的客户端。<br></p><p><b>HMaster：</b></p><p>这个东西是HBase的主节点，用来协调Client端应用程序和HRegionServer的关系，管理分配HRegion给HRegionserver服务器。</p><p><b>HRegionServer：</b><br></p><p>Hbase的从节点，管理当前自己这台服务器上面的HRegion，HRegion是Hbase表的基础单元组建，存储了分布式的表。HRegionserver负责切分在运行过程中变得过大的HRegion。</p><p><b>HRegion：</b></p><p>一
+个Table可以有多个HRegion，HBase使用rowKey将表水平切割成多个HRegion，每个HRegion都纪录了它的StartKey
+和EndKey（第一个HRegion的StartKey为空，最后一个HRegion的EndKey为空），由于RowKey是排序的，因而
+Client可以通过HMaster快速的定位每个RowKey在哪个HRegion中。HRegion由HMaster分配到相应的
+HRegionServer中，然后由HRegionServer负责HRegion的启动和管理，和Client的通信，负责数据的读(使用
+HDFS)。每个HRegionServer可以同时管理1000个左右的HRegion，出处请参看论文：BigTable（5 
+Implementation节）：Each tablet server manages a set of tablets(typically 
+we have somewhere between ten to a thousand tablets per tablet server)）。</p><p><b>MemStore：</b></p><p>它
+是一个写缓存，数据先WAL[write ahead 
+log]（也就是HLog它是一个二进制文件，所有写操作都会先保证将数据写入这个Log文件后，才会真正更新MemStore，最后写入HFile
+中），在写入MemStore后，由MemStore根据一定的算法将数据Flush到底层HDFS文件中(HFile)，一般而言，对于每个
+HRegion中的每个Column Family来说，有一个自己的MemStore。</p><p><b>StoreFile：</b></p><p>1个HStore，由一个MemStore和0~N个StoreFile组成。<br></p><p><b>HFile：</b></p><p>用于存储HBase的数据(Cell/KeyValue)，在HFile中的数据是按RowKey、Column Family、Column排序，对于相同的数据单元，排序则按照时间戳（Timestamp）倒叙排列。</p><p><b>Zookeeper：</b></p><p>HBase
+内置有zookeeper，但一般我们会有其他的Zookeeper集群来监管master和regionserver，Zookeeper通过选举，保
+证任何时候，集群中只有一个活跃的HMaster，HMaster与HRegionServer 
+启动时会向ZooKeeper注册，存储所有HRegion的寻址入口，实时监控HRegionserver的上线和下线信息。并实时通知给
+HMaster，存储HBase的schema和table元数据，默认情况下，HBase 管理ZooKeeper 
+实例，Zookeeper的引入使得HMaster不再是单点故障。一般情况下会启动两个HMaster，非Active的HMaster会定期的和
+Active HMaster通信以获取其最新状态，从而保证它是实时更新的，因而如果启动了多个HMaster反而增加了Active 
+HMaster的负担。如图：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/HBaseArchitecture-Blog-Fig3.png" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><h2>* HBase的部署</h2><p><b>** 整体规划图</b></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-11ecbf630d3c7519.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-11ecbf630d3c7519.png?imageMogr2/auto-orient/strip" data-image-slug="11ecbf630d3c7519" data-width="1182" data-height="488" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 安装Hadoop集群并启动之</b></p><p>$ tar -zxf hbase-0.98.6-hadoop2-bin.tar.gz -C /opt/modules/<br></p><p><b>** 启动Zookeeper</b></p><p>$ bin/zkServer.sh start</p><p><b>** 安装HBase</b></p><p>HBase下载传送门：链接：http://pan.baidu.com/s/1sk8DpbJ 密码：qrzj</p><p><b>** 修改配置文件</b></p><p><b>hbase-env.sh：<br></b></p><p>export JAVA_HOME=/opt/modules/jdk1.8.0_121<br></p><p>export HBASE_MANAGES_ZK=false<br></p><p>（注：该属性让HBase使用一个已有的不被HBase托管的Zookeepr集群）</p><p><b>hbase-site.xml：配置后如图</b><br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-8a65b2af75c187d4.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-8a65b2af75c187d4.png?imageMogr2/auto-orient/strip" data-image-slug="8a65b2af75c187d4" data-width="684" data-height="627" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>尖叫提示：注意此处的hbase.master属性只配置了60000端口，没有配置主机名，这是为了在多台机器节点上启动HMaster，即，为了HMaster开启高可用。</b></p><p><b>regionservers：</b></p><p>在我的集群环境下，将localhost改为</p><p>z01</p><p>z02</p><p>z03</p><p><b>创建backup-masters：</b></p><p>在我的集群环境下，声明备份的HMaster节点，我此处添加：</p><p>z02</p><p><b>尖叫提示：如果使用Notepad++工具编辑该文件，可能会造成文件格式不对而无法解析到正确的主机名，建议使用vi编辑器。</b></p><p><b>** 替换HBase的lib目录下的关于Hadoop和Zookeeper的jar包，以解决版本兼容问题</b></p><p><b>删除：</b></p><p>$ rm -rf lib/hadoop-*</p><p>$ rm -rf lib/zookeeper-3.4.6.jar</p><p><b>拷贝：</b></p><p>已整理好的jar传送门：链接：http://pan.baidu.com/s/1pLHf9H5 密码：ahpv</p><p>解压之后将文件夹里的jar拷贝到Hbase的lib目录下即可。替换后如图：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-279cfa7d653bc937.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-279cfa7d653bc937.png?imageMogr2/auto-orient/strip" data-image-slug="279cfa7d653bc937" data-width="1804" data-height="683" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>最后将整理好的在z01机器中的hbase安装包拷贝给z02，以及z03机器。</p><p><b>** 启动服务</b></p><p>首先做一个hadoop配置文件的软连接到hbase：</p><p>$
+ ln -s /opt/modules/cdh/hadoop-2.5.0-cdh5.3.6/etc/hadoop/core-site.xml 
+/opt/modules/cdh/hbase-0.98.6-cdh5.3.6/conf/core-site.xml</p><p>$ ln -s 
+/opt/modules/cdh/hadoop-2.5.0-cdh5.3.6/etc/hadoop/hdfs-site.xml 
+/opt/modules/cdh/hbase-0.98.6-cdh5.3.6/conf/hdfs-site.xml<br></p><p>然后启动：</p><p>$ bin/hbase-daemon.sh start master<br></p><p>$ bin/hbase-daemon.sh start regionserver</p><p>或者软连接做好后直接：</p><p>$ bin/start-hbase.sh，然后可以通过浏览器访问到该Hbase：</p><p>http://z01:60010/，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-05f0d0abba3da1c3.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-05f0d0abba3da1c3.png?imageMogr2/auto-orient/strip" data-image-slug="05f0d0abba3da1c3" data-width="1249" data-height="860" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** HMaster HA</b></p><p>如果配置都没有问题，也启动成功了，我们可以接着在第二台机器上启动HMaster来成功配置高可用：</p><p>第二台机器：bin/hbase-daemon.sh start master，启动后，访问第二台机器地址的60010端口，即可发现，它会告知你active的HBase是哪一台，如图所示：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-aaddcc8ae5eba260.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-aaddcc8ae5eba260.png?imageMogr2/auto-orient/strip" data-image-slug="aaddcc8ae5eba260" data-width="1884" data-height="650" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>当然了，通过查看z02中的有关master日志也可以发现z02中的HMaster为standby，如下图所示：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-7ffa5af82073bbf1.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-7ffa5af82073bbf1.png?imageMogr2/auto-orient/strip" data-image-slug="7ffa5af82073bbf1" data-width="1809" data-height="48" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>最后测试：手动停掉活跃的HMaster，看看是否能够故障自动转移：</b></p><p>$ bin/hbase-daemon.sh stop master<br></p><h2>* HBase基础概念</h2><p><b>** HBase数据存储目录</b></p><p><b>*** /hbase/data/default</b><br></p><p>存储默认命令空间表文件，创建表的时候如果不指定命令空间（库），默认创建在default下面</p><p><b>*** /hbase/data/hbase</b></p><p>存储HBase元数据的表文件，HDFS中如图：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-aa41e84ba49ab6c6.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-aa41e84ba49ab6c6.png?imageMogr2/auto-orient/strip" data-image-slug="aa41e84ba49ab6c6" data-width="992" data-height="224" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 数据存储</b></p><p>HBase中存取数据直接使用字节数组，没有其他数据类型</p><p><b>** HBase存储结构</b></p><p><b>*** rowkey：行键</b></p><p>用来唯一标识每行数据，类似RDBMS中的唯一主键</p><p><b>*** Column Family（CF）：列族</b></p><p><b>列<b>族</b></b>，拥有一个名称(string)，包含一个或者多个相关列</p><p><b>*** Column：列</b></p><p>字段名称，或列名<br></p><p><b>*** Cell：单元格</b></p><p>最基本的存储单元，用于列的实际值的存储。</p><p><b>*** Timestamp：时间戳</b></p><p>数据插入到表中的时间</p><p><b>*** 版本</b></p><p>HBase中每个列的值可以有多个版本（副本），默认情况下，有3个版本，只显示最新的版本。</p><p><b>*** 存储形式：键值对</b></p><p>rowKey + Column Family + Timestamp：value</p><h2>* HBase表的物理模型<br>
+</h2><p>** 表会根据rowKey被划分成多个region，默认情况下，刚开始每张表只有一个region</p><p>** 同一张表通常会基于rowKey被划分成多个region</p><p>** 同一张表的多个region被master分配到多台regionserver管理</p><p>** 同一台regionserver服务器可以管理不同的表的region</p><p>** 当某台regionserver服务器宕机以后，master会把这台服务器上面管理的region重新分配给其他的regionserver服务器</p><h2>* HBase常用操作</h2><p>接下来我们进行一些HBase的操作测试，测试前请确保你的节点中启动了对应的HMaster进程和HRegionServer</p><p><b>** 创建表测试</b></p><p><b>首先进入到HBase操作命令行：</b></p><p>$ bin/hbase shell，如下图：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-52b58f6c1b25fce4.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-52b58f6c1b25fce4.png?imageMogr2/auto-orient/strip" data-image-slug="52b58f6c1b25fce4" data-width="1376" data-height="163" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>接下来可以使用help命令来查看一些帮助提示：</b></p><p>hbase(main):001:0&gt; help，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-bdc268b1125d75a7.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-bdc268b1125d75a7.png?imageMogr2/auto-orient/strip" data-image-slug="bdc268b1125d75a7" data-width="1889" data-height="826" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>使用list命令，可以查看当前数据库中有哪些数据表</b></p><p>hbase(main):002:0&gt; list，我们现在没有什么表，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-ffce37c5e04702fc.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-ffce37c5e04702fc.png?imageMogr2/auto-orient/strip" data-image-slug="ffce37c5e04702fc" data-width="1645" data-height="154" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>好，那么下面我们来创建一个表：</b></p><p>这个表用来描述学生的一些基本信息吧：</p><p>hbase(main):003:0&gt; create 'student','info'，执行后如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-55f259ce055f41f0.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-55f259ce055f41f0.png?imageMogr2/auto-orient/strip" data-image-slug="55f259ce055f41f0" data-width="439" data-height="113" style="cursor: zoom-in;"><br><div class="image-caption">执行完毕后，可以使用list命令查看一下，在此不再截图展示了</div>
+</div><p><b>解释：</b></p><p>'student'：表名</p><p>'info'：列族<b></b>名，就是说这个列族可能包含多个列，比如Info列族中可能包含name，sex等列，画个图不够严谨的解释下：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-a77128a5fc467201.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-a77128a5fc467201.png?imageMogr2/auto-orient/strip" data-image-slug="a77128a5fc467201" data-width="572" data-height="604" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>接下来往表里放置一些数据：</b></p><p><b>我先语言表述一下第一行执行的含义，后边以此类推：</b></p><p><b>向student这张表中插入数据，rowKey为1001，列族:列，为info:name，值value为Thomas</b></p><p>hbase(main):007:0&gt; put 'student','1001','info:name','Thomas'<br></p><p>hbase(main):008:0&gt; put 'student','1001','info:sex','male'<br></p><p>hbase(main):009:0&gt; put 'student','1001','info:age','18'<br></p><p><b>OK，插入成功后，使用scan来看一下这张表内容</b></p><p>hbase(main):010:0&gt; scan 'student'，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-a69b9f48fa7b1fac.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-a69b9f48fa7b1fac.png?imageMogr2/auto-orient/strip" data-image-slug="a69b9f48fa7b1fac" data-width="1056" data-height="139" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>接下来我们来看一些其他的命令</p><p><b>** 查看表结构</b></p><p>hbase(main):014:0&gt; describe 'student'，如图：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-d1fa115c539e0560.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-d1fa115c539e0560.png?imageMogr2/auto-orient/strip" data-image-slug="d1fa115c539e0560" data-width="1318" data-height="169" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 更新数据/更新指定字段数据</b></p><p>hbase(main):018:0&gt; put 'student','1001','info:name','Nick'<br></p><p>hbase(main):019:0&gt; put 'student','1001','info:age','100'<br></p><p>完成后scan下如图：</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-472c337902c0705f.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-472c337902c0705f.png?imageMogr2/auto-orient/strip" data-image-slug="472c337902c0705f" data-width="1038" data-height="132" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** get查看数据</b></p><p>查看rowKey为1001的数据</p><p>hbase(main):021:0&gt; get 'student','1001'，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-aefc7b8b48e9d00a.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-aefc7b8b48e9d00a.png?imageMogr2/auto-orient/strip" data-image-slug="aefc7b8b48e9d00a" data-width="865" data-height="139" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>查看rowKey为1001，且列名为name的数据</p><p>get 'student','1001','info:name'，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-a4dc33adaecfae99.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-a4dc33adaecfae99.png?imageMogr2/auto-orient/strip" data-image-slug="a4dc33adaecfae99" data-width="890" data-height="97" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** scan查看数据</b></p><p>查看ROWKEY从1001到1007的数据，注意，规则为<b>“前包含后不包含”</b>，即下面的查询是不包含1007那一个rowKey的数据的。</p><p>hbase(main):023:0&gt; scan 'student',{STARTROW =&gt; '1001',STOPROW =&gt; '1007'}，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-83585c6d570a4299.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-83585c6d570a4299.png?imageMogr2/auto-orient/strip" data-image-slug="83585c6d570a4299" data-width="1188" data-height="112" style="cursor: zoom-in;"><br><div class="image-caption">因为这里我只插入了1001一行数据，所以并不存在1002~1006的数据，所以不显示~</div>
+</div><p><b>** 删除数据</b></p><p>我们把1001这一rowKey的所有数据删除掉，使用命令：</p><p>deleteall 'student','1001'<br></p><p>如果只想删除某一个rowKey中的某一个列的数据，使用命令：</p><p>delete 'student','1001','info:sex'，然后scan一下如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-ef8a17df4369e205.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-ef8a17df4369e205.png?imageMogr2/auto-orient/strip" data-image-slug="ef8a17df4369e205" data-width="1095" data-height="90" style="cursor: zoom-in;"><br><div class="image-caption">可以看到1001的sex这一列的数据删除掉了</div>
+</div><p><b>** 清空数据表</b></p><p>hbase(main):030:0&gt; truncate 'student'，如图：<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-86552457a00e1ad1.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-86552457a00e1ad1.png?imageMogr2/auto-orient/strip" data-image-slug="86552457a00e1ad1" data-width="513" data-height="138" style="cursor: zoom-in;"><br><div class="image-caption">看到这里之后，你list一下会发现，这个表还在，但是scan一下发现数据没了</div>
+</div><p><b>** 删除表</b></p><p>首先需要先让该表为disable状态，使用命令：</p><p>hbase(main):033:0&gt; disable 'student'<br></p><p>然后才能drop这个表，使用命令：</p><p>hbase(main):040:0&gt; drop 'student'</p><p><b>尖叫提示：如果直接drop表，会报错：Drop the named table. Table must first be disabled，如图：</b></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-8213a50fb6e8ce10.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-8213a50fb6e8ce10.png?imageMogr2/auto-orient/strip" data-image-slug="8213a50fb6e8ce10" data-width="546" data-height="199" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>** 统计一张表有多少行数据</b></p><p>为了展示一张表有多少行数据，我先重新创建student表，并重新put数据，然后使用命令：</p><p>hbase(main):046:0&gt; count 'student'<br></p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-701f246843ae9dbb.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-701f246843ae9dbb.png?imageMogr2/auto-orient/strip" data-image-slug="701f246843ae9dbb" data-width="371" data-height="113" style="cursor: zoom-in;"><br><div class="image-caption">当然了，我插入了2行数据，所以如此</div>
+</div><h1>* 总结</h1><p>这一节我们了解了Hbase的存储结构，以及相关特性，并与Hive以及RDBMS进行了一些对比说明，最后写了一点小练习，希望各位可以动手操作一下Hbase，在此之前确保你的集群正常运行。</p><hr><p>个人微博：http://weibo.com/seal13<br></p><p>QQ大数据技术交流群（广告勿入）：476966007</p><div class="image-package">
+<img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-62ba58fe1377a8ce.png" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><hr><p><a href="http://www.jianshu.com/p/fb59dabbd67a" target="_blank">下一篇：Hbase框架基础（二）</a></p>
+        </div>
+        <!--  -->
+
+        <div class="show-foot">
+          <a class="notebook" href="http://www.jianshu.com/nb/10277662">
+            <i class="iconfont ic-search-notebook"></i> <span>BigData</span>
+</a>          <div class="copyright" data-toggle="tooltip" data-html="true" data-original-title="转载请联系作者获得授权，并标注“简书作者”。">
+            © 著作权归作者所有
+          </div>
+          <div class="modal-wrap" data-report-note="">
+            <a id="report-modal">举报文章</a>
+          </div>
+        </div>
+    </div>
+
+    <!-- 文章底部作者信息 -->
+      <div class="follow-detail">
+        <div class="info">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+          <a class="title" href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a>
+            <i class="iconfont ic-man"></i>
+        <p>写了 69304 字，被 107 人关注，获得了 112 个喜欢</p></div>
+          <div class="signature">年轻人，应该了解处于风口浪尖的一切科技。</div>
+      </div>
+
+      <div class="support-author"></div>
+
+    <div class="meta-bottom">
+      <div class="like"><div class="btn like-group"><div class="btn-like"><a href="http://www.jianshu.com/sign_in"><i class="iconfont ic-like"></i>喜欢</a></div> <div class="modal-wrap"><a>8</a></div></div> <!----></div>
+      <div class="share-group">
+        <a class="share-circle" data-action="weixin-share" data-toggle="tooltip" data-original-title="分享到微信">
+          <i class="iconfont ic-wechat"></i>
+        </a>
+        <a class="share-circle" data-toggle="tooltip" href="javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/11535160/weibo/image_85c7f4a6feff.jpg',%20'%E6%8E%A8%E8%8D%90%20@%E5%B0%BD%E9%99%85iActivity%20%E7%9A%84%E6%96%87%E7%AB%A0%E3%80%8AHBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%E3%80%8B%EF%BC%88%20%E5%88%86%E4%BA%AB%E8%87%AA%20@%E7%AE%80%E4%B9%A6%20%EF%BC%89','http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','%E9%A1%B5%E9%9D%A2%E7%BC%96%E7%A0%81gb2312|utf-8%E9%BB%98%E8%AE%A4gb2312'));" data-original-title="分享到微博">
+          <i class="iconfont ic-weibo"></i>
+        </a>
+          <a class="share-circle" data-toggle="tooltip" href="http://cwb.assets.jianshu.io/notes/images/11535160/weibo/image_85c7f4a6feff.jpg" target="_blank" data-original-title="下载长微博图片">
+            <i class="iconfont ic-picture"></i>
+          </a>
+        <a class="share-circle more-share" tabindex="0" data-toggle="popover" data-placement="top" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="
+          &lt;ul class=&quot;share-list&quot;&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《HBase框架基础（一）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-zone&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《HBase框架基础（一）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-twitter&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-facebook&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-google&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('HBase框架基础（一）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-douban&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        " data-original-title="" title="">更多分享</a>
+      </div>
+    </div>
+    <div id="vue_comment"></div>
+  </div>
+
+  <div class="side-tool"><ul><li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="回到顶部" style="display: none;"><a class="function-button"><i class="iconfont ic-backtop"></i></a></li> <!----> <!----> <li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="分享文章"><a tabindex="0" role="button" data-toggle="popover" data-placement="left" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="&lt;ul class='share-list'&gt;
+                &lt;li&gt;&lt;a class=&quot;weixin-share&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-weixin&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到微信&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/11535160/weibo/image_85c7f4a6feff.jpg', '推荐 @尽际iActivity 的文章《HBase框架基础（一）》（ 分享自 @简书 ）','http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','页面编码gb2312|utf-8默认gb2312'));&quot;&gt;&lt;i class='social-icon-sprite social-icon-weibo'&gt;&lt;/i&gt;&lt;span&gt;分享到微博&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;http://cwb.assets.jianshu.io/notes/images/11535160/weibo/image_85c7f4a6feff.jpg&quot; target=&quot;_blank&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-picture&quot;&gt;&lt;/i&gt;&lt;span&gt;下载长微博图片&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《HBase框架基础（一）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-zone'&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《HBase框架基础（一）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-twitter'&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-facebook'&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-google'&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/44e0327798ad?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('HBase框架基础（一）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class='social-icon-sprite social-icon-douban'&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;" data-original-title="" title="" class="function-button"><i class="iconfont ic-share"></i></a> <!----></li></ul></div>
+</div>
+<div class="note-bottom">
+  <div><div class="main"><div class="title">被以下专题收入，发现更多相似内容</div> <!----> <div class="include-collection"><!----> <a href="http://www.jianshu.com/c/d2f9d733c6c8?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/timg.jpg"><div class="name">Linux大数据教程</div></a><a href="http://www.jianshu.com/c/V2CqjW?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/6249340_194140034135_2.jpg"><div class="name">@IT·互联网</div></a><a href="http://www.jianshu.com/c/86ff829f995f?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/u_2582065815_2360012304_fm_21_gp_0.jpg"><div class="name">大数据核心技术&amp;科普</div></a><a href="http://www.jianshu.com/c/93d58e9169cb?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/keji.jpg"><div class="name">互联网科技</div></a> <!----></div></div> <!----> <!----></div>
+  <div data-vcomp="recommended-notes" data-note-id="11535160"></div>
+</div>
+
+    <script src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/push.js"></script><script src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/hm.js"></script><script async="" src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/analytics.js"></script><script type="application/json" data-name="page-data">{"user_signed_in":false,"locale":"zh-CN","os":"windows","read_mode":"day","read_font":"font2","note_show":{"is_author":false,"is_following_author":false,"is_liked_note":false,"uuid":"2067e7f8-6a3a-4ad7-ae3f-0e6631fbcd56"},"note":{"id":11535160,"slug":"44e0327798ad","user_id":4951489,"notebook_id":10277662,"commentable":true,"likes_count":8,"views_count":154,"public_wordage":3413,"comments_count":1,"total_rewards_count":0,"is_author":false,"author":{"nickname":"Z尽际","total_wordage":69304,"followers_count":107,"total_likes_count":112}}}</script>
+    
+    <script src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/babel-polyfill-879c5f4bc085ce8a6153.js"></script>
+    <script src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-base-60bef14f05f21a4581be.js"></script>
+<script src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-480e049f44d3eb16dea8.js"></script>
+    
+    <script src="HBase%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%80%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-e304fd423c162fd5a868.js"></script>
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-35169517-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+<script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?0c0e9d9b1e7d617b3e6842e85b9fb068";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script>
+  (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+          bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else {
+          bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+  
+
+<!----><!----></body></html>

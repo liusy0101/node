@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<!--[if IE 6]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 7]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 8]><html class="ie ie8"><![endif]-->
+<!--[if IE 9]><html class="ie ie9"><![endif]-->
+<!--[if !IE]><!-->
+<html><!--<![endif]--><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+
+  <!-- Start of Baidu Transcode -->
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta name="applicable-device" content="pc,mobile">
+  <meta name="MobileOptimized" content="width">
+  <meta name="HandheldFriendly" content="true">
+  <meta name="mobile-agent" content="format=html5;url=http://www.jianshu.com/p/87209aba4465">
+  <!-- End of Baidu Transcode -->
+
+    <meta name="description" content="** Hadoop框架基础（三） 上一节我们使用eclipse运行展示了hdfs系统中的某个文件数据，这一节我们简析一下离线计算框架MapReduce，以及通过eclipse来编写关于MapReduce的代码，在Hadoop第一小节内容中，我们成功运行了官方的WordCount的案例，这一节我们自己编写代码走一下这个流程。 本节目标： * 了解mapreduce原理 * 编写wordcoun...">
+
+  <meta name="360-site-verification" content="604a14b53c6b871206001285921e81d8">
+  <meta property="wb:webmaster" content="294ec9de89e7fadb">
+  <meta property="qc:admins" content="104102651453316562112116375">
+  <meta property="qc:admins" content="11635613706305617">
+  <meta property="qc:admins" content="1163561616621163056375">
+  <meta name="google-site-verification" content="cV4-qkUJZR6gmFeajx_UyPe47GW9vY6cnCrYtCHYNh4">
+  <meta name="google-site-verification" content="HF7lfF8YEGs1qtCE-kPml8Z469e2RHhGajy6JPVy5XI">
+  <meta http-equiv="mobile-agent" content="format=html5; url=http://www.jianshu.com/p/87209aba4465">
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-title" content="简书">
+
+    <!--  Meta for Smart App Banner -->
+  <meta name="apple-itunes-app" content="app-id=888237539, app-argument=jianshu://notes/9973728">
+  <!-- End -->
+
+  <!--  Meta for Twitter Card -->
+  <meta content="summary" property="twitter:card">
+  <meta content="@jianshucom" property="twitter:site">
+  <meta content="Hadoop框架基础（三）" property="twitter:title">
+  <meta content="** Hadoop框架基础（三） 上一节我们使用eclipse运行展示了hdfs系统中的某个文件数据，这一节我们简析一下离线计算框架MapReduce，以及通过eclipse来编写关于MapReduce的代码，在Hadoop第一小节内容中，我们成功运行了官方的WordCount的案例，这一节我们自己编写代码走一下这个流程。 本节目标： * 了解mapreduce原理 * 编写wordcount的mapreduce案例 ** MapReduce简述及架构 上图简单的阐明了map和reduce的两个过程或者作用，虽然不够严谨，但是足以提供一个大概的认知，map过程是一个蔬菜到制成食物前的准备..." property="twitter:description">
+  <meta content="http://www.jianshu.com/p/87209aba4465" property="twitter:url">
+  <!-- End -->
+
+  <!--  Meta for OpenGraph -->
+  <meta property="fb:app_id" content="865829053512461">
+  <meta property="og:site_name" content="简书">
+  <meta property="og:title" content="Hadoop框架基础（三）">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="http://www.jianshu.com/p/87209aba4465">
+  <meta property="og:description" content="** Hadoop框架基础（三） 上一节我们使用eclipse运行展示了hdfs系统中的某个文件数据，这一节我们简析一下离线计算框架MapReduce，以及通过eclipse来编写关于MapRe...">
+  <!-- End -->
+
+  <!--  Meta for Facebook Applinks -->
+  <meta property="al:ios:url" content="jianshu://notes/9973728">
+  <meta property="al:ios:app_store_id" content="888237539">
+  <meta property="al:ios:app_name" content="简书">
+
+  <meta property="al:android:url" content="jianshu://notes/9973728">
+  <meta property="al:android:package" content="com.jianshu.haruki">
+  <meta property="al:android:app_name" content="简书">
+  <!-- End -->
+
+
+    <title>Hadoop框架基础（三） - 简书</title>
+
+  <meta name="csrf-param" content="authenticity_token">
+<meta name="csrf-token" content="vccf3kjCT9ko9W2QWD85NamLfjH7XjmoYKxn3pBzJwyQVT0qmK4zUyncgrjWcE3fbGXyYYt1Oec/WY9dW0AluQ==">
+
+  <link rel="stylesheet" media="all" href="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-60bef14f05f21a4581be.css">
+  
+  <link rel="stylesheet" media="all" href="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-60bef14f05f21a4581be.css">
+
+  <link href="http://cdn2.jianshu.io/assets/favicons/favicon-783beb88ed621ceab614de960376ac0c.ico" rel="icon">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/57-47624b2e2161e8eb144462c85db0a5ff.png" sizes="57x57">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/72-c00cde7cf98fc49e50cbb3ee1dcd5804.png" sizes="72x72">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/76-e8af0bdeaf1ba31e303b1fde8b5e66c4.png" sizes="76x76">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/114-f4c78569bbf1977e8382a5fd90c9237a.png" sizes="114x114">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/120-cf10c3711dba269522743729efe66bbc.png" sizes="120x120">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/152-7bd60457b5f3ecbf1343f0e6241be4f8.png" sizes="152x152">
+<link rel="stylesheet" href="blob:http://www.jianshu.com/23ae401e-4fea-4fc4-b59b-7b69f5543cd0"><link rel="stylesheet" href="blob:http://www.jianshu.com/68a584f7-6120-4ff9-974e-c7b6f091e9e0"></head>
+
+  <body class="reader-black-font" lang="zh-CN">
+    <!-- 全局顶部导航栏 -->
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="width-limit">
+    <!-- 左上方 Logo -->
+    <a class="logo" href="http://www.jianshu.com/"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/logo-58fd04f6f0de908401aa561cda6a0688.png" alt="Logo"></a>
+
+    <!-- 右上角 -->
+      <!-- 未登录显示登录/注册/写文章 -->
+      <a class="btn write-btn" target="_blank" href="http://www.jianshu.com/writer#/">
+        <i class="iconfont ic-write"></i>写文章
+</a>      <a class="btn sign-up" href="http://www.jianshu.com/sign_up">注册</a>
+      <a class="btn log-in" href="http://www.jianshu.com/sign_in">登录</a>
+
+    <!-- 如果用户登录，显示下拉菜单 -->
+
+    <div class="style-mode"><a class="style-mode-btn"><i class="iconfont ic-navigation-mode"></i></a> <div class="popover-modal" style="left: 0px; display: none;"><div class="meta"><i class="iconfont ic-navigation-night"></i><span>夜间模式</span></div> <div class="switch day-night-group"><a class="switch-btn">开</a> <a class="switch-btn active">关</a></div> <hr> <div class="switch font-family-group"><a class="switch-btn font-song">宋体</a> <a class="switch-btn font-hei active">黑体</a></div> <div class="switch"><a class="switch-btn active">简</a> <a class="switch-btn">繁</a></div></div></div>
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu" aria-expanded="false">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse" id="menu">
+        <ul class="nav navbar-nav">
+            <li class="">
+              <a href="http://www.jianshu.com/">
+                <span class="menu-text">首页</span><i class="iconfont ic-navigation-discover menu-icon"></i>
+</a>            </li>
+            <li class="">
+              <a class="app-download-btn" href="http://www.jianshu.com/apps"><span class="menu-text">下载App</span><i class="iconfont ic-navigation-download menu-icon"></i></a>
+            </li>
+          <li class="search">
+            <form target="_blank" action="/search" accept-charset="UTF-8" method="get"><input name="utf8" value="✓" type="hidden">
+              <input name="q" id="q" placeholder="搜索" class="search-input" type="text">
+              <a class="search-btn" href="javascript:void(null)"><i class="iconfont ic-search"></i></a>
+              <!-- <div id="navbar-trending-search"></div> -->
+</form>          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+    
+<div class="note">
+  <div class="post">
+    <div class="article">
+        <h1 class="title">Hadoop框架基础（三）</h1>
+
+        <!-- 作者区域 -->
+        <div class="author">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <div class="info">
+            <span class="tag">作者</span>
+            <span class="name"><a href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a></span>
+            <!-- 关注用户按钮 -->
+            <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+            <!-- 文章数据信息 -->
+            <div class="meta">
+              <!-- 如果文章更新时间大于发布时间，那么使用 tooltip 显示更新时间 -->
+                <span class="publish-time" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="最后编辑于 2017.04.30 22:03">2017.04.10 15:01*</span>
+              <span class="wordage">字数 2573</span>
+            <span class="views-count">阅读 77</span><span class="comments-count">评论 0</span><span class="likes-count">喜欢 2</span></div>
+          </div>
+          <!-- 如果是当前作者，加入编辑按钮 -->
+        </div>
+        <!-- -->
+
+        <!-- 文章内容 -->
+        <div data-note-content="" class="show-content">
+          <h1>** Hadoop框架基础（三）<br>
+</h1><p>上一节我们使用eclipse运行展示了hdfs系统中的某个文件数据，这一节我们简析一下离线计算框架MapReduce，以及通过
+eclipse来编写关于MapReduce的代码，在Hadoop第一小节内容中，我们成功运行了官方的WordCount的案例，这一节我们自己编写
+代码走一下这个流程。</p><h2>本节目标：</h2><p><b>* 了解mapreduce原理</b><br></p><p><b>* 编写wordcount的mapreduce案例</b></p><h2>** MapReduce简述及架构</h2><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-af87ceff3205962b.jpg" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-af87ceff3205962b.jpg?imageMogr2/auto-orient/strip" data-image-slug="af87ceff3205962b" data-width="727" data-height="546" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>上图简单的阐明了map和reduce的两个过程或者作用，虽然不够严谨，但是足以提供一个大概的认知，map过程是一个蔬菜到制成食物前的准备工作，reduce将准备好的材料合并进而制作出食物的过程，举个例子（方案3可以对比蔬菜这个图片做一个简单理解）：</p><p>任务：我想检索全国的身份证信息，将姓名重复最多的名字统计出来。</p><p>想要完成这个任务，我们想一下方案</p><p><b>方案1：</b>将全国的身份信息先搜集到某个文件中（比如搜集到<b>“身份信息.txt”</b>文件中），然后写一个程序，遍历该文件所有的名字，统计出名字出现最多的那个，并输出出来。</p><p><b>方案2：</b>多线程，并发同时遍历处理该文件，但前提是：该计算机是物理多核CPU；而且还要手动分割文件，不然会出现内容重复统计，再者还要手动合并结果，做数据同步，效率比1高，但是代码逻辑比1麻烦的多。</p><p><b>方案3：</b>我还是使用<b>“方案1”</b>的代码，把<b>“方案1”</b>的代码部署到多台计算机上，每台计算机遍历身份信息文件的一部分，统计出结果后，所有计算机做一个合并就OK了，但问题是，如何切分文件给所有的计算机，怎么切分合理，所有计算机的结果合并谁来处理，怎么合并。</p><p>其实mapreduce过程就是<b>方案3</b>。我们要学习的，也就是别人制定好的方案，并研究其合理性。</p><h2>** MapReduce代码编写</h2><p><b>目标：</b>计算words.txt文档中的所有单词出现的次数，单词如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-6e61397386678165.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-6e61397386678165.png?imageMogr2/auto-orient/strip" data-image-slug="6e61397386678165" data-width="368" data-height="84" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>代码组成部分：</b></p><h4>* map</h4><p>如下图，首先创建WordCountMapper类，继承自
+org.apache.hadoop.mapreduce.Mapper类，然后复写其map方法，这个map方法会在整个框架需要进行map运算时自动
+调用的。map方法中，需要做的操作是将单词和出现次数放入map映射，比如这个例子，map过程结束后，出现的结果是：</p><p>&lt;one,
+ 1&gt; &nbsp;&lt;two, 1&gt; &nbsp;&lt;hadoop, 1&gt; &nbsp;&lt;element, 
+1&gt; &nbsp;&lt;dog, 1&gt; &nbsp;&lt;cat, 1&gt; &nbsp;&lt;go, 1&gt; 
+&nbsp;&lt;for, 1&gt; &nbsp;&lt;cat, 1&gt; &nbsp;&lt;nick, 1&gt; 
+&nbsp;&lt;hello, 1&gt; &nbsp;&lt;two, 1&gt;</p><p>这里需要注意的是：</p><p>1、单词作为键</p><p>2、单词不管出现了几次，该键所对应的值都为1</p><p>3、map方法的参数，key为当前单词，value为<b>分配给当前map任务的</b>整个文本内容，所以后边要做一个split分割，后边的正则表达式的意思为：单词按照任意空白字符分割。</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-396cf401385853d5.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-396cf401385853d5.png?imageMogr2/auto-orient/strip" data-image-slug="396cf401385853d5" data-width="886" data-height="439" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><h4>* reduce</h4><p>如下图，首先创建WordCountReduce类，继承自
+org.apache.hadoop.mapreduce.Reducer类，然后覆写其reduce方法，这个reduce方法会在整个框架需要进行
+reduce运算时自动调用的。reduce方法中，需要做的操作是将map映射好的单词做合并处理（在shuffle过程讲解前，只能这样不太严谨的表
+述），reduce方法的key参数是当前传入到reduce方法中的单词，比如：cat这个单词，接着values参数，是这个cat单词所对应的映
+射，此例子为两个1。reduce过程，是将如下数据进行合并运算：</p><p>&lt;one, [1]&gt;</p><p>&lt;two, [1, 1]&gt;</p><p>&lt;hadoop, [1]&gt;</p><p>&lt;element, [1]&gt;</p><p>&lt;dog, [1]&gt;</p><p>&lt;cat, [1, 1]&gt;</p><p>&lt;go, [1]&gt;</p><p>&lt;for, [1]&gt;</p><p>&lt;nick, [1]&gt;</p><p>&lt;hello, [1]&gt;</p><p>那么对于cat这个单词来讲，reduce中的key参数就代表cat，values参数就代表[1, 1]，如此便可统计合并。最后出来的结果，比如cat这个单词，那么就是&lt;cat, 2&gt;</p><p>可能的疑惑：</p><p>1、map过程产生的&lt;cat, 1&gt;和&lt;cat, 1&gt;是怎么变成&lt;cat, [1, 1]&gt;从而传递给reduce的？</p><p>2、如果我这个words.txt文件有10T这么大，那么按照HDFS存储分割成好多个128M分布存储在各个主机，那到底是怎么来协调的。</p><p>如上两个问题需要涉及到map和reduce的之间的一些细节，即<b>shuffle</b>过程（后续在说）。</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-468fa2429879d48b.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-468fa2429879d48b.png?imageMogr2/auto-orient/strip" data-image-slug="468fa2429879d48b" data-width="857" data-height="366" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><h4>* job</h4><p>编写完map和reduce代码后，最后需要创建一个任务来执行mapreduce运算，如下图，首先创建一个App类，继承自Configured并实现Tool接口，这里会让你覆写run方法。在run方法中，我们需要做的是：</p><p>1、创建配置实例Configuration</p><p>2、创建Job任务并设置Job任务所在类为App.class</p><p>3、为当前Job设置数据输入路径inPath</p><p>4、为当前Job设置map运算所在的那个类为WordCountMapper.class，设置map任务输出的结果类型，&lt;cat, 1&gt;这个类型当然是Text.class和LongWritable.class了</p><p>5、设置Job的reduce运算所在类，为WordCountReducer.class，设置reducer输出结果&lt;cat, 2&gt;的类型分别为Text.class和LongWritable.class。</p><p>6、设置Job任务的输出目录outPath</p><p>7、如果Job任务成功执行完毕，则返回0，否则返回1。</p><p>8、调用时，将输入目录和输出目录传入到args参数中，此时我直接默认：</p><p>args = new String[]{"/input/words/words.txt", "/output/"};</p><p>最后通过如下两行代码，执行任务并退出系统。</p><p>int status = ToolRunner.run(app.getConf(), app, args);</p><p>System.exit(status);</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-f20cf3870a52747b.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-f20cf3870a52747b.png?imageMogr2/auto-orient/strip" data-image-slug="f20cf3870a52747b" data-width="980" data-height="764" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>其中的deleteFileInHDFS方法为之前自定义的Tools类中的方法，方法可以在HDFS系统中删除传入的目录，在这个例
+子里，每次执行都删除之前创建出来的output目录，原因在于在执行某个job任务前，输出目录不能为已经存在的目录，所以要么手动删除之前的目录，要
+么手动指定新目录。在此为了方便我选择了前者（因为对于本例来讲，之前那些输出数据不需要了）。</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-d5e6465c3b1db7a1.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-d5e6465c3b1db7a1.png?imageMogr2/auto-orient/strip" data-image-slug="d5e6465c3b1db7a1" data-width="768" data-height="266" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>接着就可以运行该案例了，注意运行时，要先开启hdfs和yarn的相关服务，运行完成后，通过查看output目录的结果如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-bb3be10e8aa39f2d.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-bb3be10e8aa39f2d.png?imageMogr2/auto-orient/strip" data-image-slug="bb3be10e8aa39f2d" data-width="456" data-height="189" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>以上便完成了mapreduce关于wordcount单词统计的编码和运行。接下来，我们回忆一下之前使用官方examples.jar运行的单词统计任务，使用的命令是：</p><p><b>$ bin/yarn jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.5.0.jar wordcount /input/ /output/</b></p><p>那么我们也想使用类似的方式把自己的代码打成jar包之后调用，怎么玩呢。首先，既然是想手动传入输入数据和输出目录，那么就先把如下代码注释掉：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-ac75056fbd843488.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-ac75056fbd843488.png?imageMogr2/auto-orient/strip" data-image-slug="ac75056fbd843488" data-width="981" data-height="123" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>接着，我们开始打包程序：</p><p>1、在Eclipse中，依次点击：File -- Export -- Java -- JAR file -- Next</p><p>2、出现如下界面，这里我把JAR的输出目录改为：/home/z/Desktop/MyWordCount.jar，同时注意选择你要打包的源码，即src/main/java</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-acb987886e429182.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-acb987886e429182.png?imageMogr2/auto-orient/strip" data-image-slug="acb987886e429182" data-width="609" data-height="710" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>3、下一步，再下一步，出现如下界面，注意红框部分，这里我们选择一个jar包的入口类，如果不选择，那么我们执行jar包时，还需要
+手动输入哪个类为入口类，最后Finish。（如果你的红框内容被遮挡住了，先Cancel下，然后全屏你的虚拟机系统，再次来到这个界面就能看到了）</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-95cc9aafb612fa81.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-95cc9aafb612fa81.png?imageMogr2/auto-orient/strip" data-image-slug="95cc9aafb612fa81" data-width="611" data-height="791" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>4、桌面生成了一个Jar文件则成功。接下来我们通过这个jar来运行一下，输入指令：</p><p><b>$ bin/yarn jar /home/z/Desktop/MyWordCount.jar /input/words/words.txt /output/</b>，如图所示，开始运行任务：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-3c0e037253b2e74f.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-3c0e037253b2e74f.png?imageMogr2/auto-orient/strip" data-image-slug="3c0e037253b2e74f" data-width="1504" data-height="159" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>最后查看该任务结果：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-b9487f6e167c49cd.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-b9487f6e167c49cd.png?imageMogr2/auto-orient/strip" data-image-slug="b9487f6e167c49cd" data-width="440" data-height="190" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>成功运行！</p><h2>** 最后我们对比两条命令</h2><p>运行官方jar：<b>$ bin/yarn jar share/hadoop/mapreduce/hadoop-mapreduce-examples-2.5.0.jar wordcount /input/ /output/</b></p><p>运行自己jar：<b>$ bin/yarn jar /home/z/Desktop/MyWordCount.jar /input/words/words.txt /output/</b></p><h4>* 运行官方的jar时，除了指定某个位置的jar包运行在yarn平台上之外，还提供了wordcount任务名称，而我们自己写的没有，是因为我们封装的jar就一个单词统计任务，而且在封装jar时指定了主类。</h4><h4>* 运行官方提供的jar中的wordcount任务，提供的数据输入目录为/input/并没有指定哪个具体文件，是因为官方的demo中编写了自动遍历指定目录中所有可用的统计资源，而我们的代码中没有写这样的功能，所以请直接指定文件的绝对路径。</h4><h1>** 总结</h1><p>本节需要大概了解mapreduce的运行原理，并成功使用eclipse编写mapreduce的单词统计任务，使之成功运行。最后完成jar包封装并成功调用。</p><hr><p>个人微博：http://weibo.com/seal13</p><p>QQ大数据技术交流群（广告勿入）：476966007</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-62ba58fe1377a8ce.png" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><a href="http://www.jianshu.com/p/0ad52ec23309" target="_blank">下一节：Hadoop框架基础（四）</a></p>
+        </div>
+        <!--  -->
+
+        <div class="show-foot">
+          <a class="notebook" href="http://www.jianshu.com/nb/10277662">
+            <i class="iconfont ic-search-notebook"></i> <span>BigData</span>
+</a>          <div class="copyright" data-toggle="tooltip" data-html="true" data-original-title="转载请联系作者获得授权，并标注“简书作者”。">
+            © 著作权归作者所有
+          </div>
+          <div class="modal-wrap" data-report-note="">
+            <a id="report-modal">举报文章</a>
+          </div>
+        </div>
+    </div>
+
+    <!-- 文章底部作者信息 -->
+      <div class="follow-detail">
+        <div class="info">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+          <a class="title" href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a>
+            <i class="iconfont ic-man"></i>
+        <p>写了 69304 字，被 107 人关注，获得了 112 个喜欢</p></div>
+          <div class="signature">年轻人，应该了解处于风口浪尖的一切科技。</div>
+      </div>
+
+      <div class="support-author"></div>
+
+    <div class="meta-bottom">
+      <div class="like"><div class="btn like-group"><div class="btn-like"><a href="http://www.jianshu.com/sign_in"><i class="iconfont ic-like"></i>喜欢</a></div> <div class="modal-wrap"><a>2</a></div></div> <!----></div>
+      <div class="share-group">
+        <a class="share-circle" data-action="weixin-share" data-toggle="tooltip" data-original-title="分享到微信">
+          <i class="iconfont ic-wechat"></i>
+        </a>
+        <a class="share-circle" data-toggle="tooltip" href="javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/9973728/weibo/image_15375b112099.jpg',%20'%E6%8E%A8%E8%8D%90%20@%E5%B0%BD%E9%99%85iActivity%20%E7%9A%84%E6%96%87%E7%AB%A0%E3%80%8AHadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%E3%80%8B%EF%BC%88%20%E5%88%86%E4%BA%AB%E8%87%AA%20@%E7%AE%80%E4%B9%A6%20%EF%BC%89','http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','%E9%A1%B5%E9%9D%A2%E7%BC%96%E7%A0%81gb2312|utf-8%E9%BB%98%E8%AE%A4gb2312'));" data-original-title="分享到微博">
+          <i class="iconfont ic-weibo"></i>
+        </a>
+          <a class="share-circle" data-toggle="tooltip" href="http://cwb.assets.jianshu.io/notes/images/9973728/weibo/image_15375b112099.jpg" target="_blank" data-original-title="下载长微博图片">
+            <i class="iconfont ic-picture"></i>
+          </a>
+        <a class="share-circle more-share" tabindex="0" data-toggle="popover" data-placement="top" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="
+          &lt;ul class=&quot;share-list&quot;&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《Hadoop框架基础（三）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-zone&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《Hadoop框架基础（三）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-twitter&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-facebook&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-google&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('Hadoop框架基础（三）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-douban&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        " data-original-title="" title="">更多分享</a>
+      </div>
+    </div>
+    <div id="vue_comment"></div>
+  </div>
+
+  <div class="side-tool"><ul><li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="回到顶部" style="display: none;"><a class="function-button"><i class="iconfont ic-backtop"></i></a></li> <!----> <!----> <li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="分享文章"><a tabindex="0" role="button" data-toggle="popover" data-placement="left" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="&lt;ul class='share-list'&gt;
+                &lt;li&gt;&lt;a class=&quot;weixin-share&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-weixin&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到微信&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/9973728/weibo/image_15375b112099.jpg', '推荐 @尽际iActivity 的文章《Hadoop框架基础（三）》（ 分享自 @简书 ）','http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','页面编码gb2312|utf-8默认gb2312'));&quot;&gt;&lt;i class='social-icon-sprite social-icon-weibo'&gt;&lt;/i&gt;&lt;span&gt;分享到微博&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;http://cwb.assets.jianshu.io/notes/images/9973728/weibo/image_15375b112099.jpg&quot; target=&quot;_blank&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-picture&quot;&gt;&lt;/i&gt;&lt;span&gt;下载长微博图片&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《Hadoop框架基础（三）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-zone'&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《Hadoop框架基础（三）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-twitter'&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-facebook'&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-google'&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/87209aba4465?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('Hadoop框架基础（三）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class='social-icon-sprite social-icon-douban'&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;" data-original-title="" title="" class="function-button"><i class="iconfont ic-share"></i></a> <!----></li></ul></div>
+</div>
+<div class="note-bottom">
+  <div><div class="main"><div class="title">被以下专题收入，发现更多相似内容</div> <!----> <div class="include-collection"><!----> <a href="http://www.jianshu.com/c/d2f9d733c6c8?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/timg.jpg"><div class="name">Linux大数据教程</div></a><a href="http://www.jianshu.com/c/V2CqjW?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/6249340_194140034135_2.jpg"><div class="name">@IT·互联网</div></a><a href="http://www.jianshu.com/c/5c09c028a281?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/20140107_32188.jpg"><div class="name">Hadoop</div></a><a href="http://www.jianshu.com/c/86ff829f995f?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/u_2582065815_2360012304_fm_21_gp_0.jpg"><div class="name">大数据核心技术&amp;科普</div></a> <!----></div></div> <!----> <!----></div>
+  <div data-vcomp="recommended-notes" data-note-id="9973728"></div>
+</div>
+
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/push.js"></script><script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/hm.js"></script><script async="" src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/analytics.js"></script><script type="application/json" data-name="page-data">{"user_signed_in":false,"locale":"zh-CN","os":"windows","read_mode":"day","read_font":"font2","note_show":{"is_author":false,"is_following_author":false,"is_liked_note":false,"uuid":"ffa22168-aad5-4246-855d-19c709270749"},"note":{"id":9973728,"slug":"87209aba4465","user_id":4951489,"notebook_id":10277662,"commentable":true,"likes_count":2,"views_count":77,"public_wordage":2573,"comments_count":0,"total_rewards_count":0,"is_author":false,"author":{"nickname":"Z尽际","total_wordage":69304,"followers_count":107,"total_likes_count":112}}}</script>
+    
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/babel-polyfill-879c5f4bc085ce8a6153.js"></script>
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-base-60bef14f05f21a4581be.js"></script>
+<script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-480e049f44d3eb16dea8.js"></script>
+    
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%B8%89%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-e304fd423c162fd5a868.js"></script>
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-35169517-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+<script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?0c0e9d9b1e7d617b3e6842e85b9fb068";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script>
+  (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+          bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else {
+          bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+  
+
+<!----><!----></body></html>

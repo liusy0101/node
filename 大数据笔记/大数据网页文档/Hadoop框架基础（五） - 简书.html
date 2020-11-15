@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<!--[if IE 6]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 7]><html class="ie lt-ie8"><![endif]-->
+<!--[if IE 8]><html class="ie ie8"><![endif]-->
+<!--[if IE 9]><html class="ie ie9"><![endif]-->
+<!--[if !IE]><!-->
+<html><!--<![endif]--><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=no">
+
+  <!-- Start of Baidu Transcode -->
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta name="applicable-device" content="pc,mobile">
+  <meta name="MobileOptimized" content="width">
+  <meta name="HandheldFriendly" content="true">
+  <meta name="mobile-agent" content="format=html5;url=http://www.jianshu.com/p/b39f71b1522b">
+  <!-- End of Baidu Transcode -->
+
+    <meta name="description" content="** Hadoop框架基础（五） 已经部署了Hadoop的完全分布式集群，我们知道NameNode节点的正常运行对于整个HDFS系统来说非常重要，如果NameNode宕掉了，那么整个HDFS就要整段垮掉了，所以人类思考，能不能让世界多一点爱：），我们能不能弄个备用的NameNode，一旦正在使用的NameNode原地爆炸了，另一台备用的NameNode能立刻代替原先NameNode的位置，继...">
+
+  <meta name="360-site-verification" content="604a14b53c6b871206001285921e81d8">
+  <meta property="wb:webmaster" content="294ec9de89e7fadb">
+  <meta property="qc:admins" content="104102651453316562112116375">
+  <meta property="qc:admins" content="11635613706305617">
+  <meta property="qc:admins" content="1163561616621163056375">
+  <meta name="google-site-verification" content="cV4-qkUJZR6gmFeajx_UyPe47GW9vY6cnCrYtCHYNh4">
+  <meta name="google-site-verification" content="HF7lfF8YEGs1qtCE-kPml8Z469e2RHhGajy6JPVy5XI">
+  <meta http-equiv="mobile-agent" content="format=html5; url=http://www.jianshu.com/p/b39f71b1522b">
+
+  <!-- Apple -->
+  <meta name="apple-mobile-web-app-title" content="简书">
+
+    <!--  Meta for Smart App Banner -->
+  <meta name="apple-itunes-app" content="app-id=888237539, app-argument=jianshu://notes/9973744">
+  <!-- End -->
+
+  <!--  Meta for Twitter Card -->
+  <meta content="summary" property="twitter:card">
+  <meta content="@jianshucom" property="twitter:site">
+  <meta content="Hadoop框架基础（五）" property="twitter:title">
+  <meta content="** Hadoop框架基础（五） 已经部署了Hadoop的完全分布式集群，我们知道NameNode节点的正常运行对于整个HDFS系统来说非常重要，如果NameNode宕掉了，那么整个HDFS就要整段垮掉了，所以人类思考，能不能让世界多一点爱：），我们能不能弄个备用的NameNode，一旦正在使用的NameNode原地爆炸了，另一台备用的NameNode能立刻代替原先NameNode的位置，继续让HDFS系统正常运行？（同理，ResourceManager也是可以的。） 世界果然充满爱，动物管理员横空出世——zookeeper框架 ** ZooKeeper 这个框架的翻译为动物园管理员，想..." property="twitter:description">
+  <meta content="http://www.jianshu.com/p/b39f71b1522b" property="twitter:url">
+  <!-- End -->
+
+  <!--  Meta for OpenGraph -->
+  <meta property="fb:app_id" content="865829053512461">
+  <meta property="og:site_name" content="简书">
+  <meta property="og:title" content="Hadoop框架基础（五）">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="http://www.jianshu.com/p/b39f71b1522b">
+  <meta property="og:description" content="** Hadoop框架基础（五） 已经部署了Hadoop的完全分布式集群，我们知道NameNode节点的正常运行对于整个HDFS系统来说非常重要，如果NameNode宕掉了，那么整个HDFS就要...">
+  <!-- End -->
+
+  <!--  Meta for Facebook Applinks -->
+  <meta property="al:ios:url" content="jianshu://notes/9973744">
+  <meta property="al:ios:app_store_id" content="888237539">
+  <meta property="al:ios:app_name" content="简书">
+
+  <meta property="al:android:url" content="jianshu://notes/9973744">
+  <meta property="al:android:package" content="com.jianshu.haruki">
+  <meta property="al:android:app_name" content="简书">
+  <!-- End -->
+
+
+    <title>Hadoop框架基础（五） - 简书</title>
+
+  <meta name="csrf-param" content="authenticity_token">
+<meta name="csrf-token" content="Lt0ECoQbDPZc+tcAqWz5yz76bDA8+6JlaKUzGRRnxvcDTyb+VHdwfF3TOCgnI40h+xTgYEzQoio3UNua31TEQg==">
+
+  <link rel="stylesheet" media="all" href="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-60bef14f05f21a4581be.css">
+  
+  <link rel="stylesheet" media="all" href="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-60bef14f05f21a4581be.css">
+
+  <link href="http://cdn2.jianshu.io/assets/favicons/favicon-783beb88ed621ceab614de960376ac0c.ico" rel="icon">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/57-47624b2e2161e8eb144462c85db0a5ff.png" sizes="57x57">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/72-c00cde7cf98fc49e50cbb3ee1dcd5804.png" sizes="72x72">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/76-e8af0bdeaf1ba31e303b1fde8b5e66c4.png" sizes="76x76">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/114-f4c78569bbf1977e8382a5fd90c9237a.png" sizes="114x114">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/120-cf10c3711dba269522743729efe66bbc.png" sizes="120x120">
+      <link rel="apple-touch-icon-precomposed" href="http://cdn2.jianshu.io/assets/apple-touch-icons/152-7bd60457b5f3ecbf1343f0e6241be4f8.png" sizes="152x152">
+<link rel="stylesheet" href="blob:http://www.jianshu.com/f434752d-b55d-4e8e-b7b3-af68258311ef"><link rel="stylesheet" href="blob:http://www.jianshu.com/78412348-62b9-44aa-a8fc-f060454214cb"></head>
+
+  <body class="reader-black-font" lang="zh-CN">
+    <!-- 全局顶部导航栏 -->
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="width-limit">
+    <!-- 左上方 Logo -->
+    <a class="logo" href="http://www.jianshu.com/"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/logo-58fd04f6f0de908401aa561cda6a0688.png" alt="Logo"></a>
+
+    <!-- 右上角 -->
+      <!-- 未登录显示登录/注册/写文章 -->
+      <a class="btn write-btn" target="_blank" href="http://www.jianshu.com/writer#/">
+        <i class="iconfont ic-write"></i>写文章
+</a>      <a class="btn sign-up" href="http://www.jianshu.com/sign_up">注册</a>
+      <a class="btn log-in" href="http://www.jianshu.com/sign_in">登录</a>
+
+    <!-- 如果用户登录，显示下拉菜单 -->
+
+    <div class="style-mode"><a class="style-mode-btn"><i class="iconfont ic-navigation-mode"></i></a> <div class="popover-modal" style="left: 0px; display: none;"><div class="meta"><i class="iconfont ic-navigation-night"></i><span>夜间模式</span></div> <div class="switch day-night-group"><a class="switch-btn">开</a> <a class="switch-btn active">关</a></div> <hr> <div class="switch font-family-group"><a class="switch-btn font-song">宋体</a> <a class="switch-btn font-hei active">黑体</a></div> <div class="switch"><a class="switch-btn active">简</a> <a class="switch-btn">繁</a></div></div></div>
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#menu" aria-expanded="false">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+      <div class="collapse navbar-collapse" id="menu">
+        <ul class="nav navbar-nav">
+            <li class="">
+              <a href="http://www.jianshu.com/">
+                <span class="menu-text">首页</span><i class="iconfont ic-navigation-discover menu-icon"></i>
+</a>            </li>
+            <li class="">
+              <a class="app-download-btn" href="http://www.jianshu.com/apps"><span class="menu-text">下载App</span><i class="iconfont ic-navigation-download menu-icon"></i></a>
+            </li>
+          <li class="search">
+            <form target="_blank" action="/search" accept-charset="UTF-8" method="get"><input name="utf8" value="✓" type="hidden">
+              <input name="q" id="q" placeholder="搜索" class="search-input" type="text">
+              <a class="search-btn" href="javascript:void(null)"><i class="iconfont ic-search"></i></a>
+              <!-- <div id="navbar-trending-search"></div> -->
+</form>          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</nav>
+
+    
+<div class="note">
+  <div class="post">
+    <div class="article">
+        <h1 class="title">Hadoop框架基础（五）</h1>
+
+        <!-- 作者区域 -->
+        <div class="author">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <div class="info">
+            <span class="tag">作者</span>
+            <span class="name"><a href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a></span>
+            <!-- 关注用户按钮 -->
+            <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+            <!-- 文章数据信息 -->
+            <div class="meta">
+              <!-- 如果文章更新时间大于发布时间，那么使用 tooltip 显示更新时间 -->
+                <span class="publish-time" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="最后编辑于 2017.07.18 17:18">2017.04.12 15:18*</span>
+              <span class="wordage">字数 3640</span>
+            <span class="views-count">阅读 91</span><span class="comments-count">评论 2</span><span class="likes-count">喜欢 6</span></div>
+          </div>
+          <!-- 如果是当前作者，加入编辑按钮 -->
+        </div>
+        <!-- -->
+
+        <!-- 文章内容 -->
+        <div data-note-content="" class="show-content">
+          <h2>** Hadoop框架基础（五）<br>
+</h2><p>已经部署了Hadoop的完全分布式集群，我们知道NameNode节点的正常运行对于整个HDFS系统来说非常重要，如果
+NameNode宕掉了，那么整个HDFS就要整段垮掉了，所以人类思考，能不能让世界多一点爱：），我们能不能弄个备用的NameNode，一旦正在使
+用的NameNode原地爆炸了，另一台备用的NameNode能立刻代替原先NameNode的位置，继续让HDFS系统正常运行？（同
+理，ResourceManager也是可以的。）</p><p>世界果然充满爱，动物管理员横空出世——zookeeper框架</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-0d41bc31c3736cab.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-0d41bc31c3736cab.png?imageMogr2/auto-orient/strip" data-image-slug="0d41bc31c3736cab" data-width="431" data-height="373" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><h2>** ZooKeeper</h2><p>这个框架的翻译为动物园管理员，想想其实是有道理的，大数据领域，Hadoop框架是大象，Hive框架是蜜蜂（为啥是个大象头哎喂？），Pig框架是猪，都是人类的好朋友，所以有个动物管理员也不差异。接下来简单介绍一下zookeeper框架。</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-fe63ceec1d9121b4.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-fe63ceec1d9121b4.png?imageMogr2/auto-orient/strip" data-image-slug="fe63ceec1d9121b4" data-width="854" data-height="124" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><h3>** zookeeper功能：<br>
+</h3><p>* 统一命名服务（Name Service）</p><p>* 配置管理（Configuration Management）</p><p>* 集群管理（Group Membership）</p><p>* 共享锁（Locks）/同步锁</p><h3>** zookeeper简述：</h3><p>apache
+开源项目，提供分布式集群，属于Hadoop底下的一个分支，为分布式应用提供协调服务，官方网
+站：zookeeper.apache.org，zookeeper服务器为奇数个，即2n+1个服务器，允许有n个机器宕机，不影响整个系统的运行。比
+如：3台机器，其中有1台机器宕机，且存活的Server的数目不得少于n+1.，不会影响整个系统运行。 
+zookeeper集群会选择出一个leader服务器，其他服务器角色是follower，它使用的FastLeaderELection选举算法是类
+fast paoxs的算法（有兴趣的可以周边查阅下），投票数量结果过半的服务器选为leader服务器。</p><h4>** zookeeper原理简述</h4><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-f75ddb90fb5e04b3.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-f75ddb90fb5e04b3.png?imageMogr2/auto-orient/strip" data-image-slug="f75ddb90fb5e04b3" data-width="1127" data-height="356" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>当leader崩溃或者leader失去大多数的follower，这时候zookeeper进入恢复模式，恢复模式需要重新选举出一个新的leader，让所有的Server都恢复到一个正确的状态，系统默认的选举算法为fast paxos。</p><h3>** zookeeper的Fast Leader选举机制</h3><p>首先介绍几个概念</p><p><b>服务器ID</b><br></p><p>比如有三台服务器，编号分别是1,2,3。</p><p>编号越大在选择算法中的权重越大。</p><p><b>数据ID</b></p><p>服务器中存放的最大数据ID.</p><p>值越大说明数据越新，在选举算法中数据越新权重越大。</p><p><b>逻辑时钟</b></p><p>或者叫投票的轮数，同一轮投票过程中的逻辑时钟值是相同的。每投完一轮票这个数据就会增加，然后与接收到的其它服务器返回的投票信息中的数值相比，根据不同的值做出不同的判断。</p><p><b>选举状态</b></p><p>LOOKING，竞选状态。</p><p>FOLLOWING，随从状态，同步leader状态，参与投票。</p><p>OBSERVING，观察状态,同步leader状态，不参与投票。</p><p>LEADING，领导者状态。</p><p><b>选举消息内容</b><br></p><p>在投票完成后，需要将投票信息发送给集群中的所有服务器，它包含如下内容。</p><p>服务器ID</p><p>数据ID</p><p>逻辑时钟（或者理解为选举轮数，从0开始递增）</p><p>选举状态</p><p><b>开始投票：</b></p><p><b>1、恢复数据</b><br></p><p>zookeeper服务器中的每份数据，都有一个对应的id值，这个值是依次递增的，越新的数据，对应的ID值就越大，所以先把数据恢复到最新。<br></p><p><b>2、广播投票到其他服务器</b></p><p>恢复数据到最新之后，每个zookeeper服务器发送自己选举的leader（崭新状态首次投票推选自己），这个协议中包含了以下几部分的数据：<br></p><p>* 当前的服务器的id，即sid</p><p>* 当前服务器的最大的数据id，这个值大的服务器，说明存放了更新的数据.</p><p>* 当前服务器本次的逻辑时钟的值</p><p>* 当前机器的选举状态</p><p><b>3、接收其他服务器的广播</b></p><p><b>每个服务器将自己的数据（以上4个）广播给其他服务器，同时也接收其他服务器广播过来的数据，之后：</b></p><p><b>如果所接收数据中服务器的状态还是在选举阶段(LOOKING 状态)，那么首先判断逻辑时钟值，又分为以下三种情况:</b></p><p>*
+ 
+如果发送过来的逻辑时钟大于目前的逻辑时钟，那么说明这次选举更加的新，此时需要更新一下本机的逻辑时钟值，同时将之前收集到的来自其他服务器的选举清
+空，因为这些数据已经过期了。然后判断是否需要更新当前自己的选举情况。在这里是根据选举sid和保存的最大数据id来进行判断的，这两种数据之间对这个
+选举结果的影响的权重关系是：首先看数据id，数据id大者胜出；其次再判断sid，sid大者胜出。然后再将自身最新的选举结果广播给其他服务器。</p><p>* 如果发送过来数据的逻辑时钟小于本机的逻辑时钟，说明对方在一个相对较早的选举进程中，此时只需要发送自己的选举数据即可。</p><p>* 两边的逻辑时钟相同，此时只需要判断是否需要更新本机的数据，如果更新了再将自己最新的选举结果广播出去就是了。</p><p><b>然后再处理两种情况:</b></p><p>* 服务器判断是不是已经收集到了所有服务器的选举状态，如果是，那么这台服务器选举的leader就定下来了，然后根据选举结果设置自己的角色(FOLLOWING还是LEADER)，选举结束。</p><p>*
+ 
+即使没有收集到所有服务器的选举状态，也可以根据该节点上选择的最新的leader是不是得到了超过半数以上服务器的支持，如果是，那么当前线程将被阻塞
+等待一段时间(这个时间在finalizeWait定义)看看是不是还会收到当前leader的数据更优的leader，如果经过一段时间还没有这个新的
+leader提出来，那么这台服务器最终的leader就确定了，否则进行下一次选举。</p><p><b>&nbsp;如果所接收服务器不在选举状态,也就是在FOLLOWING或者LEADING状态做以下两个判断：</b></p><p>* 如果逻辑时钟相同，将该数据保存到recvset，如果所接收服务器宣称自己是leader，那么将判断是不是有半数以上的服务器选举它，如果是则设置选举状态，选举结束。</p><p>* 否则这是一条与当前逻辑时钟不符合的消息，那么说明在另一个选举过程中已经有了选举结果，于是将该选举结果加入到集合中，再根据集合来判断是否可以结束选举，如果可以也是保存逻辑时钟，设置选举状态，选举结束。</p><p>原理引用网络上的一张图，如图所示：<br></p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-e65658da8923ea2f.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-e65658da8923ea2f.png?imageMogr2/auto-orient/strip" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>在此举个例子：假设有5台机器</p><p>服务器1启动，给自己投票，然后发投票信息，由于其它机器还没有启动所以它收不到反馈信息，服务器1的状态一直属于Looking。<br></p><p>服务器2启动，给自己投票，同时与之前启动的服务器1交换结果，由于服务器2的编号大所以服务器2胜出，但此时投票数没有大于半数，所以两个服务器的状态依然是LOOKING。</p><p>服务器3启动，给自己投票，同时与之前启动的服务器1，2交换信息，由于服务器3的编号最大所以服务器3胜出，此时投票数正好大于半数，所以服务器3成为leader，服务器1，2成为follower。</p><p>服务器4启动，给自己投票，同时与之前启动的服务器1，2，3交换信息，尽管服务器4的编号大，但之前服务器3已经胜出，所以服务器4只能成为follower。</p><p>服务器5启动，后面的逻辑同服务器4成为follower。</p><h2>zookeeper安装：<br>
+</h2><p><b>* 下载地址传送门：</b></p><p>zookeeper下载：链接：http://pan.baidu.com/s/1o78IBsY 密码：xh3k</p><p><b>* 解压到modules目录中</b></p><p><b>* 修改配置文件（cp -a命令意为保留原文件属性的情况下，复制文件）</b></p><p>复制conf目录下的zoo_sample.cfg文件并重命名为zoo.cfg文件</p><p>$ cp -a zoo_sample.cfg zoo.cfg，执行后，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-f0aeb5b7dbf50a66.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-f0aeb5b7dbf50a66.png?imageMogr2/auto-orient/strip" data-image-slug="f0aeb5b7dbf50a66" data-width="493" data-height="111" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>对文件做如下修改：</p><p>$ vi zoo.cfg</p><p>dataDir=/opt/modules/zookeeper-3.4.5/zkData， 如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-a6f66394a0852055.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-a6f66394a0852055.png?imageMogr2/auto-orient/strip" data-image-slug="a6f66394a0852055" data-width="628" data-height="439" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>创建这个目录：</p><p>$ mkdir /opt/modules/zookeeper-3.4.5/zkData</p><p><b>* 启动zookeeper</b></p><p>单节点启动，切换到zookeeper的安装根目录：</p><p>$ bin/zkServer.sh start</p><p>查看启动状态：</p><p>$ bin/zkServer.sh status，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-534860c69c63c6e0.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-534860c69c63c6e0.png?imageMogr2/auto-orient/strip" data-image-slug="534860c69c63c6e0" data-width="511" data-height="152" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><h2>** zookeeper集群的部署</h2><p>集群规划如下：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-75d753478de69f0d.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-75d753478de69f0d.png?imageMogr2/auto-orient/strip" data-image-slug="75d753478de69f0d" data-width="704" data-height="99" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 修改zoo.cfg</b><br></p><p>dataDir=/opt/modules/zookeeper-3.4.5/zkData</p><p>server.1=192.168.122.200:2888:3888</p><p>server.2=192.168.122.201:2888:3888</p><p>server.3=192.168.122.202:2888:3888</p><p>注意：这里我使用的是三台服务器的ip地址，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-368c3ef0ade2e452.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-368c3ef0ade2e452.png?imageMogr2/auto-orient/strip" data-image-slug="368c3ef0ade2e452" data-width="629" data-height="535" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 添加myid文件，注意</b><b>一定要在linux里面创建</b></p><p>$ vi zkData/myid</p><p>添加内容：1</p><p><b>* 把zookeeper目录拷贝给其他集群服务器</b><br></p><p>$ scp -r zookeeper-3.4.5/ z02:/opt/modules/</p><p>$ scp -r zookeeper-3.4.5/ z03:/opt/modules/</p><p><b>修改myid文件</b></p><p>z02 为 2</p><p>z03 为 3</p><p><b>* 依次启动所有集群服务</b></p><p>$ bin/zkServer.sh start</p><p><b>* 检查每个服务器的状态</b></p><p>$ bin/zkServer.sh status</p><p>一顿操作之后，如图：通过查看状态，可以发现，现在的leader服务器是z02，其他的服务器为follower。</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-0192d83c83f9c909.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-0192d83c83f9c909.png?imageMogr2/auto-orient/strip" data-image-slug="0192d83c83f9c909" data-width="524" data-height="689" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><h2>** NameNode的HA部署</h2><p>目标： 防止单个namenode宕机以后,整个HDFS集群失效</p><p>集群规划：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-a1cb7af30920ec30.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-a1cb7af30920ec30.png?imageMogr2/auto-orient/strip" data-image-slug="a1cb7af30920ec30" data-width="714" data-height="199" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>注意：建议配置之前把之前服务器配置备份一次,方便以后使用</b><br></p><p>$ cp -ra hadoop-2.5.0/ back-up-hadoop-2.5.0/，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-f45e9893f3f7a712.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-f45e9893f3f7a712.png?imageMogr2/auto-orient/strip" data-image-slug="f45e9893f3f7a712" data-width="779" data-height="57" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 配置：hdfs-site.xml，如图：</b></p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-243fb8e2e84dab10.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-243fb8e2e84dab10.png?imageMogr2/auto-orient/strip" data-image-slug="243fb8e2e84dab10" data-width="1507" data-height="3262" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 配置core-site.xml，如图：</b></p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-f32d287547ba62ca.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-f32d287547ba62ca.png?imageMogr2/auto-orient/strip" data-image-slug="f32d287547ba62ca" data-width="756" data-height="310" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 拷贝文件给其他服务器</b></p><p>删除三台服务器的数据目录，去每个机器上执行该命令：<br></p><p>$ rm -rf data/ &nbsp;<br></p><p>拷贝给其他两台服务器：</p><p>$ scp etc/hadoop/core-site.xml etc/hadoop/hdfs-site.xml &nbsp;z02:/opt/modules/hadoop-2.5.0/etc/hadoop/</p><p>$ scp etc/hadoop/core-site.xml etc/hadoop/hdfs-site.xml&nbsp; z03:/opt/modules/hadoop-2.5.0/etc/hadoop/</p><p><b>* 启动服务</b><br></p><p><b>* 在各个JournalNode节点上，输入以下命令启动journalnode服务：</b></p><p>$ sbin/hadoop-daemon.sh start journalnode</p><p><b>* 在[nn1]上，对其进行格式化，并启动</b></p><p>$ bin/hdfs namenode -format</p><p>$ sbin/hadoop-daemon.sh start namenode</p><p><b>* 在[nn2]上，同步nn1的元数据信息，并启动</b></p><p>$ bin/hdfs namenode -bootstrapStandby</p><p>$ sbin/hadoop-daemon.sh start namenode</p><p><b>* 在nn1中与nn2中查看jps进程如下图：</b></p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-41c41e60740c3462.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-41c41e60740c3462.png?imageMogr2/auto-orient/strip" data-image-slug="41c41e60740c3462" data-width="374" data-height="198" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 浏览器浏览，以下两个地址均可以访问HDFS：</b></p><p>http://z01:50070/<br></p><p>http://z02:50070/</p><p><b>* 手动把nn1设置为active</b><br></p><p>$ bin/hdfs haadmin -transitionToActive nn1</p><p><b>以上为手动故障转移，如果我们想自动切换故障，需要进行如下配置，即开启故障自动转移功能</b></p><p><b>配置hdfs-site.xml</b></p><p>添加属性：</p><p>dfs.ha.automatic-failover.enabled.mycluster：true<br></p><p><b><b>配置core-site.xml</b><br></b></p><p>添加属性：<br></p><p>ha.zookeeper.quorum：z01:2181,z02:2181,z03:2181<br></p><p><b>* 拷贝文件给后面两台服务器</b><br></p><p>$ scp etc/hadoop/core-site.xml etc/hadoop/hdfs-site.xml z02:/opt/modules/hadoop-2.5.0/etc/hadoop/<br></p><p>$ scp etc/hadoop/core-site.xml etc/hadoop/hdfs-site.xml z03:/opt/modules/hadoop-2.5.0/etc/hadoop/</p><p><b>* <b>启动服务</b></b></p><p>$ bin/zkServer.sh start<br></p><p><b><b>* </b>关闭所有HDFS服务</b></p><p>在[nn1]执行：</p><p>$ sbin/stop-dfs.sh，如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-8c10b996054d2d99.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-8c10b996054d2d99.png?imageMogr2/auto-orient/strip" data-image-slug="8c10b996054d2d99" data-width="332" data-height="189" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>启动zookeeper，初始化HA在Zookeeper中状态<br></p><p>$ bin/hdfs zkfc -formatZK</p><p><b>* 启动HDFS服务</b></p><p>在[nn1]执行：</p><p>$ sbin/start-dfs.sh</p><p>nn1与nn2的jps如图所示：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-bee1f21a98e882a3.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-bee1f21a98e882a3.png?imageMogr2/auto-orient/strip" data-image-slug="bee1f21a98e882a3" data-width="370" data-height="298" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 查看活跃状态</b></p><p>$ bin/hdfs haadmin -getServiceState nn1<br></p><p>$ bin/hdfs haadmin -getServiceState nn2<br></p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-1642b116bfb3bd86.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-1642b116bfb3bd86.png?imageMogr2/auto-orient/strip" data-image-slug="1642b116bfb3bd86" data-width="495" data-height="91" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 测试，访问如下站点也可以查看NameNode的活跃状态：</b></p><p>http://z01:50070/<br></p><p>http://z02:50070/</p><p>此时kill掉active的NameNode进程，查看standby状态会自动切换到active</p><h2>** Yarn的HA部署</h2><p>目标： 防止单个resourcemanager宕机以后,整个YARN集群失效<br></p><p>集群规划：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-7e863c25eac0936b.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-7e863c25eac0936b.png?imageMogr2/auto-orient/strip" data-image-slug="7e863c25eac0936b" data-width="723" data-height="158" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 配置：yarn-site.xml，如图：</b><br></p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-2d77be8d77282cda.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-2d77be8d77282cda.png?imageMogr2/auto-orient/strip" data-image-slug="2d77be8d77282cda" data-width="1507" data-height="1958" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p><b>* 拷贝给其他服务器并修改</b></p><p>$ scp etc/hadoop/yarn-site.xml z02:/opt/modules/hadoop-2.5.0/etc/hadoop/<br></p><p>$ scp etc/hadoop/yarn-site.xml z03:/opt/modules/hadoop-2.5.0/etc/hadoop/<br></p><p><b>* 启动每个服务器的服务</b></p><p>通过jps查看每个服务器的zookeeper服务QuorumPeerMain已经运行，没有运行则开启，方式前文已经说过，不再赘述。</p><p><b>在 z02中：</b><br></p><p>$ sbin/start-yarn.sh</p><p><b>在z03中：</b></p><p>$ sbin/yarn-daemon.sh start resourcemanager</p><p><b>查看服务状态：</b></p><p>$ bin/yarn rmadmin -getServiceState rm1<br></p><p>$ bin/yarn rmadmin -getServiceState rm2<br></p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-34c4c5e393855112.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-34c4c5e393855112.png?imageMogr2/auto-orient/strip" data-image-slug="34c4c5e393855112" data-width="484" data-height="94" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>测试：</p><p>运行我们之前打好的jar包，进行wordcount实例运算，在运算过程中kill掉active的rm，观察任务运行。</p><p>先开启HDFS服务（忘记的请看上边的内容），再上传一个words.txt文档到HDFS，再开始单词统计，涉及命令：</p><p>$ bin/hdfs dfs -mkdir /input/</p><p>$ bin/hdfs dfs -mkdir /input/words/<br></p><p>$ bin/hdfs dfs -put words.txt /input/words/<br></p><p>如图：</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-06342545facb4431.png" data-original-src="http://upload-images.jianshu.io/upload_images/4951489-06342545facb4431.png?imageMogr2/auto-orient/strip" data-image-slug="06342545facb4431" data-width="902" data-height="171" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><p>$ bin/yarn jar MyWordCount.jar /input/words/words.txt /output/</p><h1>** 总结</h1><p>这一节简单介绍了zookeeper并阐述其工作原理，成功使用zookeeper部署了NameNode HA和Resourcemanager HA。</p><hr><p>个人微博：http://weibo.com/seal13<br></p><p>QQ大数据技术交流群（广告勿入）：476966007</p><div class="image-package">
+<img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/4951489-62ba58fe1377a8ce.png" style="cursor: zoom-in;"><br><div class="image-caption"></div>
+</div><hr><p>下一节：Hadoop框架基础（六）后续更新</p>
+        </div>
+        <!--  -->
+
+        <div class="show-foot">
+          <a class="notebook" href="http://www.jianshu.com/nb/10277662">
+            <i class="iconfont ic-search-notebook"></i> <span>BigData</span>
+</a>          <div class="copyright" data-toggle="tooltip" data-html="true" data-original-title="转载请联系作者获得授权，并标注“简书作者”。">
+            © 著作权归作者所有
+          </div>
+          <div class="modal-wrap" data-report-note="">
+            <a id="report-modal">举报文章</a>
+          </div>
+        </div>
+    </div>
+
+    <!-- 文章底部作者信息 -->
+      <div class="follow-detail">
+        <div class="info">
+          <a class="avatar" href="http://www.jianshu.com/u/a39ddf86b31d">
+            <img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/b5933287-2239-4028-a7e0-8d87958ac06f.jpg" alt="144">
+</a>          <a class="btn btn-success follow"><i class="iconfont ic-follow"></i><span>关注</span></a>
+          <a class="title" href="http://www.jianshu.com/u/a39ddf86b31d">Z尽际</a>
+            <i class="iconfont ic-man"></i>
+        <p>写了 69304 字，被 107 人关注，获得了 112 个喜欢</p></div>
+          <div class="signature">年轻人，应该了解处于风口浪尖的一切科技。</div>
+      </div>
+
+      <div class="support-author"></div>
+
+    <div class="meta-bottom">
+      <div class="like"><div class="btn like-group"><div class="btn-like"><a href="http://www.jianshu.com/sign_in"><i class="iconfont ic-like"></i>喜欢</a></div> <div class="modal-wrap"><a>6</a></div></div> <!----></div>
+      <div class="share-group">
+        <a class="share-circle" data-action="weixin-share" data-toggle="tooltip" data-original-title="分享到微信">
+          <i class="iconfont ic-wechat"></i>
+        </a>
+        <a class="share-circle" data-toggle="tooltip" href="javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/9973744/weibo/image_b76514042f95.jpg',%20'%E6%8E%A8%E8%8D%90%20@%E5%B0%BD%E9%99%85iActivity%20%E7%9A%84%E6%96%87%E7%AB%A0%E3%80%8AHadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%E3%80%8B%EF%BC%88%20%E5%88%86%E4%BA%AB%E8%87%AA%20@%E7%AE%80%E4%B9%A6%20%EF%BC%89','http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','%E9%A1%B5%E9%9D%A2%E7%BC%96%E7%A0%81gb2312|utf-8%E9%BB%98%E8%AE%A4gb2312'));" data-original-title="分享到微博">
+          <i class="iconfont ic-weibo"></i>
+        </a>
+          <a class="share-circle" data-toggle="tooltip" href="http://cwb.assets.jianshu.io/notes/images/9973744/weibo/image_b76514042f95.jpg" target="_blank" data-original-title="下载长微博图片">
+            <i class="iconfont ic-picture"></i>
+          </a>
+        <a class="share-circle more-share" tabindex="0" data-toggle="popover" data-placement="top" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="
+          &lt;ul class=&quot;share-list&quot;&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《Hadoop框架基础（五）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-zone&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《Hadoop框架基础（五）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-twitter&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-facebook&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-google&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+            &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('Hadoop框架基础（五）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-douban&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+          &lt;/ul&gt;
+        " data-original-title="" title="">更多分享</a>
+      </div>
+    </div>
+    <div id="vue_comment"></div>
+  </div>
+
+  <div class="side-tool"><ul><li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="回到顶部" style="display: none;"><a class="function-button"><i class="iconfont ic-backtop"></i></a></li> <!----> <!----> <li data-placement="left" data-toggle="tooltip" data-container="body" data-original-title="分享文章"><a tabindex="0" role="button" data-toggle="popover" data-placement="left" data-html="true" data-trigger="focus" href="javascript:void(0);" data-content="&lt;ul class='share-list'&gt;
+                &lt;li&gt;&lt;a class=&quot;weixin-share&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-weixin&quot;&gt;&lt;/i&gt;&lt;span&gt;分享到微信&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void((function(s,d,e,r,l,p,t,z,c){var%20f='http://v.t.sina.com.cn/share/share.php?appkey=1881139527',u=z||d.location,p=['&amp;url=',e(u),'&amp;title=',e(t||d.title),'&amp;source=',e(r),'&amp;sourceUrl=',e(l),'&amp;content=',c||'gb2312','&amp;pic=',e(p||'')].join('');function%20a(){if(!window.open([f,p].join(''),'mb',['toolbar=0,status=0,resizable=1,width=440,height=430,left=',(s.width-440)/2,',top=',(s.height-430)/2].join('')))u.href=[f,p].join('');};if(/Firefox/.test(navigator.userAgent))setTimeout(a,0);else%20a();})(screen,document,encodeURIComponent,'','','http://cwb.assets.jianshu.io/notes/images/9973744/weibo/image_b76514042f95.jpg', '推荐 @尽际iActivity 的文章《Hadoop框架基础（五）》（ 分享自 @简书 ）','http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=weibo','页面编码gb2312|utf-8默认gb2312'));&quot;&gt;&lt;i class='social-icon-sprite social-icon-weibo'&gt;&lt;/i&gt;&lt;span&gt;分享到微博&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;http://cwb.assets.jianshu.io/notes/images/9973744/weibo/image_b76514042f95.jpg&quot; target=&quot;_blank&quot;&gt;&lt;i class=&quot;social-icon-sprite social-icon-picture&quot;&gt;&lt;/i&gt;&lt;span&gt;下载长微博图片&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='http://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=qzone')+'&amp;title='+e('推荐 Z尽际 的文章《Hadoop框架基础（五）》'),x=function(){if(!window.open(r,'qzone','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-zone'&gt;&lt;/i&gt;&lt;span&gt;分享到QQ空间&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://twitter.com/share?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=twitter')+'&amp;text='+e('推荐 Z尽际 的文章《Hadoop框架基础（五）》（ 分享自 @jianshucom ）')+'&amp;related='+e('jianshucom'),x=function(){if(!window.open(r,'twitter','toolbar=0,resizable=1,scrollbars=yes,status=1,width=600,height=600'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-twitter'&gt;&lt;/i&gt;&lt;span&gt;分享到Twitter&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://www.facebook.com/dialog/share?app_id=483126645039390&amp;display=popup&amp;href=http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=facebook',x=function(){if(!window.open(r,'facebook','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-facebook'&gt;&lt;/i&gt;&lt;span&gt;分享到Facebook&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,r='https://plus.google.com/share?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=google_plus'),x=function(){if(!window.open(r,'google_plus','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})();&quot;&gt;&lt;i class='social-icon-sprite social-icon-google'&gt;&lt;/i&gt;&lt;span&gt;分享到Google+&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+                &lt;li&gt;&lt;a href=&quot;javascript:void(function(){var d=document,e=encodeURIComponent,s1=window.getSelection,s2=d.getSelection,s3=d.selection,s=s1?s1():s2?s2():s3?s3.createRange().text:'',r='http://www.douban.com/recommend/?url='+e('http://www.jianshu.com/p/b39f71b1522b?utm_campaign=maleskine&amp;utm_content=note&amp;utm_medium=reader_share&amp;utm_source=douban')+'&amp;title='+e('Hadoop框架基础（五）')+'&amp;sel='+e(s)+'&amp;v=1',x=function(){if(!window.open(r,'douban','toolbar=0,resizable=1,scrollbars=yes,status=1,width=450,height=330'))location.href=r+'&amp;r=1'};if(/Firefox/.test(navigator.userAgent)){setTimeout(x,0)}else{x()}})()&quot;&gt;&lt;i class='social-icon-sprite social-icon-douban'&gt;&lt;/i&gt;&lt;span&gt;分享到豆瓣&lt;/span&gt;&lt;/a&gt;&lt;/li&gt;
+              &lt;/ul&gt;" data-original-title="" title="" class="function-button"><i class="iconfont ic-share"></i></a> <!----></li></ul></div>
+</div>
+<div class="note-bottom">
+  <div><div class="main"><div class="title">被以下专题收入，发现更多相似内容</div> <!----> <div class="include-collection"><!----> <a href="http://www.jianshu.com/c/d2f9d733c6c8?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/timg.jpg"><div class="name">Linux大数据教程</div></a><a href="http://www.jianshu.com/c/V2CqjW?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/6249340_194140034135_2.jpg"><div class="name">@IT·互联网</div></a><a href="http://www.jianshu.com/c/86ff829f995f?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/u_2582065815_2360012304_fm_21_gp_0.jpg"><div class="name">大数据核心技术&amp;科普</div></a><a href="http://www.jianshu.com/c/93d58e9169cb?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/keji.jpg"><div class="name">互联网科技</div></a><a href="http://www.jianshu.com/c/3ce88fc43e68?utm_source=desktop&amp;utm_medium=notes-included-collection" target="_blank" class="item"><img src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/android.jpg"><div class="name">大数据 爬虫P...</div></a> <!----></div></div> <!----> <!----></div>
+  <div data-vcomp="recommended-notes" data-note-id="9973744"></div>
+</div>
+
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/push.js"></script><script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/hm.js"></script><script async="" src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/analytics.js"></script><script type="application/json" data-name="page-data">{"user_signed_in":false,"locale":"zh-CN","os":"windows","read_mode":"day","read_font":"font2","note_show":{"is_author":false,"is_following_author":false,"is_liked_note":false,"uuid":"ff0506b4-0112-45bc-8d0f-8686ebd1f4e9"},"note":{"id":9973744,"slug":"b39f71b1522b","user_id":4951489,"notebook_id":10277662,"commentable":true,"likes_count":6,"views_count":91,"public_wordage":3640,"comments_count":2,"total_rewards_count":0,"is_author":false,"author":{"nickname":"Z尽际","total_wordage":69304,"followers_count":107,"total_likes_count":112}}}</script>
+    
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/babel-polyfill-879c5f4bc085ce8a6153.js"></script>
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-base-60bef14f05f21a4581be.js"></script>
+<script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/web-480e049f44d3eb16dea8.js"></script>
+    
+    <script src="Hadoop%E6%A1%86%E6%9E%B6%E5%9F%BA%E7%A1%80%EF%BC%88%E4%BA%94%EF%BC%89%20-%20%E7%AE%80%E4%B9%A6_files/entry-e304fd423c162fd5a868.js"></script>
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-35169517-1', 'auto');
+  ga('send', 'pageview');
+</script>
+
+<script>
+  var _hmt = _hmt || [];
+  (function() {
+    var hm = document.createElement("script");
+    hm.src = "//hm.baidu.com/hm.js?0c0e9d9b1e7d617b3e6842e85b9fb068";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+
+<script>
+  (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      if (curProtocol === 'https') {
+          bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+      }
+      else {
+          bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+      }
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+  })();
+</script>
+
+  
+
+<!----><!----></body></html>
