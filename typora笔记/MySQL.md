@@ -2,6 +2,78 @@
 
 ![image-20201028224446173](typora-user-images/image-20201028224446173.png)
 
+
+
+## EXPLAIN
+
+![1605863208480](F:\git笔记\node\typora笔记\typora-user-images\1605863208480.png)
+
+### EXPLAIN有两个变种
+
+（1）EXPLAIN EXTENDED：为一个Select语句逆向编译执行计划。可以执行SHOW WARNINGS看到生成的语句，可检测查询优化器到底是如何转化语句的。
+
+（2）EXPLAIN PARTITIONS：显示查询将访问的分区。
+
+
+
+### EXPLAIN中的列
+
+#### （1）id
+
+标识Select所属的行，如果没有子查询或者嵌套查询，只有一个select，那么每一行的id都是1，否则内层的select语句一般会顺序编号，对应其他原始语句中的位置。
+
+临时表并不在原SQL中，所以id列为Null。
+
+
+
+#### （2）select_type
+
+显示对应行是简单还是复杂select。SIMPLE值表明查询不包括子查询和Union。如果查询有任何复杂的子部分，则最外层部分标记为PRIMARY。
+
+##### SUBQUERY
+
+包含在select列表中的子查询的select，不在From子句中。
+
+##### DERIVED
+
+包含在From子句中的select，MySQL会递归执行并将结果放在一个临时表中，成为派生表，从子查询中派生出来的。
+
+##### UNION
+
+在UNION中的第二个和随后的select被标记为Union。第一个select被标记它以部分外查询来执行。如果UNION被From子句中的子查询包含，那么它的第一个Select会被标记为DERIVED。
+
+##### UNION RESULT
+
+用来从UNION的匿名临时表检索结果的select被标记为UNION RESULT。
+
+##### DEPENDENT
+
+以为着select依赖于外层查询中发现的数据。
+
+##### UNCACHEABLE
+
+select中的某些特性阻止结果被缓存在一个Item_cache中。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 一、并发控制
 
 ### 1、读写锁
