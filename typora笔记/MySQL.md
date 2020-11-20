@@ -605,6 +605,60 @@ EXPLAIN的Extra列出现“Using Where”，表示服务器将存储引擎返回
 
 
 
+### （2）优化特定类型的查询
+
+#### 优化count查询
+
+count是一个统计函数，可统计某个列值的数量，也可以统计行数。
+
+count(*)并不会扩展成所有的列，而是会忽略所有的列而直接统计所有的行数。最好使用通配符
+
+
+
+#### 优化关联查询
+
+（1）确保ON或者Using子句中的列上有索引。
+
+（2）确保Group by和Order by的表达式只涉及到一个表上的列。
+
+
+
+#### 优化Group by和Distinct
+
+
+
+#### 优化Limit分页
+
+（1）尽可能使用覆盖索引
+
+（2）可改写sql
+
+比如：
+
+```sql
+select a,b,c from t limit 50,10
+```
+
+改成如下的：
+
+```sql
+select a,b,c from t inner join (select a from t limit 50,10) using(a)
+```
+
+也可以先获取到开始的id：
+
+```sql
+select a,b,c from t where a>1000 limit 0,10
+```
+
+
+
+
+
+
+
+
+
 
 
 
