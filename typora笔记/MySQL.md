@@ -6,7 +6,28 @@
 
 ## EXPLAIN
 
-![1605863208480](F:\git笔记\node\typora笔记\typora-user-images\1605863208480.png)
+
+
+参考文档：https://blog.csdn.net/Dreamhai/article/details/104558854
+
+![1605863208480](typora-user-images\1605863208480.png)
+
+| 字段          | 解释                                                         |
+| ------------- | ------------------------------------------------------------ |
+| id            | select查询的序列号，包含一组数字，表示查询中执行select子句或操作表的顺序 |
+| select_type   | 查询类型                                                     |
+| tab           | 正在访问哪个表                                               |
+| partitions    | 匹配的分区                                                   |
+| type          | 访问的类型                                                   |
+| possible_keys | 显示可能应用在这张表中的索引，一个或多个，但不一定实际使用到 |
+| key           | 实际使用到的索引，如果为NULL，则没有使用索引                 |
+| key_len       | 表示索引中使用的字节数，可通过该列计算查询中使用的索引的长度 |
+| ref           | 显示索引的哪一列被使用了，如果可能的话，是一个常数，哪些列或常量被用于查找索引列上的值 |
+| rows          | 根据表统计信息及索引选用情况，大致估算出找到所需的记录所需读取的行数 |
+| filtered      | 查询的表行占表的百分比                                       |
+| Extra         | 包含不适合在其它列中显示但十分重要的额外信息                 |
+
+![在这里插入图片描述](typora-user-images/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0RyZWFtaGFp,size_16,color_FFFFFF,t_70)
 
 ### EXPLAIN有两个变种
 
@@ -20,9 +41,11 @@
 
 #### （1）id
 
-标识Select所属的行，如果没有子查询或者嵌套查询，只有一个select，那么每一行的id都是1，否则内层的select语句一般会顺序编号，对应其他原始语句中的位置。
+1、标识Select所属的行，有几个Select就有几个Id，并且id的顺序是按照select出现的顺序增长的。
 
-临时表并不在原SQL中，所以id列为Null。
+2、临时表并不在原SQL中，所以id列为Null。
+
+3、id越大执行优先级越高，id相同则从上往下执行，id为NULL的最后执行。
 
 
 
@@ -56,7 +79,158 @@ select中的某些特性阻止结果被缓存在一个Item_cache中。
 
 
 
+#### （3）table
 
+显示当前行的数据是来自哪一张表。
+
+
+
+#### （4）type
+
+访问类型，结果值从最好到最坏依次是：
+
+system>const>eq_ref>ref>fulltext>ref_or_null>index_merge>unique_subquery>index_subquery>range>index>ALL
+
+**需要记忆的**
+NULL>system>const>eq_ref>ref>range>index>ALL
+
+一般来说，得保证查询至少达到range级别，最好能达到ref。
+
+##### system
+
+表只有一行记录（等于系统表）。
+
+##### const
+
+表示通过索引一次就找到了，通常是用于primary key和unique key。如果将主键置于where中，就能将改查询转换成一个常量。
+
+##### eq_ref
+
+唯一性索引扫描，对于每个索引键，表中只有一条记录与之匹配。常见于主键或唯一索引扫描。
+
+##### ref
+
+非唯一性索引扫描，返回匹配某个单独值得所有行。
+
+##### range
+
+1、只检索给定范围的行，使用一个索引来选择行，key列显示使用了哪个索引
+
+2、一般就是where条件中出现“>”、“<”、“between”、“in”等条件
+
+3、这种范围扫描索引扫描比全表扫描要好，因为它只需要开始于索引的某一点，而结束语另一点，不用扫描全部索引。
+
+
+
+#### （5）possible_keys
+
+可能会使用的key
+
+
+
+#### （6）key
+
+实际使用的key
+
+
+
+#### （7）key_len
+
+索引中使用的字节数，可通过该列计算出查询中使用的索引的长度。长度越短越好。
+
+显示的是索引字段的最大可能长度，并非实际使用长度，根据表定义计算而来，不是通过表内检索而来。
+
+**字符串类型**
+
+![在这里插入图片描述](typora-user-images/image-20201122224253698.png)
+
+
+
+1、变长字段需要额外的2个字节（VARCHAR值保存时只保存需要的字符数，另加一个字节来记录长度(如果列声明的长度超过255，则使用两个字节)，所以VARCAHR索引长度计算时候要加2），固定长度字段不需要额外的字节。
+2、而NULL都需要1个字节的额外空间,所以索引字段最好不要为NULL，因为NULL让统计更加复杂并且需要额外的存储空间。
+3、复合索引有最左前缀的特性，如果复合索引能全部使用上，则是复合索引字段的索引长度之和，这也可以用来判定复合索引是否部分使用，还是全部使用。
+
+
+
+**数值类型**
+
+![在这里插入图片描述](typora-user-images/image-20201122224253699.png)
+
+
+
+**日期和时间类型**
+
+![在这里插入图片描述](typora-user-images/image-20201122000952653.png)
+
+NOT NULL=字段本身的字段长度
+NULL=字段本身的字段长度+1(因为需要有是否为空的标记，这个标记需要占用1个字节)
+
+datetime类型在5.6中字段长度是5个字节，datetime类型在5.5中字段长度是8个字节
+
+
+
+#### （8）ref
+
+显示索引的哪一列被使用了，如果可能的话，是一个常数。哪些列或者常量被用于查找索引列上的值。
+
+
+
+#### （9）rows
+
+根据表统计信息及索引选用情况，大致估算出找到所需的记录需要读取的行数。
+
+
+
+#### （10）extra
+
+| 值                | 描述                                                         |
+| ----------------- | ------------------------------------------------------------ |
+| Using filesort    | 说明mysql会对数据使用一个外部的索引排序，而不是按照表内的索引顺序进行读取。MySQL中无法利用索引完成的排序操作称为"文件排序" |
+| Using temporary   | 使了用临时表保存中间结果,MySQL在对查询结果排序时使用临时表。常见于排序 order by 和分组查询 group by。 |
+| Using index       | 表示相应的select操作中使用了覆盖索引(Covering Index)，避免访问了表的数据行，效率不错！   如果同时出现using where，表明索引被用来执行索引键值的查找;   如果没有同时出现using where，表明索引用来读取数据而非执行查找动作 |
+| Using where       | 使用了where条件                                              |
+| Using join buffer | 使用了连接缓存                                               |
+| impossible where  | where子句的值总是false,不能用来获取任何元素                  |
+| distinct          | 一单mysql找到了与形相联合匹配的行,就不在搜索了               |
+
+
+
+**Using filesort**
+
+会对数据使用一个外部的索引排序，而不是按照表内的索引顺序进行读取。无法利用索引完成的排序操作称为“文件排序”
+
+当发现了有“Using filesort”的地方，实际就是发现了可优化的地方，可以建立相应的索引。
+
+**Using temporary**
+
+使用了临时表保存中间数据，常见于Order by操作和Group by操作中。
+
+**Using index**
+
+使用到了覆盖索引，避免回表。
+
+如果同时出现了Using Where，表示索引被用来执行索引键值的查找，反之则表示索引用来读取数据而非查找操作。
+
+**Using where**
+
+使用where过滤
+
+**Using join buffer**
+
+使用了连接缓存。
+
+```sql
+-- 查询MySQl 默认的join_buffer_size
+show VARIABLES like '%join_buffer_size%'
+```
+
+**impossible where**
+
+where中的子句总是false，不能用来获取任何元组。
+
+**distinct**
+
+一旦找到了与行相匹配的行，就不再进行搜索。
 
 
 
