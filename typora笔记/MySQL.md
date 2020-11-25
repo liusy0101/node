@@ -947,6 +947,26 @@ delete：分区层先打开并锁住所有底层表，确定数据在哪个分�
 
 
 
+#### 分区表类型
+
+例如：根据范围进行分区
+
+```sql
+create table t (
+	create_year int;
+) engine=InnoDB partition by range(create_year)(
+	partition p_2010 values less then (2010),
+    partition p_2011 values less then (2011),
+    partition p_other values less then MAXVALUE
+);
+```
+
+
+
+MySQL还支持键值、哈希和列表等分区。
+
+
+
 
 
 
