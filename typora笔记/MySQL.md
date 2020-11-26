@@ -829,6 +829,38 @@ EXPLAIN的Extra列出现“Using Where”，表示服务器将存储引擎返回
 
 5、返回结果。
 
+![1606383507293](typora-user-images\1606383507293.png)
+
+
+
+
+
+### （2）一条Update语句的执行流程
+
+```sql
+update table t set a=a+1 where id = 2;
+```
+
+![](typora-user-images\1606383655073.png)
+
+图中浅色框表示是在 InnoDB 内部执行的， 深色框表示是在执行器中执行的。
+
+redolog+binlog，WAL(write-ahead logging) 
+
+redo log 的写入拆成了两个步骤： 
+
+prepare 和 commit，这就是"两阶段提交" 
+
+事务=更新内存+写redolog+写binlog
+
+
+
+
+
+
+
+
+
 
 
 #### 查询状态
