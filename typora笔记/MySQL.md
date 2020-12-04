@@ -1,5 +1,11 @@
 #  MySQL
 
+
+
+
+
+![MySQL体系结构](typora-user-images/image-20201129224028394.png)
+
 ![image-20201028224446173](typora-user-images/image-20201028224446173.png)
 
 
@@ -367,6 +373,116 @@ InnoDB的数据存储在表空间中，表空间是由InnoDB管理的一个黑�
 采用MVVC来支持高并发，并且实现了四个标准的隔离级别。默认级别是REPEATABLE READ（可重复读），并且通过间隙锁（next-key locking）策略来防止幻读的出现。间隙锁使得InnoDB不仅仅锁定查询设计的行，还会对索引中的间隙进行锁定，防止幻影行的插入。
 
 InnoDB表是基于聚簇索引建立的，聚簇索引对主键查询由很高的性能，不过它的二级索引（非主键索引）必须包含主键列。
+
+
+
+
+
+InnoDB 存储引擎的具体架构如下图，上半部分是实例层（计算层），位于内存中，下半部分是物理层，位于文件系统中。
+
+![img](C:/Users/Administrator/Desktop/typora-user-images/CgoB5l14ySOAT9VMAASFWIacodo791.png)
+
+#### 实例层
+
+分为线程和内存，InnoDB 重要的线程有 Master Thread，Master Thread 是 InnoDB 的主线程，负责调度其他各线程。
+
+Master Thread 的优先级最高, 其内部包含几个循环：主循环（loop）、后台循环（background loop）、刷新循环（flush loop）、暂停循环（suspend loop）。Master Thread 会根据其内部运行的相关状态在各循环间进行切换。
+
+大部分操作在主循环（loop）中完成，其包含 1s 和 10s 两种操作。
+
+1s 操作主要包括如下：
+
+​	`日志缓冲刷新到磁盘（这个操作总是被执行，即使事务还没有提交）。`
+
+​	`最多可能刷 100 个新脏页到磁盘。`
+
+​	`执行并改变缓冲的操作。`
+
+​	`若当前没有用户活动，可能切换到后台循环（background loop）等。`
+
+10s 操作主要包括如下：
+
+​	`最多可能刷新 100 个脏页到磁盘。`
+
+​	`合并至多 5 个被改变的缓冲（总是）。`
+
+​	`日志缓冲刷新到磁盘（总是）。`
+
+​	`删除无用的 Undo 页（总是）。`
+
+​	`刷新 100 个或者 10 个脏页到磁盘（总是）产生一个检查点（总是）等。`
+
+buf_dump_thread 负责将 buffer pool 中的内容 dump 到物理文件中，以便再次启动 MySQL 时，可以快速加热数据。
+
+page_cleaner_thread 负责将 buffer pool 中的脏页刷新到磁盘，在 5.6 版本之前没有这个线程，刷新操作都是由主线程完成的，所以在刷新脏页时会非常影响 MySQL 的处理能力，在5.7 版本之后可以通过参数设置开启多个page_cleaner_thread。
+
+purge_thread 负责将不再使用的 Undo 日志进行回收。
+
+read_thread 处理用户的读请求，并负责将数据页从磁盘上读取出来，可以通过参数设置线程数量。
+
+write_thread 负责将数据页从缓冲区写入磁盘，也可以通过参数设置线程数量，page_cleaner 线程发起刷脏页操作后 write_thread 就开始工作了。
+
+redo_log_thread 负责把日志缓冲中的内容刷新到 Redo log 文件中。
+
+insert_buffer_thread 负责把 Insert Buffer 中的内容刷新到磁盘。实例层的内存部分主要包含 InnoDB Buffer Pool，这里包含 InnoDB 最重要的缓存内容。数据和索引页、undo 页、insert buffer 页、自适应 Hash 索引页、数据字典页和锁信息等。additional memory pool 后续已不再使用。Redo buffer 里存储数据修改所产生的 Redo log。double write buffer 是 double write 所需的 buffer，主要解决由于宕机引起的物理写入操作中断，数据页不完整的问题。
+
+
+
+#### 物理层
+
+物理层在逻辑上分为系统表空间、用户表空间和 Redo日志。
+
+系统表空间里有 ibdata 文件和一些 Undo，ibdata 文件里有 insert buffer 段、double write段、回滚段、索引段、数据字典段和 Undo 信息段。
+
+用户表空间是指以 .ibd 为后缀的文件，文件中包含 insert buffer 的 bitmap 页、叶子页（这里存储真正的用户数据）、非叶子页。InnoDB 表是索引组织表，采用 B+ 树组织存储，数据都存储在叶子节点中，分支节点（即非叶子页）存储索引分支查找的数据值。
+
+Redo 日志中包括多个 Redo 文件，这些文件循环使用，当达到一定存储阈值（0.75）时会触发checkpoint 刷脏页操作，同时也会在 MySQL 实例异常宕机后重启，InnoDB 表数据自动还原恢复过程中使用。
+
+
+
+
+
+#### 内存和物理结构
+
+![img](C:/Users/Administrator/Desktop/typora-user-images/CgotOV14ySOAck4ZAAItjZ-RV6o006.png)
+
+用户读取或者写入的最新数据都存储在 Buffer Pool 中，如果 Buffer Pool 中没有找到则会读取物理文件进行查找，之后存储到 Buffer Pool 中并返回给 MySQL Server。Buffer Pool 采用LRU 机制。
+
+Buffer Pool 决定了一个 SQL 执行的速度快慢，如果查询结果页都在内存中则返回结果速度很快，否则会产生物理读（磁盘读），返回结果时间变长，性能远不如存储在内存中。
+
+
+
+
+
+#### Redo 和 Undo
+
+Redo log 是一个循环复用的文件集，负责记录 InnoDB 中所有对 Buffer Pool的物理修改日志，当 Redo log文件空间中，检查点位置的 LSN 和最新写入的 LSN 差值（checkpoint_age）达到 Redo log 文件总空间的 75% 后，InnoDB 会进行异步刷新操作，直到降至 75% 以下，并释放 Redo log 的空间；当 checkpoint_age 达到文件总量大小的 90% 后，会触发同步刷新，此时 InnoDB 处于挂起状态无法操作。
+
+Redo记录变更后的数据。
+
+Undo记录事务数据变更前的值，用于回滚和其他事务多版本读。
+
+
+
+
+
+
+
+![image-20201129231128228](C:/Users/Administrator/Desktop/typora-user-images/image-20201129231128228.png)
+
+#### ARIES 三原则
+
+ARIES 三原则，是指 Write Ahead Logging（WAL）。
+
+先写日志后写磁盘，日志成功写入后事务就不会丢失，后续由 checkpoint 机制来保证磁盘物理文件与 Redo 日志达到一致性；
+
+利用 Redo 记录变更后的数据，即 Redo 记录事务数据变更后的值；
+
+利用 Undo 记录变更前的数据，即 Undo 记录事务数据变更前的值，用于回滚和其他事务多版本读。
+
+show engine innodb status\G 的结果里面有详细的 InnoDB 运行态信息，分段记录的，包括内存、线程、信号、锁、事务等
+
+
 
 
 
