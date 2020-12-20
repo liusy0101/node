@@ -562,7 +562,7 @@ InnoDB表是基于聚簇索引建立的，聚簇索引对主键查询由很高�
 
 InnoDB 存储引擎的具体架构如下图，上半部分是实例层（计算层），位于内存中，下半部分是物理层，位于文件系统中。
 
-![img](C:/Users/Administrator/Desktop/typora-user-images/CgoB5l14ySOAT9VMAASFWIacodo791.png)
+![img](typora-user-images/CgoB5l14ySOAT9VMAASFWIacodo791.png)
 
 #### 实例层
 
@@ -626,7 +626,7 @@ Redo 日志中包括多个 Redo 文件，这些文件循环使用，当达到一
 
 #### 内存和物理结构
 
-![img](C:/Users/Administrator/Desktop/typora-user-images/CgotOV14ySOAck4ZAAItjZ-RV6o006.png)
+![img](typora-user-images/CgotOV14ySOAck4ZAAItjZ-RV6o006.png)
 
 用户读取或者写入的最新数据都存储在 Buffer Pool 中，如果 Buffer Pool 中没有找到则会读取物理文件进行查找，之后存储到 Buffer Pool 中并返回给 MySQL Server。Buffer Pool 采用LRU 机制。
 
@@ -650,7 +650,7 @@ Undo记录事务数据变更前的值，用于回滚和其他事务多版本读�
 
 
 
-![image-20201129231128228](C:/Users/Administrator/Desktop/typora-user-images/image-20201129231128228.png)
+![image-20201129231128228](typora-user-images/image-20201129231128228.png)
 
 #### ARIES 三原则
 
