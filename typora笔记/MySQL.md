@@ -1331,6 +1331,76 @@ select a,b,c from t where a>1000 limit 0,10
 
 
 
+
+
+
+
+### 参数优化
+
+MySQL 参数优化可以分为系统全局内存参数（SGA）和线程全局内存（PGA）。首先先聊下 SGA 系统全局内存分配的相关参数：
+
+（1）innodb_buffer_pool_size ，用于缓存行数据、索引数据，以及事务锁和自适应哈希等。 单机多实例的情况内存建议按实际数据热点数据量的30%规划，单机单实例（独享实例）的情况建议是分配50%～80%。
+
+（2）innodb_buffer_pool_instances，用于提升性能。
+
+（3）innodb_additional_mem_pool_size，用于缓存所有数据字典。
+
+（4）innodb_log_buffer_size ，InnoDB Redo日志缓冲，提高Redo日志写入效率。
+
+（5）key_buffer_size，MyISAM 表索引高速缓冲，提高 MyISAM 表索引读写效率。
+
+（6）query_cache_size，查询缓存，缓存相同SQL查询结果，提高查询结果返回效率，建议禁用。
+
+（7）table_cache && table_definiton_cache，表空间文件描述符缓存和表定义文件描述符缓存，提供数据表打开效率。
+
+
+
+PGA 系统全局内存分配，这个是每个连接使用时需要申请对应的内存。使用默认参数值相加统计出每个连接线程占用的最大内存大小为 25MB， 线程级参数不宜设置过大。
+
+![image-20201221231109092](typora-user-images/image-20201221231109092.png)
+
+
+
+#### Redo Log
+
+第一个参数是控制 Redo Log 刷盘策略的 innodb_flush_log_at_trx_commit，它有三个取值策略，如下图所示。
+
+![image-20201221231243962](typora-user-images/image-20201221231243962.png)
+
+
+
+#### Binlog
+
+第二个参数是控制 Binlog 刷盘策略的 sync_binlog，其取值分为 0、1、N（N>1）三类，
+
+![image-20201221231403017](typora-user-images/image-20201221231403017.png)
+
+
+
+
+
+#### Log
+
+ Log 相关参数的介绍，对于写入压力大的 OLTP 场景，扩容 Redo Log 有助于提升写入性能。主要关注的参数如下。
+
+innodb_flush_log_at_timeout：每隔 N 秒写入并刷新日志，默认为 1 即每秒 flush一次,可选 [1-2700]。该参数值允许增加 flush 之间的间隔以减少刷新，避免影响二进制日志组提交的性能。
+
+innodb_log_file_size：日志文件大小，建议设置1～2GB。
+
+innodb_log_files_in_group：日志文件组个数。
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 九、特性
 
 ### （1）分区表
@@ -1399,6 +1469,99 @@ MySQL还支持键值、哈希和列表等分区。
 
 
 
+### （2）Replication
+
+![image-20201221231814860](typora-user-images/image-20201221231814860.png)
+
+1、主库 Master 将数据库的变更操作记录在二进制日志 Binary Log 中。
+
+2、备库 Slave 读取主库上的日志并写入到本地中继日志 Relay Log 中。
+
+3、备库读取中继日志 Relay Log 中的 Event 事件在备库上进行重放 Replay。
+
+
+
+其具体参与主从复制的数据同步过程如下。
+
+1、Master 服务器上对数据库的变更操作记录在 Binlog 中。
+
+2、Master 的 Binlog Dump Thread 接到写入请求后读取 Binlog 推送给 Slave I/O Thread。
+
+3、Slave I/O Thread 将读取的 Binlog 写入到本地 relay log 文件。
+
+4、Slave SQL thread 检测到 relay log 的变更请求，解析 relay log 并在从库上进行应用。
+
+ 
+
+以上整个复制过程都是异步操作，所以主从复制俗称异步复制，存在数据延迟。
+
+
+
+MySQL 事务写入碰到主从复制时的完整过程，主库事务写入分为 4 个步骤：
+
+1、InnoDB Redo File Write (Prepare Write)；
+
+2、Binlog File Flush & Sync to Binlog File；
+
+3、InnoDB Redo File Commit（Commit Write）；
+
+4、Send Binlog to Slave。
+
+
+
+当 Master 不需要关注 Slave 是否接受到 Binlog Event 时，即为传统的主从复制。
+
+当 Master 需要在第三步等待 Slave 返回 ACK 时，即为 after-commit。
+
+当 Master 需要在第二步等待 Slave 返回 ACK 时，即为 after-sync。
+
+
+
+#### after_commit
+
+MySQL Master 将事务写入 Binlog（sync_binlog=1）并推送给 Slave 后主库将事务提交到存储引擎（此时未返回客户端但是其他会话可以访问到事务提交信息），Slave  I/O Thread 将读取的 Binlog 写入到本地 relay log 文件（sync_relay=1）后向 Master 返回 ACK 消息，当主库 Master 等到 Slave 返回的 ACK 消息后 Master 将事务提交成功的结果返回给客户端。
+
+![image-20201221233317023](typora-user-images/image-20201221233317023.png)
+
+对于当前会话的客户端进行事务提交后，主库等待 ACK 的过程中有两种情况。
+
+事务还没发送到从库，主库 crash 并发起切换，从库为新主库。客户端收到事务提交失败的信息，需要重新提交该事务。
+
+事务已经发送到从库，主库 crash 并发起切换，从库为新主库。从库已经应用该事务并写入数据，但客户端连接重置同样会收到事务提交失败的信息，重新提交该事务时会报错数据已存在（如订单已提交成功）。
+
+
+
+#### after-sync
+
+将 Master 等待 ACK 消息放到了 Binlog File Flush & Sync to Binlog File 之后，Engine Commit 之前，这样就可以保证数据不会丢失，因为 Slave 接受到event 并写入自身 relay log。
+
+![image-20201221233418947](typora-user-images/image-20201221233418947.png)
+
+数据安全的场景，参数 innodb_flush_log_at_trx_commit 和 sync_log 配置为双一配合 after-sync 半同步模式是一个好的选择
+
+
+
+![image-20201221233525825](typora-user-images/image-20201221233525825.png)
+
+
+
+
+
+#### Galera Cluster
+
+同步复制（准同步）Galera Cluster 和 MySQL Group Replication。
+
+
+
+通常由三个实例组成的一个集群，三个节点均可以提供读写，即常见的 Multi-Master 多主架构。客户端可以读写访问集群任意一个节点，集群节点间组成了 Group communication，如下图所示。这可以用来保证集群节点数据的强一致性，这种架构是 Share-Nothing，不共享数据、多副本的高冗余架构，拥有多点写入、同步复制、无复制延迟、并发复制、随意切换、节点自动配置、健康检查等功能。        
+
+![image-20201221233651317](typora-user-images/image-20201221233651317.png)
+
+Group communication 的本质是 Galera Cluster，它来实现强一致性、支持多点写入的同步复制集群架构，Galera Cluter 提供了一系列的 API，为上层 MySQL 提供丰富的状态信息及回调函数，API 即 Write-Set Replication API，简称 wsrep API。通过这些API 来提供基于写集验证的乐观的同步复制，当一个节点组装完写集后，每个节点在复制事务时都会在组内广播写集并进行写集比对，如果没有冲突的话，那么 Galera Cluster 层对该写集对应的事务就可以继续提交或 APPLY，当数据库 MySQL 层得到Galera Cluster 层返回的回调状态信息后继续事务提交或回滚的操作。
+
+ 
+
+Galera Cluster是一个强一致性集群，当集群节点有数据写入时，Group communication 会向组内所有成员广播写集（初步可简单理解为写入的Binlog），所有节点验证通过之后写节点开始提交，其他节点执行写集应用和提交，当出现数据冲突时则写节点执行回滚，其他节点丢弃该写集。
 
 
 
@@ -1406,18 +1569,13 @@ MySQL还支持键值、哈希和列表等分区。
 
 
 
+#### MySQL Group Replication
 
+MGR 同样是一个支持多点写入的多主复制架构，它基于原生 MySQL 主从复制的基础上构建组通信层，由 Group Replication 提供一组原子消息并且按照全局顺序进行消息传递，集群任何节点均可写入，但所有写入事务只有在获得复制组认证通过（多数派协议 Paxos）后才能进行提交。例如由若干个节点共同组成一个复制组，一个事务的提交必须经过组内大多数节点（N / 2 + 1）决议并通过，才能得以提交。
 
+​     
 
+如下是 MySQL Group Replication /Galera Cluster 的时序图：由 3 个节点组成一个复制组，Consensus 层为一致性协议层，在事务提交过程中，发生组间通信，由 2 个节点决议（certify）通过这个事务，事务才能够最终得以提交并响应。        
 
-
-
-
-
-
-
-
-
-
-
+![image-20201221233836517](typora-user-images/image-20201221233836517.png)
 
