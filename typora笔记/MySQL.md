@@ -1579,3 +1579,32 @@ MGR 同样是一个支持多点写入的多主复制架构，它基于原生 MyS
 
 ![image-20201221233836517](typora-user-images/image-20201221233836517.png)
 
+
+
+
+
+
+
+
+
+### 扩展性
+
+
+
+在数据库的架构设计中主要有三种方法论，分别是：Shared Everything、Shared Nothing和 Shared Disk。
+
+（1）Shared Everything：一般是针对单个系统，完全透明共享 CPU/MEMORY/IO，并行处理能力是最差的，典型的代表 SQL Server。
+
+（2）Shared Nothing：系统中的各个处理单元都有私有的 CPU/MEMORY/IO 等，不存在共享资源，类似于 MPP（大规模并行处理）模式，各处理单元之间相互独立，各自处理自己的数据，它们之间通过协议通信，处理后的结果或向上层汇总或在节点间流转。这种方式的并行处理和扩展能力更好。典型的代表 DB2 DPF、Hadoop、GreenPlum 等。
+
+（3）Shared Disk：系统中的各个处理单元使用私有 CPU 和 MEMORY，共享磁盘系统。典型的代表 Oracle Rac、AWS Aurora 和极数云舟自主研发的 ArkDB 等，它们都是数据共享，可通过增加节点来提高并行处理的能力，做到了计算与存储分离，扩展能力较好。
+
+
+
+
+
+
+
+
+
+![1608640334108](F:\git笔记\node\typora笔记\typora-user-images\1608640334108.png)
