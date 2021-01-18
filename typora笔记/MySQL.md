@@ -290,7 +290,7 @@ MySQL中使用START TRANSACTION语句开始一个事务，使用COMMIT提交事�
 
 数据的完整性是通过其他三个特性来保证的，包括原子性、隔离性、持久性，而这三个特性，又是通过 Redo/Undo 来保证的，正所谓：合久必分，分久必合，三足鼎力，三分归晋，数据库也是，为了保证数据的完整性，提出来三个特性，这三个特性又是由同一个技术来实现的，所以理解 Redo/Undo 才能理解数据库的本质。
 
-![1607049290403](F:\git笔记\node\typora笔记\typora-user-images\1607049290403.png)
+![1607049290403](typora-user-images\1607049290403.png)
 
 #### （3）Isolation隔离性
 
@@ -300,7 +300,7 @@ MySQL中使用START TRANSACTION语句开始一个事务，使用COMMIT提交事�
 
 一旦事务提交，其所做的修改就会永久保存到数据库中。
 
-![1607047383963](F:\git笔记\node\typora笔记\typora-user-images\1607047383963.png)
+![1607047383963](typora-user-images\1607047383963.png)
 
 
 
@@ -362,7 +362,7 @@ MySQL的默认事务隔离级别。
 
 一个事务按相同的查询条件重新读取以前检索过的数据，却发现其他事务插入了满足其查询条件的新数据，这种现象就称为“幻读”（Phantom Reads）。
 
- ![img](F:\git笔记\node\typora笔记\typora-user-images\CgoB5l13I8KAHCFwAABQYjH_j24097.png) 
+ ![img](typora-user-images\CgoB5l13I8KAHCFwAABQYjH_j24097.png) 
 
 不可重复读重点在于 UPDATA 和 DELETE，而幻读的重点在于 INSERT
 
@@ -426,7 +426,7 @@ MySQL有三种级别的锁：页级锁、表级锁、行级锁。
 
 页级锁：开销和加锁时间界于表锁和行锁之间；会出现死锁；锁定粒度界于表锁和行锁之间，并发度一般。会发生在：BDB 存储引擎。
 
-![1607050536672](F:\git笔记\node\typora笔记\typora-user-images\1607050536672.png)
+![1607050536672](typora-user-images\1607050536672.png)
 
 
 
@@ -476,7 +476,7 @@ InnoDB 有两种内部使用的意向锁（Intention Locks），这两种意向�
 
 在 MySQL InnoDB 存储引擎中，我们在设计表结构的时候，通常会建议添加一列作为自增主键。这里就会涉及一个特殊的锁：自增锁（即：AUTO-INC Locks），它属于表锁的一种，在 INSERT 结束后立即释放。我们可以执行 show engine innodb status\G 来查看自增锁的状态信息。
 
-![1607050885796](F:\git笔记\node\typora笔记\typora-user-images\1607050885796.png)
+![1607050885796](typora-user-images\1607050885796.png)
 
 
 
@@ -518,7 +518,7 @@ InnoDB 是逐行加锁的，极容易产生死锁。那么死锁产生的四个�
 
 #### 元数据锁
 
- ![img](F:\git笔记\node\typora笔记\typora-user-images\CgotOV13JAeAfDhaAAKx8-t0UEg960.png) 
+ ![img](typora-user-images\CgotOV13JAeAfDhaAAKx8-t0UEg960.png) 
 
 session1 和 session2 都在抢占 id=1 和 id=6 的元数据的资源，产生死锁。
 
@@ -1607,4 +1607,4 @@ MGR 同样是一个支持多点写入的多主复制架构，它基于原生 MyS
 
 
 
-![1608640334108](F:\git笔记\node\typora笔记\typora-user-images\1608640334108.png)
+![1608640334108](typora-user-images\1608640334108.png)
