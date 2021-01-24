@@ -1608,3 +1608,401 @@ MGR 同样是一个支持多点写入的多主复制架构，它基于原生 MyS
 
 
 ![1608640334108](typora-user-images\1608640334108.png)
+
+
+
+
+
+
+
+
+
+
+
+## 前言
+
+上篇说到数据库事务中的特性ACID和4个隔离级别，今儿就来看一下事务中的锁。
+
+
+## MySQL中的锁
+
+锁是MySQL在服务器层和存储引擎层的并发控制，锁可以保证数据并发访问的一致性、有效性；
+
+锁冲突也是影响数据库并发访问性能的一个重要因素
+
+MySQL有三种级别的锁：**表级锁、行级锁、页级锁**
+
+|      | 表级锁         | 行级锁         | 业级锁                   |
+| ---- | -------------- | -------------- | ------------------------ |
+| 特点 | 开销小、加锁快 | 开销大、加锁慢 | 加锁时间介于其余两者之间 |
+|是否会死锁| 否|是|是
+|并发度|粒度大、锁冲突概率最高、并发低|粒度小、锁冲突概率低、并发高|粒度介于其余两者之间、并发一般|
+|存储引擎|Innodb、MyISAM|Innodb|BDB|
+
+
+**术语：**
+
+DDL，Data Definition Language，数据库定义语言
+
+比如：CREATE，ALERT，DROP，TRUNCATE
+
+
+DML，Data Manipulation Language，数据库操作语言
+
+比如：SELECT，INSERT，UPDATE，DELETE，CALL，EXPLAIN PLAN，LOCK
+
+
+DCL，Data Control Language，数据库控制语言
+
+比如：COMMIT，SAVEPOINT，ROLLBACK，SET TRANSACTION
+
+
+
+## Innodb中的锁
+
+表锁和行锁
+
+### 表锁
+
+Innodb有两种内部使用的意向锁（Intention Locks），都是表锁。
+
+表锁分成三种：
+
+**意向共享锁（IS）：** 
+
+事务计划给数据行加行共享锁，加共享锁之前必先获取该锁
+
+**意向排他锁（IX）：** 
+
+事务打算给数据行加行排他锁，加排他锁之前必先获取该锁
+
+**自增锁（AUTO-INC Locks）：** 
+
+特殊表锁，自增长计数器通过该“锁”来获得子增长计数器最大的计数值。
+
+
+
+
+在加行锁之前必须先获得表级意向锁，否则等待 innodb_lock_wait_timeout 超时后根据innodb_rollback_on_timeout 决定是否回滚事务。
+
+
+
+### 如何添加表锁
+
+```sql
+lock tables table_name read/write
+```
+
+
+
+**释放锁：**
+
+释放锁不需要添加参数，其会释放当前用户的所有锁。
+
+```sql
+unlock tables
+```
+
+
+**例如：**
+
+1、给student表添加读锁，看当前用户和其他用户是否能插入数据：
+
+![](https://static01.imgkr.com/temp/6d226e57c22546bfa0f1518509609c05.png)
+
+当前用户：报错无法插入
+
+![](https://static01.imgkr.com/temp/e564c62cc1e04cdcad5a3c26c43848f3.png)
+
+其他用户：一直等待
+
+![](https://static01.imgkr.com/temp/020013f5fbcb40cea76dae772888d8d4.png)
+
+
+释放锁之后：
+
+![](https://imgkr2.cn-bj.ufileos.com/7c6f6171-417b-4f86-aa14-73fa64007669.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=seRbprGG6obVyMDPPeGXL5Oo52A%253D&Expires=1611457561)
+
+
+其他用户：插入成功
+
+![](https://static01.imgkr.com/temp/fb7ed05c8a96493191e5ca2e35f57c85.png)
+
+
+2、多个用户获取写锁
+
+root用户获取写锁：
+
+
+![](https://imgkr2.cn-bj.ufileos.com/d0591f25-cec8-476e-9e25-0b98f2d4d12c.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=LFvEC2snHdS0TSvOjMckXUOp4tk%253D&Expires=1611457719)
+
+
+然后试一下lsy用户能否获取相同表的写锁
+
+
+![](https://imgkr2.cn-bj.ufileos.com/2ebc377a-8adb-4469-98bc-4c94dd0f8d76.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=KBR27C1ueI2DtGR8YzRe6c%252F6I48%253D&Expires=1611457769)
+
+可看到是一直在等待。
+
+当root用户释放写锁后：
+
+![](https://static01.imgkr.com/temp/f41d91b0a4604f369b305bb009e7017a.png)
+
+lsy用户立马就获得了写锁：
+
+![](https://static01.imgkr.com/temp/eaf529a2346b4fc688f3b6cd2e2a778c.png)
+
+
+
+
+
+### 行锁
+
+共享锁（S）和排它锁（X）。
+
+**共享锁（S）：**
+
+多个事务可以一起读，共享锁之间不互斥，共享锁会阻塞排它锁。
+
+**排他锁（X）：**
+
+允许获得排他锁的事务更新数据，阻止其他事务取得相同数据集的共享读锁和排他写锁。
+
+
+
+#### 加锁方式：
+
+自动加锁
+
+对于UPDATE、DELETE、INSERT语句，自动给相关数据加上排他锁
+
+对于普通的SELECT语句，不加锁，属于快照读
+
+**手动加锁：**
+
+共享锁：
+```sql
+select * from table_name [where] lock in share mode;
+```
+
+排他锁：(这是我之前比较常用的)
+```sql
+select * from table_name [where] for updete
+```
+
+
+
+
+通过对索引数据页上的记录（record）加锁实现的。
+
+主要实现算法有 3 种：
+
+
+**Record Lock 锁：**
+
+单个行记录的锁（锁数据，不锁 Gap）。
+
+例如for update就是此锁
+
+**Gap Lock 锁：**
+
+间隙锁，锁定一个范围，不包括记录本身（不锁数据，仅仅锁数据前面的Gap）。
+
+保证某个间隙内的数据在锁定期间不会发生任何变化。
+
+当使用唯一索引进行搜索的时候，不会产生间隙锁
+
+例如：student的id列是唯一索引
+```sql
+select * from student where id = 1;
+```
+
+当使用非唯一索引或者没有索引进行搜索的时候，会产生间隙锁
+
+间隙范围：
+
+根据检索条件向下寻找最靠近检索条件的记录值A作为左区间，向上寻找最靠近检索条件的记录值B作为右区间，即锁定的间隙为（A，B] 左开右闭。
+
+
+![](https://static01.imgkr.com/temp/6ec889b55c5e405883c48b992ec46610.png)
+
+例如：test的id列是没有索引
+
+![](https://static01.imgkr.com/temp/37640c489d6248c7957ff1ded2d7492e.png)
+
+
+使用如下sql查询的时候
+
+在lsy用户下执行
+```sql
+select * from test where id = 3 for update;
+```
+
+![](https://imgkr2.cn-bj.ufileos.com/491325f7-5e4b-4c5c-a3ad-c5ead9b869dd.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=V4JC2sypn6K%252B5C6CDTU1HpL8RhY%253D&Expires=1611461825)
+
+那么它的间隙范围就是(1，6]
+
+如果在其他用户想往这区间插入数据就会阻塞，比如插入id是4的。
+
+![](https://static01.imgkr.com/temp/384b55cc4e4c42a9ab5c04171889c7f3.png)
+
+不过我在试着插入区间外的数据时，也出现这种情况，待进一步验证。
+
+
+**Next-key Lock 锁：**
+
+同时锁住数据，并且锁住数据前面的 Gap。
+
+
+
+
+
+## 死锁
+
+InnoDB 是逐行加锁的，极容易产生死锁。那么死锁产生的四个条件是什么呢？
+
+**互斥条件：**
+
+一个资源每次只能被一个进程使用； 
+
+**请求与保持条件：**
+
+一个进程因请求资源而阻塞时，对已获得的资源保持不放； 
+
+**不剥夺条件：**
+
+进程已获得的资源，在没使用完之前，不能强行剥夺； 
+
+**循环等待条件：**
+
+多个进程之间形成的一种互相循环等待资源的关系。
+
+
+发生死锁后，会出现CPU使用率高，QPS急剧下降，回滚请求失败的情况
+
+
+### 避免死锁
+
+加锁顺序一致
+
+尽量基于primary或unique key更新数据。
+
+单次操作数据量不宜过多，涉及表尽量少。
+
+减少表上索引，减少锁定资源。
+
+
+
+**死锁情况下打印错误日志**
+
+Show engine innodb status\G或者innodb_print_all_deadlocks=ON 打印到错误日志
+
+
+
+例如：
+
+有两张表，分别是student和test表
+
+1、在事务1中先删除student表中id=10的数据
+
+2、在事务2中删除test表中id=6的数据
+
+3、在事务1中删除test表中id=6的数据
+
+4、在事务2中删除student表中id=10的数据
+
+
+![](https://imgkr2.cn-bj.ufileos.com/134394d7-ed5c-4ab9-b39d-6c7aa76ddbf2.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=rUT4GkCrY2ZRcfJSB8H2WuHBWtk%253D&Expires=1611467056)
+
+
+
+此时就会报死锁错误：
+
+事务1：
+
+![](https://imgkr2.cn-bj.ufileos.com/8360c79d-5f38-4bca-bd80-cd4547a74f91.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=nwW7Osq%252BXydLYAC7pTnu2f%252BVcBM%253D&Expires=1611466682)
+
+
+事务2：
+
+![](https://imgkr2.cn-bj.ufileos.com/716e2988-1088-4d70-895d-4eaf397fcf10.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=Gznm6bo4NHHCeLOtnCfA4DfVERs%253D&Expires=1611466703)
+
+
+用Show engine innodb status\G查看日志：
+
+
+![](https://imgkr2.cn-bj.ufileos.com/15fa7c99-98c4-4220-ad37-d76ca5e18091.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=DztBMBSRO%252FRZ6H8EXBJjNusR3sk%253D&Expires=1611466793)
+
+
+
+![](https://static01.imgkr.com/temp/fba754c53dec41be8e9cf40481078b0d.png)
+
+
+
+
+
+
+
+
+## 元数据锁
+
+Metadata Lock
+
+用于解决或者保证DDL操作与DML操作之间的一致性。
+
+当对一个表做增删改查操作的时候，加 MDL 读锁；
+
+当要对表做结构变更操作的时候，加 MDL 写锁。
+
+
+读写锁之间、写锁之间是互斥的，用来保证变更表结构操作的安全性
+
+
+
+
+## 快速发现锁等待
+
+**Innodb锁：**
+
+```sql
+select b.trx_mysql_thread_id as '被阻塞线程' ,b.trx_query as '被阻塞SQL'
+,c.trx_mysql_thread_id as '阻塞线程' ,c.trx_query as '阻塞SQL'
+,(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(c.trx_started)) as '阻塞时间'
+from
+information_schema.innodb_lock_waits a
+join
+information_schema.innodb_trx b on a.requesting_trx_id=b.trx_id
+join
+information_schema.innodb_trx c on a.blocking_trx_id=c.trx_id
+where
+(UNIX_TIMESTAMP() - UNIX_TIMESTAMP(c.trx_started))>10;
+
+或
+
+select * from sys.innodb_lock_waits\G
+```
+
+
+**元数据锁：**
+
+
+```sql
+select * from performance_schema.metadata_locks;
+```
+
+
+![](https://imgkr2.cn-bj.ufileos.com/dd8feeb7-0a55-46c8-8593-2967a64d5558.png?UCloudPublicKey=TOKEN_8d8b72be-579a-4e83-bfd0-5f6ce1546f13&Signature=iEYXKAOEu3SyfcRjf%252FGrkBYnDIU%253D&Expires=1611467516)
+
+根据上一条sql获取的线程id查询线程详细信息：
+```sql
+select * from performance_schema.threads where thread_id in (thread_ids)
+```
+
+
+
+注意：元数据锁信息需要开启performance_schema
+
+```sql
+UPDATE performance_schema.setup_instruments SET ENABLED = 'YES', TIMED = 'YES'
+WHERE NAME = 'wait/lock/metadata/sql/mdl';
+```
