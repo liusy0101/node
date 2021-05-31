@@ -362,6 +362,8 @@ Concurrent mark sweep(CMS)收集器是一种年老代垃圾收集器，其最主
 
 详细参考：https://www.cnblogs.com/aspirant/p/8663872.html
 
+​				  https://tech.meituan.com/2016/09/23/g1.html
+
 相比于CMS收集器来说，G1收集器两个最突出的改进是：
 
 1. 基于标记-整理算法，不产生内存碎片。
@@ -375,6 +377,108 @@ G1 收集器避免全区域垃圾收集，它把堆内存划分为大小固定�
 ![img](typora-user-images/19049-6326d8cc7bbdbcc3.png)
 
 ![image-20210529233157512](typora-user-images/image-20210529233157512.png)
+
+
+
+#### （1）Region
+
+传统的GC收集器将连续的内存空间划分为新生代、老年代和永久代（元空间），个贷的存储地址是连续的。
+
+ ![传统GC内存布局](typora-user-images/8a9db36e.png) 
+
+而G1的各代存储地址是不连续的，每一代都是用了n个不连续的大小相同的Region，每个Region占有一块连续的虚拟内存地址。
+
+ ![g1 GC内存布局](typora-user-images/8ca16868.png) 
+
+**H：** 表示这些Region存储的是巨大对象（H-Objs），即是大小大于等于region一半的对象。
+
+
+
+ H-obj有如下几个特征：
+
+* H-obj直接分配到了old gen，防止了反复拷贝移动。 
+* H-obj在global concurrent marking阶段的cleanup 和 full GC阶段回收。 
+* 在分配H-obj之前先检查是否超过 initiating heap occupancy percent和the marking threshold, 如果超过的话，就启动global concurrent marking，为的是提早回收，防止 evacuation failures 和 full GC。 
+
+
+
+一个Region的大小可通过参数-XX:G1HeapRegionSize设定，取值范围是 1m~32m，且是2的指数。
+
+默认的Region个数是2048个。
+
+
+
+#### （2）RSet
+
+Remembered Set，辅助GC过程的一种结构，典型的空间换时间工具，和Card Table类似。还有一种数据结构也是辅助GC的：Collection Set（CSet），记录了GC要收集的Region集合，集合里的Region可是任意年代的。
+
+在GC时，对于old->young 和old->old的跨代对象引用，只要扫描对应的CSet中的RSet即可。
+
+ 逻辑上说每个Region都有一个RSet，RSet记录了其他Region中的对象引用本Region中对象的关系，属于points-into结构（谁引用了我的对象）。而Card Table则是一种points-out（我引用了谁的对象）的结构，每个Card 覆盖一定范围的Heap（一般为512Bytes）。G1的RSet是在Card Table的基础上实现的：每个Region会记录下别的Region有指向自己的指针，并标记这些指针分别在哪些Card的范围内。 这个RSet其实是一个Hash Table，Key是别的Region的起始地址，Value是一个集合，里面的元素是Card Table的Index。 
+
+ ![Remembered Sets](typora-user-images/5aea17be.jpg) 
+
+ 上图中有三个Region，每个Region被分成了多个Card，在不同Region中的Card会相互引用，Region1中的Card中的对象引用了Region2中的Card中的对象，蓝色实线表示的就是points-out的关系，而在Region2的RSet中，记录了Region1的Card，即红色虚线表示的关系，这就是points-into。 而维系RSet中的引用关系靠post-write barrier和Concurrent refinement threads来维护 
+
+
+
+#### （3）停顿预测模型
+
+ 用户可以设定整个GC过程的期望停顿时间，参数-XX:MaxGCPauseMillis指定一个G1收集过程目标停顿时间，默认值200ms，不过它不是硬性条件，只是期望值。
+
+**那么G1怎么满足用户的期望呢？**
+
+就需要这个停顿预测模型了。G1根据这个模型统计计算出来的历史数据来预测本次收集需要选择的Region数量，从而尽量满足用户设定的目标停顿时间。 
+
+
+
+#### （4）GC过程
+
+G1提供了两种GC模式：Young GC和Mixed GC。两种都是完全stop the world的。
+
+**Young GC：** 选定所有年轻代里的Region，通过控制年轻代的region个数，即年轻代内存大小，来控制Young GC的时间开销。
+
+**Mixed GC：** 选定所有年轻代的Region，外加根据global concurrent marking统计得出收集收益高的若干老年代region。在用户指定的开销目标范围内尽可能选择收益高的老年代Region。
+
+Mixed GC不是fullGC，只能回收部分老年代的region，如果mixed GC是在无法跟上程序分配内存的速度，导致老年代填满无法继续进行Mixed GC，就会使用Serial Old（full GC）来收集整个gc heap。
+
+ global concurrent marking，它的执行过程类似CMS，但是不同的是，在G1 GC中，它主要是为Mixed GC提供标记服务的，并不是一次GC过程的一个必须环节。
+
+global concurrent marking的执行过程分为四个步骤： 
+
+* 初始标记（initial mark，STW）。它标记了从GC Root开始直接可达的对象。 
+* 并发标记（Concurrent Marking）。这个阶段从GC Root开始对heap中的对象标记，标记线程与应用程序线程并行执行，并且收集各个Region的存活对象信息。 
+* 最终标记（Remark，STW）。标记那些在并发标记阶段发生变化的对象，将被回收。 
+* 清除垃圾（Cleanup）。清除空Region（没有存活对象的），加入到free list。 
+
+ 第一阶段initial mark是共用了Young GC的暂停，这是因为他们可以复用root scan操作，所以可以说global concurrent marking是伴随Young GC而发生的。第四阶段Cleanup只是回收了没有存活对象的Region，所以它并不需要STW。 
+
+
+
+**什么时候发生Mixed GC呢？**
+
+其实是由一些参数控制着的，另外也控制着哪些老年代Region会被选入CSet。
+
+* G1HeapWastePercent：在global concurrent marking结束之后，我们可以知道old gen regions中有多少空间要被回收，在每次YGC之后和再次发生Mixed GC之前，会检查垃圾占比是否达到此参数，只有达到了，下次才会发生Mixed GC。 
+*  G1MixedGCLiveThresholdPercent：old generation region中的存活对象的占比，只有在此参数之下，才会被选入CSet。 
+* G1MixedGCCountTarget：一次global concurrent marking之后，最多执行Mixed GC的次数。 
+*  G1OldCSetRegionThresholdPercent：一次Mixed GC中能被选入CSet的最多old generation region数量。 
+
+| 参数                               | 含义                                                         |
+| :--------------------------------- | :----------------------------------------------------------- |
+| -XX:G1HeapRegionSize=n             | 设置Region大小，并非最终值                                   |
+| -XX:MaxGCPauseMillis               | 设置G1收集过程目标时间，默认值200ms，不是硬性条件            |
+| -XX:G1NewSizePercent               | 新生代最小值，默认值5%                                       |
+| -XX:G1MaxNewSizePercent            | 新生代最大值，默认值60%                                      |
+| -XX:ParallelGCThreads              | STW期间，并行GC线程数                                        |
+| -XX:ConcGCThreads=n                | 并发标记阶段，并行执行的线程数                               |
+| -XX:InitiatingHeapOccupancyPercent | 设置触发标记周期的 Java 堆占用率阈值。默认值是45%。这里的java堆占比指的是non_young_capacity_bytes，包括old+humongous |
+
+
+
+
+
+
 
 
 
@@ -633,3 +737,202 @@ OSGi 服务平台提供在多种网络设备上无需重启的动态改变构造
 OSGi 旨在为实现 Java 程序的模块化编程提供基础条件，基于 OSGi 的程序很可能可以实现模块级的热插拔功能，当程序升级更新时，可以只停用、重新安装然后启动程序的其中一部分，这对企业级程序开发来说是非常具有诱惑力的特性。
 
 OSGi 描绘了一个很美好的模块化开发目标，而且定义了实现这个目标的所需要服务与架构，同时也有成熟的框架进行实现支持。但并非所有的应用都适合采用 OSGi 作为基础架构，它在提供强大功能同时，也引入了额外的复杂度，因为它不遵守了类加载的双亲委托模型。
+
+
+
+
+
+## 8、JVM调优
+
+### （1）何时进行JVM调优
+
+- Heap内存（老年代）持续上涨达到设置的最大内存值
+- Full GC次数频繁
+- GC停顿时间过长（超过1秒）
+- 应用出现OutOfMemory等内存异常
+- 应用中有使用本地缓存且占用大量内存空间
+- 系统吞吐量与响应性能不高或下降。
+
+
+
+### （2）调优目标
+
+- 延迟：GC低停顿和GC低频率
+- 低内存占用
+- 高吞吐量
+
+
+
+### （3）调优步骤
+
+1. 分析GC日志及dump文件，判断是否需要优化，确定瓶颈问题点
+2. 确定JVM调优量化目标
+
+
+
+4. 依次调优内存、延迟、吞吐量等指标
+5. 对比观察调优前后的差异
+6. 不断分析和调整，直至找到合适的JVM参数配置
+7. 找到最合适的参数，将这些参数应用至所有服务器，并进行后续跟踪。
+
+
+
+从满足程序的内存使用需求，之后是时间延迟的要求，最后才是吞吐量的要求。
+
+
+
+### （4）参数解析及调优
+
+例如：
+
+```
+-Xmx4g –Xms4g –Xmn1200m –Xss512k -XX:NewRatio=4 -XX:SurvivorRatio=8 -XX:PermSize=100m -XX:MaxPermSize=256m -XX:MaxTenuringThreshold=15
+```
+
+参数解析：
+
+- -Xmx4g：堆内存最大值为4GB。 
+- -Xms4g：初始化堆内存大小为4GB。 
+- -Xmn1200m：设置年轻代大小为1200MB。增大年轻代后，将会减小年老代大小。此值对系统性能影响较大，Sun官方推荐配置为整个堆的3/8。 
+- -Xss512k：设置每个线程的堆栈大小。JDK5.0以后每个线程堆栈大小为1MB，以前每个线程堆栈大小为256K。应根据应用线程所需内存大小进行调整。在相同物理内存下，减小这个值能生成更多的线程。但是操作系统对一个进程内的线程数还是有限制的，不能无限生成，经验值在3000~5000左右。 
+- -XX:NewRatio=4：设置年轻代（包括Eden和两个Survivor区）与年老代的比值（除去持久代）。设置为4，则年轻代与年老代所占比值为1：4，年轻代占整个堆栈的1/5 
+- -XX:SurvivorRatio=8：设置年轻代中Eden区与Survivor区的大小比值。设置为8，则两个Survivor区与一个Eden区的比值为2:8，一个Survivor区占整个年轻代的1/10 
+- -XX:PermSize=100m：初始化永久代大小为100MB。 
+- -XX:MaxPermSize=256m：设置持久代大小为256MB。 
+- -XX:MaxTenuringThreshold=15：设置垃圾最大年龄。如果设置为0的话，则年轻代对象不经过Survivor区，直接进入年老代。对于年老代比较多的应用，可以提高效率。如果将此值设置为一个较大值，则年轻代对象会在Survivor区进行多次复制，这样可以增加对象再年轻代的存活时间，增加在年轻代即被回收的概论。
+
+
+
+**可调优参数：**
+
+-Xms：初始化堆内存大小，默认为物理内存的1/64(小于1GB)。
+
+-Xmx：堆内存最大值。默认(MaxHeapFreeRatio参数可以调整)空余堆内存大于70%时，JVM会减少堆直到-Xms的最小限制。
+
+-Xmn：新生代大小，包括Eden区与2个Survivor区。
+
+-XX:SurvivorRatio=1：Eden区与一个Survivor区比值为1:1。
+
+-XX:MaxDirectMemorySize=1G：直接内存。报java.lang.OutOfMemoryError: Direct buffer memory异常可以上调这个值。
+
+-XX:+DisableExplicitGC：禁止运行期显式地调用System.gc()来触发fulll GC。
+
+注意: Java RMI的定时GC触发机制可通过配置-Dsun.rmi.dgc.server.gcInterval=86400来控制触发的时间。
+
+-XX:CMSInitiatingOccupancyFraction=60：老年代内存回收阈值，默认值为68。
+
+-XX:ConcGCThreads=4：CMS垃圾回收器并行线程线，推荐值为CPU核心数。
+
+-XX:ParallelGCThreads=8：新生代并行收集器的线程数。
+
+-XX:MaxTenuringThreshold=10：设置垃圾最大年龄。如果设置为0的话，则年轻代对象不经过Survivor区，直接进入年老代。对于年老代比较多的应用，可以提高效率。如果将此值设置为一个较大值，则年轻代对象会在Survivor区进行多次复制，这样可以增加对象再年轻代的存活时间，增加在年轻代即被回收的概论。
+
+-XX:CMSFullGCsBeforeCompaction=4：指定进行多少次fullGC之后，进行tenured区 内存空间压缩。
+
+-XX:CMSMaxAbortablePrecleanTime=500：当abortable-preclean预清理阶段执行达到这个时间时就会结束。
+
+在设置的时候，如果关注性能开销的话，应尽量把永久代的初始值与最大值设置为同一值，因为永久代的大小调整需要进行FullGC才能实现。
+
+
+
+### （5）内存优化示例
+
+ ![image](typora-user-images/1) 
+
+以上gc日志中，在发生fullGC之时，整个应用的堆占用以及GC时间。为了更加精确需多次收集，计算平均值。或者是采用耗时最长的一次FullGC来进行估算。上图中，老年代空间占用在93168kb（约93MB），以此定为老年代空间的活跃数据。则其他堆空间的分配，基于以下规则来进行。
+
+- java heap：参数-Xms和-Xmx，建议扩大至3-4倍FullGC后的老年代空间占用。 
+- 永久代：-XX:PermSize和-XX:MaxPermSize，建议扩大至1.2-1.5倍FullGc后的永久代空间占用。 
+- 新生代：-Xmn，建议扩大至1-1.5倍FullGC之后的老年代空间占用。 
+- 老年代：2-3倍FullGC后的老年代空间占用。
+
+**注意：都是以FullGC后的空间占用为基础**
+
+
+
+### （6）延迟优化示例
+
+对延迟性优化，首先需要了解延迟性需求及可调优的指标有哪些。
+
+- 应用程序可接受的平均停滞时间: 此时间与测量的Minor 
+- GC持续时间进行比较。可接受的Minor GC频率：Minor 
+- GC的频率与可容忍的值进行比较。 
+- 可接受的最大停顿时间:最大停顿时间与最差情况下FullGC的持续时间进行比较。 
+- 可接受的最大停顿发生的频率：基本就是FullGC的频率。 
+
+其中，平均停滞时间和最大停顿时间，对用户体验最为重要
+
+ 对于上面的指标，相关数据采集包括：MinorGC的持续时间、统计MinorGC的次数、FullGC的最差持续时间、最差情况下，FullGC的频率。 
+
+
+
+ 新生代空间越大，Minor GC的GC时间越长，频率越低。如果想减少其持续时长，就需要减少其空间大小。如果想减小其频率，就需要加大其空间大小。 
+
+
+
+
+
+### （7）吞吐量调优
+
+吞吐量调优主要是基于应用程序的吞吐量要求而来的，应用程序应该有一个综合的吞吐指标，这个指标基于整个应用的需求和测试而衍生出来的。
+
+评估当前吞吐量和目标差距是否巨大，如果在20%左右，可以修改参数，加大内存，再次从头调试，如果巨大就需要从整个应用层面来考虑，设计以及目标是否一致了，重新评估吞吐目标。
+
+对于垃圾收集器来说，提升吞吐量的性能调优的目标就是尽可能避免或者很少发生FullGC或者Stop-The-World压缩式垃圾收集（CMS），因为这两种方式都会造成应用程序吞吐降低。尽量在MinorGC 阶段回收更多的对象，避免对象提升过快到老年代。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
