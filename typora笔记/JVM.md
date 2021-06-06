@@ -2,7 +2,7 @@
 
 
 
-# JAM
+# JVM
 
 JVM是可运行java代码的假想计算机，包括一套字节码指令集、一组寄存器、一个栈、一个垃圾回收堆和一个存储方法域。
 
@@ -160,7 +160,7 @@ Java新对象的出生地，（如果新创建对象占内存很大，则直接�
 
 ![image-20210529225301824](typora-user-images/image-20210529225301824.png)
 
-#### （1）如何确认垃圾
+### （1）如何确认垃圾
 
 ##### 1、引用计数法
 
@@ -172,7 +172,7 @@ Java新对象的出生地，（如果新创建对象占内存很大，则直接�
 
 
 
-#### （2）标记-清除算法（Mark-Sweep）
+### （2）标记-清除算法（Mark-Sweep）
 
 分为两个阶段，标记、清除
 
@@ -694,7 +694,7 @@ JVM初始化步骤
 
 ### 7、类加载器
 
-#### （1）. 启动类加载器(Bootstrap ClassLoader)
+#### （1）启动类加载器(Bootstrap ClassLoader)
 
 负责加载 JAVA_HOME\lib 目录中的，或通过-Xbootclasspath 参数指定路径中的，且被虚拟机认可（按文件名识别，如 rt.jar）的类。
 
@@ -702,7 +702,7 @@ JVM初始化步骤
 
 负责加载 JAVA_HOME\lib\ext 目录中的，或通过 java.ext.dirs 系统变量指定路径中的类库。
 
-#### （3）. 应用程序类加载器(Application ClassLoader)：
+#### （3）应用程序类加载器(Application ClassLoader)：
 
 负责加载用户路径（classpath）上的类库。JVM 通过双亲委派模型进行类的加载，当然我们也可以通过继承 java.lang.ClassLoader实现自定义的类加载器。
 

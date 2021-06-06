@@ -151,9 +151,7 @@ ApplicationContext由BeanFactory派生而来，提供了更多面向实际应用
 1. ClassPathXmlApplicationContext：默认从类路径加载配置文件13/04/2018
 2. FileSystemXmlApplicationContext：默认从文件系统中装载配置文件
 
-3. ApplicationEventPublisher：让容器拥有发布应用上下文事件的功能，包括容器启动事
-
-件、关闭事件等。
+3. ApplicationEventPublisher：让容器拥有发布应用上下文事件的功能，包括容器启动事件、关闭事件等。
 
 4. MessageSource：为应用提供 i18n 国际化消息访问的功能；
 
@@ -180,7 +178,7 @@ WebApplicationContext 是专门为 Web 应用准备的，它允许从相对于 W
 #### 		singleton：单例模式（多线程下不安全）
 
 1. singleton：单例模式，Spring IoC 容器中只会存在一个共享的 Bean 实例，无论有多少个Bean 引用它，始终指向同一对象。该模式在多线程下是不安全的。Singleton 作用域是Spring 中的缺省作用域，也可以显示的将 Bean 定义为 singleton 模式，配置为：
-  <bean id="userDao" class="com.ioc.UserDaoImpl" scope="singleton"/>
+    <bean id="userDao" class="com.ioc.UserDaoImpl" scope="singleton"/>
 
   #### prototype:原型模式每次使用时创建
 
@@ -189,12 +187,12 @@ WebApplicationContext 是专门为 Web 应用准备的，它允许从相对于 W
    #### Request：一次 request 一个实例
 
 3. request：在一次 Http 请求中，容器会返回该 Bean 的同一实例。而对不同的 Http 请求则会产生新的 Bean，而且该 bean 仅在当前 Http Request 内有效,当前 Http 请求结束，该 bean实例也将会被销毁。
-  <bean id="loginAction" class="com.cnblogs.Login" scope="request"/>
+    <bean id="loginAction" class="com.cnblogs.Login" scope="request"/>
 
   #### session
 
 4. session：在一次 Http Session 中，容器会返回该 Bean 的同一实例。而对不同的 Session 请求则会创建新的实例，该 bean 实例仅在当前 Session 内有效。同 Http 请求相同，每一次session 请求创建新的实例，而不同的实例之间不共享属性，且实例仅在自己的 session 请求内有效，请求结束，则实例将被销毁。
-  <bean id="userPreference" class="com.ioc.UserPreference" scope="session"/>
+    <bean id="userPreference" class="com.ioc.UserPreference" scope="session"/>
 
   #### global Session
 
@@ -254,7 +252,7 @@ postProcessBeforeInitialization(Object obj, String s)方法，BeanPostProcessor 
 #### Destroy 过期自动清理阶段
 
 9. 当 Bean 不再需要时，会经过清理阶段，如果 Bean 实现了 DisposableBean 这个接口，会调
-  用那个其实现的 destroy()方法；
+    用那个其实现的 destroy()方法；
 
   #### destroy-method 自配置清理
 
