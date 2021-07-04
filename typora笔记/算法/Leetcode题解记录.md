@@ -8,13 +8,236 @@
 
 # Leetcode题解记录
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## 一、数组
 
-### （1）两数之和
+### （1）[两数之和](https://leetcode-cn.com/problems/two-sum/)
+
+给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target  的那 两个 整数，并返回它们的数组下标。
+
+你可以假设每种输入只会对应一个答案。但是，数组中同一个元素在答案里不能重复出现。
+
+你可以按任意顺序返回答案。
+
+输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
+
+
+
+```java
+public int[] twoSum(int[] nums, int target) {
+        int[] result = null;
+
+        Map<Integer, Integer> value2Index = new HashMap<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            if (value2Index.get(target-nums[i]) != null) {
+                result = new int[]{i,value2Index.get(target-nums[i])};
+                break;
+            }
+            value2Index.put(nums[i],i);
+        }
+        return result;
+    }
+```
+
+![image-20210704222307795](../typora-user-images/image-20210704222307795.png)
+
+
+
+
 
 ### （2）[三数之和 ](https://leetcode-cn.com/problems/3sum/)
 
-### （3）[求众数](https://leetcode-cn.com/problems/majority-element/)
+给你一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = 0 ？请你找出所有和为 0 且不重复的三元组。
+
+注意：答案中不可以包含重复的三元组。
+
+示例 1：
+
+输入：nums = [-1,0,1,2,-1,-4]
+输出：[[-1,-1,2],[-1,0,1]]
+示例 2：
+
+输入：nums = []
+输出：[]
+示例 3：
+
+输入：nums = [0]
+输出：[]
+
+
+
+```java
+public List<List<Integer>> threeSum(int[] nums) {
+        Arrays.sort(nums);
+
+        List<List<Integer>> result = new ArrayList<>();
+
+        int len = nums.length;
+
+        if (len < 3) {
+            return result;
+        }
+
+        for (int i = 0; i < len; i++) {
+            if (nums[i]>0) {
+                continue;
+            }
+            if(i > 0 && nums[i] == nums[i-1]) continue;
+            int start = i+1;
+            int end = len - 1;
+            while (start<end) {
+                int tem = nums[start] + nums[end];
+                if (tem > -nums[i]) {
+                    end--;
+                } else if (tem < -nums[i]) {
+                    start++;
+                } else {
+                    while (start<len-1 && nums[start]==nums[start+1]) start++;
+                    while (end> start && nums[end]==nums[end-1]) end--;
+                    ArrayList<Integer> subResult = new ArrayList<>();
+                    subResult.add(nums[i]);
+                    subResult.add(nums[start++]);
+                    subResult.add(nums[end--]);
+                        result.add(subResult);
+                }
+            }
+        }
+
+        return result;
+    }
+```
+
+
+
+
+
+
+
+
+
+
+
+### （3）[多数元素](https://leetcode-cn.com/problems/majority-element/)
+
+给定一个大小为 n 的数组，找到其中的多数元素。多数元素是指在数组中出现次数 大于 ⌊ n/2 ⌋ 的元素。
+
+你可以假设数组是非空的，并且给定的数组总是存在多数元素。
+
+**示例 1：**
+
+```
+输入：[3,2,3]
+输出：3
+```
+
+
+
+1、哈希法
+
+```java
+public int majorityElement(int[] nums) {
+
+        int len = nums.length;
+        int moreLen = len / 2 ;
+        int result = nums[0];
+
+        Map<Integer, Integer> tmpMap = new HashMap<>();
+
+        for (int i = 0; i < len; i++) {
+            if (tmpMap.get(nums[i]) != null) {
+                tmpMap.put(nums[i], tmpMap.get(nums[i])+ 1 );
+            } else {
+                tmpMap.put(nums[i],1);
+            }
+            if (tmpMap.get(nums[i])>moreLen) {
+                result = nums[i];
+                break;
+            }
+
+        }
+
+        return result;
+    }
+```
+
+
+
+2、排序法
+
+如果将数组 nums 中的所有元素按照单调递增或单调递减的顺序排序，那么下标为n/2 的元素（下标从 0 开始）一定是众数。
+
+```java
+public int majorityElement(int[] nums) {
+        Arrays.sort(nums);
+        return nums[nums.length / 2];
+    }
+```
+
+
+
+3、摩尔投票法
+
+候选人(cand_num)初始化为nums[0]，票数count初始化为1。
+当遇到与cand_num相同的数，则票数count = count + 1，否则票数count = count - 1。
+当票数count为0时，更换候选人，并将票数count重置为1。
+遍历完数组后，cand_num即为最终答案。
+
+为何这行得通呢？
+投票法是遇到相同的则票数 + 1，遇到不同的则票数 - 1。
+且“多数元素”的个数> ⌊ n/2 ⌋，其余元素的个数总和<= ⌊ n/2 ⌋。
+因此“多数元素”的个数 - 其余元素的个数总和 的结果 肯定 >= 1。
+这就相当于每个“多数元素”和其他元素 两两相互抵消，抵消到最后肯定还剩余至少1个“多数元素”。
+
+无论数组是1 2 1 2 1，亦或是1 2 2 1 1，总能得到正确的候选人。
+
+```java
+class Solution {
+    public int majorityElement(int[] nums) {
+        int cand_num = nums[0], count = 1;
+        for (int i = 1; i < nums.length; ++i) {
+            if (cand_num == nums[i])
+                ++count;
+            else if (--count == 0) {
+                cand_num = nums[i];
+                count = 1;
+            }
+        }
+        return cand_num;
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### （4）[求缺失的第一个正数](https://leetcode-cn.com/problems/first-missing-positive/)
 
