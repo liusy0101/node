@@ -241,7 +241,204 @@ class Solution {
 
 ### （4）[求缺失的第一个正数](https://leetcode-cn.com/problems/first-missing-positive/)
 
-### （5）[把数组中的 0 移到末尾](github/Leetcode 题解 数组与矩阵.md#1-把数组中的-0-移到末尾)
+给你一个未排序的整数数组 nums ，请你找出其中没有出现的最小的正整数。
+
+请你实现时间复杂度为 O(n) 并且只使用常数级别额外空间的解决方案。
+
+
+示例 1：
+
+输入：nums = [1,2,0]
+输出：3
+示例 2：
+
+输入：nums = [3,4,-1,1]
+输出：2
+示例 3：
+
+输入：nums = [7,8,9,11,12]
+输出：1
+
+**提示：**
+
+- `1 <= nums.length <= 5 * 10^5`
+- `-231 <= nums[i] <= 231 - 1`
+
+
+
+（1）布隆过滤器
+
+既然数组长度最长是5*10^5，那么直接定义一个char数组，长度就是5\*10^5
+
+```java
+public static int firstMissingPositive(int[] nums) {
+        int maxVAlue = nums[0];
+        char[] blChar = new char[500000];
+        for (int i = 0; i < nums.length; i++) {
+            maxVAlue = Math.max(nums[i],maxVAlue);
+            if (nums[i]<=0 || nums[i]>=500000) {
+                continue;
+            }
+            blChar[nums[i]-1] = 1;
+        }
+        if (maxVAlue<=0) {
+            return 1;
+        }
+        for (int i = 0; i < blChar.length; i++) {
+            if (blChar[i] != 1) {
+                return i+1;
+            }
+        }
+        return maxVAlue+1;
+    }
+```
+
+![image-20210705230106645](../typora-user-images/image-20210705230106645.png)
+
+
+
+（2）原地哈希
+
+将数组视为哈希表
+
+- 由于题目要求我们「只能使用常数级别的空间」，而要找的数一定在 [1, N + 1] 左闭右闭（这里 N 是数组的长度）这个区间里。因此，我们可以就把原始的数组当做哈希表来使用。事实上，哈希表其实本身也是一个数组；
+  我们要找的数就在 [1, N + 1] 里，最后 N + 1 这个元素我们不用找。因为在前面的 N 个元素都找不到的情况下，我们才返回 N + 1；
+- 那么，我们可以采取这样的思路：就把 11 这个数放到下标为 00 的位置， 22 这个数放到下标为 11 的位置，按照这种思路整理一遍数组。然后我们再遍历一次数组，第 11 个遇到的它的值不等于下标的那个数，就是我们要找的缺失的第一个正数。
+- 这个思想就相当于我们自己编写哈希函数，这个哈希函数的规则特别简单，那就是数值为 i 的数映射到下标为 i - 1 的位置。
+
+![image-20210705225852680](../typora-user-images/image-20210705225852680.png)
+
+```java
+public class Solution {
+
+    public int firstMissingPositive(int[] nums) {
+        int len = nums.length;
+
+        for (int i = 0; i < len; i++) {
+            while (nums[i] > 0 && nums[i] <= len && nums[nums[i] - 1] != nums[i]) {
+                // 满足在指定范围内、并且没有放在正确的位置上，才交换
+                // 例如：数值 3 应该放在索引 2 的位置上
+                swap(nums, nums[i] - 1, i);
+            }
+        }
+
+        // [1, -1, 3, 4]
+        for (int i = 0; i < len; i++) {
+            if (nums[i] != i + 1) {
+                return i + 1;
+            }
+        }
+        // 都正确则返回数组长度 + 1
+        return len + 1;
+    }
+
+    private void swap(int[] nums, int index1, int index2) {
+        int temp = nums[index1];
+        nums[index1] = nums[index2];
+        nums[index2] = temp;
+    }
+}
+```
+
+![image-20210705230009116](../typora-user-images/image-20210705230009116.png)
+
+
+
+### （5）[把数组中的 0 移到末尾](https://leetcode-cn.com/problems/move-zeroes/)
+
+给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。
+
+**示例:**
+
+```
+输入: [0,1,0,3,12]
+输出: [1,3,12,0,0]
+```
+
+```java
+public void moveZeroes(int[] nums) {
+        int len = nums.length;
+
+        for (int i = 0; i < len; i++) {
+            int curNum = nums[i];
+            if (curNum != 0) {
+                continue;
+            }
+            for (int j = i+1; j < len; j++) {
+                if (nums[j] != 0) {
+                    int tem = nums[j];
+                    nums[j] = curNum;
+                    nums[i] = tem;
+                    break;
+                }
+            }
+        }   
+    }
+```
+
+![image-20210705232202254](../typora-user-images/image-20210705232202254.png)
+
+
+
+
+
+```java
+public void moveZeroes(int[] nums) {
+
+        if(nums==null) {
+			return;
+		}
+		//第一次遍历的时候，j指针记录非0的个数，只要是非0的统统都赋给nums[j]
+		int j = 0;
+		for(int i=0;i<nums.length;++i) {
+			if(nums[i]!=0) {
+				nums[j++] = nums[i];
+			}
+		}
+		//非0元素统计完了，剩下的都是0了
+		//所以第二次遍历把末尾的元素都赋为0即可
+		for(int i=j;i<nums.length;++i) {
+			nums[i] = 0;
+		}
+
+    }
+```
+
+![image-20210705233647646](../typora-user-images/image-20210705233647646.png)
+
+
+
+**一次遍历：**
+
+这里参考了快速排序的思想，快速排序首先要确定一个待分割的元素做中间点x，然后把所有小于等于x的元素放到x的左边，大于x的元素放到其右边。
+这里我们可以用0当做这个中间点，把不等于0(注意题目没说不能有负数)的放到中间点的左边，等于0的放到其右边。
+这的中间点就是0本身，所以实现起来比快速排序简单很多，我们使用两个指针i和j，只要nums[i]!=0，我们就交换nums[i]和nums[j]
+
+```java
+public void moveZeroes(int[] nums) {
+		if(nums==null) {
+			return;
+		}
+		//两个指针i和j
+		int j = 0;
+		for(int i=0;i<nums.length;i++) {
+			//当前元素!=0，就把其交换到左边，等于0的交换到右边
+			if(nums[i]!=0) {
+				int tmp = nums[i];
+				nums[i] = nums[j];
+				nums[j++] = tmp;
+			}
+		}
+	}
+```
+
+
+
+
+
+
+
+
 
 ### （6）[改变矩阵维度](github/Leetcode 题解 数组与矩阵.md#2-改变矩阵维度)
 
