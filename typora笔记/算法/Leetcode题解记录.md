@@ -440,11 +440,303 @@ public void moveZeroes(int[] nums) {
 
 
 
-### （6）[改变矩阵维度](github/Leetcode 题解 数组与矩阵.md#2-改变矩阵维度)
+### （6）[改变矩阵维度](https://leetcode-cn.com/problems/reshape-the-matrix/)
 
-### （7）[找出数组中最长的连续 1](github/Leetcode 题解 数组与矩阵.md#3-找出数组中最长的连续-1)
+在MATLAB中，有一个非常有用的函数 reshape，它可以将一个矩阵重塑为另一个大小不同的新矩阵，但保留其原始数据。
 
-### （8）[有序矩阵查找](./github/Leetcode 题解 数组与矩阵.md#4-有序矩阵查找)
+给出一个由二维数组表示的矩阵，以及两个正整数r和c，分别表示想要的重构的矩阵的行数和列数。
+
+重构后的矩阵需要将原始矩阵的所有元素以相同的行遍历顺序填充。
+
+如果具有给定参数的reshape操作是可行且合理的，则输出新的重塑矩阵；否则，输出原始矩阵。
+
+示例 1:
+
+```
+输入: 
+nums = 
+[[1,2],
+ [3,4]]
+r = 1, c = 4
+输出: 
+[[1,2,3,4]]
+解释:
+行遍历nums的结果是 [1,2,3,4]。新的矩阵是 1 * 4 矩阵, 用之前的元素值一行一行填充新矩阵。
+```
+
+示例 2:
+
+```
+输入: 
+nums = 
+[[1,2],
+ [3,4]]
+r = 2, c = 4
+输出: 
+[[1,2],
+ [3,4]]
+解释:
+没有办法将 2 * 2 矩阵转化为 2 * 4 矩阵。 所以输出原矩阵。
+```
+
+
+
+
+
+**注意：**
+
+​	给定矩阵的宽和高范围在 [1, 100]。
+​	给定的 r 和 c 都是正数。
+
+
+
+```java
+class Solution {
+    public int[][] matrixReshape(int[][] mat, int r, int c) {
+        int row = mat.length;
+        int len = mat[0].length;
+        
+        if (row*len != r*c) {
+            return mat;
+        }
+        
+        int [][]result = new int[r][c];
+        int index = 0;
+
+        for (int i = 0; i < row; i++) {
+            for (int j = 0; j < len; j++) {
+                int newR = index / c;
+                int newL = index % c;
+                result[newR][newL] = mat[i][j];
+                index++;
+            }
+        }
+        
+        return result;
+    }
+}
+```
+
+
+
+
+
+### （7）[找出数组中最长的连续 1](https://leetcode-cn.com/problems/max-consecutive-ones/)
+
+给定一个二进制数组， 计算其中最大连续 1 的个数。
+
+示例：
+
+```
+输入：[1,1,0,1,1,1]
+输出：3
+解释：开头的两位和最后的三位都是连续 1 ，所以最大连续 1 的个数是 3.
+```
+
+
+提示：
+
+输入的数组只包含 0 和 1 。
+输入数组的长度是正整数，且不超过 10,000。
+
+```java
+public static int findMaxConsecutiveOnes(int[] nums) {
+        int result = 0;
+        int tmp = 0;
+        for (int i = 0; i < nums.length; i++) {
+            if (nums[i] == 1) {
+                tmp++;
+            } else {
+                tmp = 0;
+            }
+            result = Math.max(tmp,result);
+        }
+        return result;
+    }
+```
+
+
+
+**双指针解法：**
+
+```java
+public int findMaxConsecutiveOnes(int[] nums) {
+        int n = nums.length, res = 0;
+        for (int i = 0; i < n; i++) {
+            int j = i;
+            while (j < n && nums[j] == 1) j++;
+            res = Math.max(res, j - i);
+            i = j;
+        }
+        return res;
+    }
+```
+
+
+
+
+
+### （8）[有序矩阵查找](https://leetcode-cn.com/problems/search-a-2d-matrix/)
+
+编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：
+
+每行中的整数从左到右按升序排列。
+每行的第一个整数大于前一行的最后一个整数。
+
+
+示例 1：
+
+```
+输入：matrix = [[1,3,5,7],[10,11,16,20],[23,30,34,60]], target = 3
+输出：true
+```
+
+```java
+public static boolean searchMatrix(int[][] matrix, int target) {
+        int row = matrix.length;
+        int len = matrix[0].length;
+
+        int min = matrix[0][0];
+        int max = matrix[row-1][len-1];
+
+        if (target< min || target>max) {
+            return false;
+        }
+        if (target == min || target == max) {
+            return true;
+        }
+
+        int[] temRow = new int[row];
+        for (int i = 0; i < row; i++) {
+            temRow[i] = matrix[i][0];
+        }
+
+
+        int start = 0,end = row-1;
+
+        int targetRow = 0;
+
+        while (start<end) {
+            int mid = start + (end-start)/2;
+            if (target<temRow[mid]) {
+                end = mid-1;
+                targetRow = mid -1;
+            } else if (target>temRow[mid]) {
+                if (mid<row-1 && target<temRow[mid+1]) {
+                    targetRow = mid;
+                    break;
+                } else {
+                    start = mid+1;
+                    targetRow = mid < row-1 ? mid+1:mid;
+                }
+            } else {
+                return true;
+            }
+        }
+        if (start == end) {
+            targetRow = start;
+        }
+
+        int[] temLen = new int[len];
+        for (int i = 0; i < len; i++) {
+            temLen[i] = matrix[targetRow][i];
+        }
+
+        start = 0;
+        end = len -1;
+        while (start<=end) {
+            int mid = start + (end-start)/2;
+            if (target<temLen[mid]) {
+                end = mid-1;
+            } else if (target> temLen[mid]) {
+                start = mid+1;
+            } else {
+                return true;
+            }
+        }
+
+        if (start == end && temLen[start] == target) {
+            return true;
+        }
+
+        return false;
+    }
+```
+
+![image-20210707234259332](../typora-user-images/image-20210707234259332.png)
+
+
+
+```java
+public static boolean searchMatrix(int[][] matrix, int target) {
+        int m = matrix.length;
+        int n = matrix[0].length;
+
+        int l = 0;
+        int r = m - 1;
+        while (l < r) {
+            int mid = l + r + 1 >> 1;
+            if (matrix[mid][0] <= target) {
+                l = mid;
+            } else {
+                r = mid - 1;
+            }
+        }
+
+        int row = r;
+        if (matrix[row][0] == target)
+            return true;
+        if (matrix[row][0] > target)
+            return false;
+
+        l = 0;
+        r = n - 1;
+        while (l < r) {
+            int mid = l + r + 1 >> 1;
+            if (matrix[row][mid] <= target) {
+                l = mid;
+            } else {
+                r = mid - 1;
+            }
+        }
+        int col = r;
+
+        return matrix[row][col] == target;
+    }
+```
+
+
+
+
+
+**一次二分查找：**
+
+若将矩阵每一行拼接在上一行的末尾，则会得到一个升序数组，我们可以在该数组上二分找到目标元素。
+
+代码实现时，可以二分升序数组的下标，将其映射到原矩阵的行和列上。
+
+```java
+class Solution {
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int m = matrix.length, n = matrix[0].length;
+        int low = 0, high = m * n - 1;
+        while (low <= high) {
+            int mid = (high - low) / 2 + low;
+            int x = matrix[mid / n][mid % n];
+            if (x < target) {
+                low = mid + 1;
+            } else if (x > target) {
+                high = mid - 1;
+            } else {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+```
+
+
 
 ### （9）[有序矩阵的 Kth Element](github/Leetcode 题解 数组与矩阵.md#5-有序矩阵的-kth-element)
 
