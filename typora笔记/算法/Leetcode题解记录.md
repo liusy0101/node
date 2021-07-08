@@ -738,7 +738,11 @@ class Solution {
 
 
 
-### （9）[有序矩阵的 Kth Element](github/Leetcode 题解 数组与矩阵.md#5-有序矩阵的-kth-element)
+### （9）[有序矩阵的 Kth Element](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
+
+
+
+
 
 ### （10）[一个数组元素在 [1, n\] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](github/Leetcode 题解 数组与矩阵.md#6-一个数组元素在-[1-n]-之间，其中一个数被替换为另一个数，找出重复的数和丢失的数)
 
