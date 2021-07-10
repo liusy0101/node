@@ -740,13 +740,274 @@ class Solution {
 
 ### （9）[有序矩阵的 Kth Element](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
 
+给你一个 n x n 矩阵 matrix ，其中每行和每列元素均按升序排序，找到矩阵中第 k 小的元素。
+请注意，它是 排序后 的第 k 小元素，而不是第 k 个 不同 的元素。
+
+示例 1：
+
+```
+输入：matrix = [[1,5,9],[10,11,13],[12,13,15]], k = 8
+输出：13
+解释：矩阵中的元素为 [1,5,9,10,11,12,13,13,15]，第 8 小元素是 13
+```
+
+
+示例 2：
+
+```
+输入：matrix = [[-5]], k = 1
+输出：-5
+```
+
+
+提示：
+
+```
+n == matrix.length
+n == matrix[i].length
+1 <= n <= 300
+-109 <= matrix[i][j] <= 109
+题目数据 保证 matrix 中的所有行和列都按 非递减顺序 排列
+1 <= k <= n2
+```
+
+
+
+**二分法：**
+
+思路非常简单：
+
+- 找出二维矩阵中最小的数 leftleft，最大的数 right，那么第 k 小的数必定在 left~ right 之间
+  mid=(left+right) / 2；
+- 在二维矩阵中寻找小于等于 mid 的元素个数 count，若这个 count 小于 k，表明第 k 小的数在右半部分且不包含 mid，即 left=mid+1, right=right，又保证了第 k 小的数在 left~ right 之间
+- 若这个 count大于 k，表明第 k 小的数在左半部分且可能包含 mid，即 left=left, right=mid，又保证了第 k 小的数在 left~right 之间
+- 因为每次循环中都保证了第 k 小的数在 left~ right之间，当 left==right时，第 k 小的数即被找出，等于 right
+
+```java
+ public int kthSmallest(int[][] matrix, int k) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        int left = matrix[0][0];
+        int right = matrix[row - 1][col - 1];
+        while (left < right) {
+            // 每次循环都保证第K小的数在start~end之间，当start==end，第k小的数就是start
+            int mid = (left + right) / 2;
+            // 找二维矩阵中<=mid的元素总个数
+            int count = findNotBiggerThanMid(matrix, mid, row, col);
+            if (count < k) {
+                // 第k小的数在右半部分，且不包含mid
+                left = mid + 1;
+            } else {
+                // 第k小的数在左半部分，可能包含mid
+                right = mid;
+            }
+        }
+        return right;
+    }
+
+    private int findNotBiggerThanMid(int[][] matrix, int mid, int row, int col) {
+        // 以列为单位找，找到每一列最后一个<=mid的数即知道每一列有多少个数<=mid
+        int i = row - 1;
+        int j = 0;
+        int count = 0;
+        while (i >= 0 && j < col) {
+            if (matrix[i][j] <= mid) {
+                // 第j列有i+1个元素<=mid
+                count += i + 1;
+                j++;
+            } else {
+                // 第j列目前的数大于mid，需要继续在当前列往上找
+                i--;
+            }
+        }
+        return count;
+    }
+```
+
+![image-20210710164721513](../typora-user-images/image-20210710164721513.png)
+
+
+
+**最小堆法：**
+
+使用优先级队列
+
+```java
+public int kthSmallest(int[][] matrix, int k) {
+
+        PriorityQueue<Integer> queue = new PriorityQueue<>(k);
+
+        int n = matrix.length;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                queue.offer(matrix[i][j]);
+            }
+        }
+        int i = 0;
+        int result = queue.peek();
+        while (!queue.isEmpty()) {
+            i++;
+            Integer poll = queue.poll();
+            if (i == k) {
+                result = poll;
+            }
+        }
+
+        return result;
+    }
+```
+
+
+
+![image-20210710164642262](../typora-user-images/image-20210710164642262.png)
 
 
 
 
-### （10）[一个数组元素在 [1, n\] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](github/Leetcode 题解 数组与矩阵.md#6-一个数组元素在-[1-n]-之间，其中一个数被替换为另一个数，找出重复的数和丢失的数)
 
-### （11）[找出数组中重复的数，数组值在 [1, n\] 之间](github/Leetcode 题解 数组与矩阵.md#7-找出数组中重复的数，数组值在-[1-n]-之间)
+
+
+
+
+### （10）[一个数组元素在 [1, n] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](https://leetcode-cn.com/problems/set-mismatch/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)
+
+### （11）[找出数组中重复的数，数组值在 [1, n] 之间](https://leetcode-cn.com/problems/find-the-duplicate-number/)
+
+给定一个包含 n + 1 个整数的数组 nums ，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。
+
+假设 nums 只有 一个重复的整数 ，找出 这个重复的数 。
+
+你设计的解决方案必须不修改数组 nums 且只用常量级 O(1) 的额外空间。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [1,3,4,2,2]
+输出：2
+```
+
+提示：
+
+```
+1 <= n <= 10^5
+nums.length == n + 1
+1 <= nums[i] <= n
+nums 中 只有一个整数 出现 两次或多次 ，其余整数均只出现 一次
+```
+
+**暴力解法：**
+
+```java
+public int findDuplicate(int[] nums) {
+        Set<Integer> temSet = new HashSet<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            if (!temSet.add(nums[i])) {
+                return nums[i];
+            }
+        }
+        return nums[0];
+    }
+```
+
+![image-20210710170115899](../typora-user-images/image-20210710170115899.png)
+
+
+
+```java
+public int findDuplicate(int[] nums) {
+        char[] temChar = new char[nums.length+1];
+        for (int i=0;i<nums.length;i++) {
+            if (temChar[nums[i]] == 1) {
+                return nums[i];
+            } else {
+                temChar[nums[i]] = 1;
+            }
+        }
+        throw new RuntimeException();
+    }
+```
+
+![image-20210710170530567](../typora-user-images/image-20210710170530567.png)
+
+
+
+**快慢指针：**
+
+快慢指针：fast 和 slow。nums[slow] 表示取慢指针对应的元素。 注意 nums 数组中的数字都是在 1 到 n 之间的(在数组中进行游走不会越界)，因为有重复数字的出现，所以这个游走必然是成环的，环的入口就是重复的元素，即按照寻找链表环入口的思路来做。
+
+fast 指针一次走两步，slow 指针一次走一步，若 nums 数组中有重复的数，即有环存在，则 fast 和 slow 指针一定会相遇。
+
+当 fast 和 slow 指针相遇时，令 fast 指针重新指向 nums 数组的开头，即 fast = 0，然后 fast 指针和 slow 指针均变为为一次只走一步，当 nums[slow] 和 nums[fast] 相等时，则找到了重复的整数，返回 nums[slow] 即可。
+
+链表中：慢指针 slow = slow.next；快指针 fast = fast.next.next
+
+数组中：慢指针 slow = nums[slow]；快指针 fast = nums[nums[fast]]，因为 nums 中的元素值都在 11 到 nn 之间（包括 11 和 nn），所以这样不会造成数组越界问题。
+
+```java
+class Solution {
+
+    public int findDuplicate(int[] nums) {
+        
+        int fast = 0, slow = 0;
+        while (true) {
+
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+            if (slow == fast) {
+
+                fast = 0;
+                while (nums[slow] != nums[fast]) {
+
+                    slow = nums[slow];
+                    fast = nums[fast];
+                }
+                return nums[slow];
+            }
+        }
+    }
+}
+```
+
+
+
+
+
+**二分查找解法：**
+
+
+
+二分查找的思路是先猜一个数（有效范围 [left..right] 里位于中间的数 mid），然后统计原始数组中 小于等于 mid 的元素的个数 cnt：
+
+如果 cnt 严格大于 mid。根据抽屉原理，重复元素就在区间 [left..mid] 里；
+否则，重复元素就在区间 [mid + 1..right] 里。
+
+```java
+public int findDuplicate(int[] nums) {
+     int l = 1, h = nums.length - 1;
+     while (l <= h) {
+         int mid = l + (h - l) / 2;
+         int cnt = 0;
+         for (int i = 0; i < nums.length; i++) {
+             if (nums[i] <= mid) cnt++;
+         }
+         if (cnt > mid) h = mid - 1;
+         else l = mid + 1;
+     }
+     return l;
+}
+```
+
+
+
+
+
+
+
+
 
 ### （12）[数组相邻差值的个数](github/Leetcode 题解 数组与矩阵.md#8-数组相邻差值的个数)
 
