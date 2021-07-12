@@ -1511,11 +1511,266 @@ public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
 
 
 
-### （7）[归并两个有序的链表](github/Leetcode 题解 链表.md#3-归并两个有序的链表)
+### （7）[归并两个有序的链表](https://leetcode-cn.com/problems/merge-two-sorted-lists/)
 
-### （8）[从有序链表中删除重复节点](github/Leetcode 题解 链表.md#4-从有序链表中删除重复节点)
+将两个升序链表合并为一个新的 升序 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
 
-### （9）[删除链表的倒数第 n 个节点](github/Leetcode 题解 链表.md#5-删除链表的倒数第-n-个节点)
+ 
+
+示例 1：
+
+```
+输入：l1 = [1,2,4], l2 = [1,3,4]
+输出：[1,1,2,3,4,4]
+```
+
+
+示例 2：
+
+```
+输入：l1 = [], l2 = []
+输出：[]
+```
+
+
+示例 3：
+
+```
+输入：l1 = [], l2 = [0]
+输出：[0]
+```
+
+
+
+
+
+**归并排序：**
+
+```java
+ public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        ListNode result = new ListNode();
+        ListNode temRes = result;
+
+        while (l1 != null && l2!=null) {
+            if (l1.val<=l2.val) {
+                temRes.next = l1;
+                l1 = l1.next;
+            } else {
+                temRes.next = l2;
+                l2 = l2.next;
+            }
+            temRes = temRes.next;
+        }
+
+        while (l1 != null) {
+            temRes.next = l1;
+            l1 = l1.next;
+            temRes = temRes.next;
+        }
+
+        while (l2 != null) {
+            temRes.next = l2;
+            l2 = l2.next;
+            temRes = temRes.next;
+        }
+        
+        return result.next;
+    }
+```
+
+![image-20210712222513283](../typora-user-images/image-20210712222513283.png)
+
+
+
+**递归：**
+
+思路
+
+我们可以如下递归地定义两个链表里的 merge 操作（忽略边界情况，比如空链表等）：
+
+![image-20210712223143313](../typora-user-images/image-20210712223143313.png)
+
+ 也就是说，两个链表头部值较小的一个节点与剩下元素的 `merge` 操作结果合并。
+
+```java
+public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if (l1 == null) {
+            return l2;
+        } else if (l2 == null) {
+            return l1;
+        } else if (l1.val < l2.val) {
+            l1.next = mergeTwoLists(l1.next, l2);
+            return l1;
+        } else {
+            l2.next = mergeTwoLists(l1, l2.next);
+            return l2;
+        }
+    }
+```
+
+![image-20210712222856571](../typora-user-images/image-20210712222856571.png)
+
+
+
+
+
+
+
+### （8）[从有序链表中删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/)
+
+存在一个按升序排列的链表，给你这个链表的头节点 head ，请你删除所有重复的元素，使每个元素 只出现一次 。
+
+返回同样按升序排列的结果链表。
+
+示例 1：
+
+```
+输入：head = [1,1,2]
+输出：[1,2]
+```
+
+
+
+
+
+如果当前元素跟下一个元素相等，那么删除下一个元素，直接更新指针，当前元素的下一个元素为当前元素的下下个元素。
+
+```java
+public ListNode deleteDuplicates(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        ListNode result = head;
+
+        while (head != null && head.next != null) {
+            if (head.val == head.next.val) {
+                head.next = head.next.next;
+            } else {
+                head = head.next;
+            }
+        }
+
+        return result;
+    }
+```
+
+![image-20210712223947789](../typora-user-images/image-20210712223947789.png)
+
+
+
+
+
+
+
+### （9）[删除链表的倒数第 n 个节点](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/)
+
+给你一个链表，删除链表的倒数第 n 个结点，并且返回链表的头结点。
+
+进阶：你能尝试使用一趟扫描实现吗？
+
+示例 1：
+
+```
+输入：head = [1,2,3,4,5], n = 2
+输出：[1,2,3,5]
+```
+
+
+示例 2：
+
+```
+输入：head = [1], n = 1
+输出：[]
+```
+
+
+示例 3：
+
+```
+输入：head = [1,2], n = 1
+输出：[1]
+```
+
+
+
+**快慢指针：**
+
+先加一个前置指针，不加的话如果n刚好等于链表的长度，会求解失败，
+
+然后用快慢指针，
+
+快指针先走n步，然后快慢指针一步一步走，等快指针到尾部时候，慢指针的下一个节点就是倒数第n个节点。
+
+然后删除倒数第n个节点
+
+```java
+slow.next = slow.next.next;
+```
+
+
+
+```java
+public ListNode removeNthFromEnd(ListNode head, int n) {
+        if (head == null) {
+            return head;
+        }
+		
+        ListNode result = new ListNode();
+        result.next = head;
+
+        ListNode slow = result,fast = result;
+
+        while (fast.next != null && n>0) {
+            fast = fast.next;
+            n--;
+        }
+
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next;
+        }
+
+        slow.next = slow.next.next;
+
+        return result.next;
+    }
+```
+
+![image-20210712231236840](../typora-user-images/image-20210712231236840.png)
+
+
+
+
+
+**栈：**
+
+```java
+public ListNode removeNthFromEnd(ListNode head, int n) {
+        ListNode dummy = new ListNode(0, head);
+        Deque<ListNode> stack = new LinkedList<ListNode>();
+        ListNode cur = dummy;
+        while (cur != null) {
+            stack.push(cur);
+            cur = cur.next;
+        }
+        for (int i = 0; i < n; ++i) {
+            stack.pop();
+        }
+        ListNode prev = stack.peek();
+        prev.next = prev.next.next;
+        ListNode ans = dummy.next;
+        return ans;
+    }
+```
+
+
+
+
+
+
+
+
 
 ### （10）[ 交换链表中的相邻结点](github/Leetcode 题解 链表.md#6-交换链表中的相邻结点)
 
