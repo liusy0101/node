@@ -740,13 +740,274 @@ class Solution {
 
 ### （9）[有序矩阵的 Kth Element](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
 
+给你一个 n x n 矩阵 matrix ，其中每行和每列元素均按升序排序，找到矩阵中第 k 小的元素。
+请注意，它是 排序后 的第 k 小元素，而不是第 k 个 不同 的元素。
+
+示例 1：
+
+```
+输入：matrix = [[1,5,9],[10,11,13],[12,13,15]], k = 8
+输出：13
+解释：矩阵中的元素为 [1,5,9,10,11,12,13,13,15]，第 8 小元素是 13
+```
+
+
+示例 2：
+
+```
+输入：matrix = [[-5]], k = 1
+输出：-5
+```
+
+
+提示：
+
+```
+n == matrix.length
+n == matrix[i].length
+1 <= n <= 300
+-109 <= matrix[i][j] <= 109
+题目数据 保证 matrix 中的所有行和列都按 非递减顺序 排列
+1 <= k <= n2
+```
+
+
+
+**二分法：**
+
+思路非常简单：
+
+- 找出二维矩阵中最小的数 leftleft，最大的数 right，那么第 k 小的数必定在 left~ right 之间
+  mid=(left+right) / 2；
+- 在二维矩阵中寻找小于等于 mid 的元素个数 count，若这个 count 小于 k，表明第 k 小的数在右半部分且不包含 mid，即 left=mid+1, right=right，又保证了第 k 小的数在 left~ right 之间
+- 若这个 count大于 k，表明第 k 小的数在左半部分且可能包含 mid，即 left=left, right=mid，又保证了第 k 小的数在 left~right 之间
+- 因为每次循环中都保证了第 k 小的数在 left~ right之间，当 left==right时，第 k 小的数即被找出，等于 right
+
+```java
+ public int kthSmallest(int[][] matrix, int k) {
+        int row = matrix.length;
+        int col = matrix[0].length;
+        int left = matrix[0][0];
+        int right = matrix[row - 1][col - 1];
+        while (left < right) {
+            // 每次循环都保证第K小的数在start~end之间，当start==end，第k小的数就是start
+            int mid = (left + right) / 2;
+            // 找二维矩阵中<=mid的元素总个数
+            int count = findNotBiggerThanMid(matrix, mid, row, col);
+            if (count < k) {
+                // 第k小的数在右半部分，且不包含mid
+                left = mid + 1;
+            } else {
+                // 第k小的数在左半部分，可能包含mid
+                right = mid;
+            }
+        }
+        return right;
+    }
+
+    private int findNotBiggerThanMid(int[][] matrix, int mid, int row, int col) {
+        // 以列为单位找，找到每一列最后一个<=mid的数即知道每一列有多少个数<=mid
+        int i = row - 1;
+        int j = 0;
+        int count = 0;
+        while (i >= 0 && j < col) {
+            if (matrix[i][j] <= mid) {
+                // 第j列有i+1个元素<=mid
+                count += i + 1;
+                j++;
+            } else {
+                // 第j列目前的数大于mid，需要继续在当前列往上找
+                i--;
+            }
+        }
+        return count;
+    }
+```
+
+![image-20210710164721513](../typora-user-images/image-20210710164721513.png)
+
+
+
+**最小堆法：**
+
+使用优先级队列
+
+```java
+public int kthSmallest(int[][] matrix, int k) {
+
+        PriorityQueue<Integer> queue = new PriorityQueue<>(k);
+
+        int n = matrix.length;
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                queue.offer(matrix[i][j]);
+            }
+        }
+        int i = 0;
+        int result = queue.peek();
+        while (!queue.isEmpty()) {
+            i++;
+            Integer poll = queue.poll();
+            if (i == k) {
+                result = poll;
+            }
+        }
+
+        return result;
+    }
+```
+
+
+
+![image-20210710164642262](../typora-user-images/image-20210710164642262.png)
 
 
 
 
-### （10）[一个数组元素在 [1, n\] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](github/Leetcode 题解 数组与矩阵.md#6-一个数组元素在-[1-n]-之间，其中一个数被替换为另一个数，找出重复的数和丢失的数)
 
-### （11）[找出数组中重复的数，数组值在 [1, n\] 之间](github/Leetcode 题解 数组与矩阵.md#7-找出数组中重复的数，数组值在-[1-n]-之间)
+
+
+
+
+### （10）[一个数组元素在 [1, n] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](https://leetcode-cn.com/problems/set-mismatch/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)
+
+### （11）[找出数组中重复的数，数组值在 [1, n] 之间](https://leetcode-cn.com/problems/find-the-duplicate-number/)
+
+给定一个包含 n + 1 个整数的数组 nums ，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。
+
+假设 nums 只有 一个重复的整数 ，找出 这个重复的数 。
+
+你设计的解决方案必须不修改数组 nums 且只用常量级 O(1) 的额外空间。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [1,3,4,2,2]
+输出：2
+```
+
+提示：
+
+```
+1 <= n <= 10^5
+nums.length == n + 1
+1 <= nums[i] <= n
+nums 中 只有一个整数 出现 两次或多次 ，其余整数均只出现 一次
+```
+
+**暴力解法：**
+
+```java
+public int findDuplicate(int[] nums) {
+        Set<Integer> temSet = new HashSet<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            if (!temSet.add(nums[i])) {
+                return nums[i];
+            }
+        }
+        return nums[0];
+    }
+```
+
+![image-20210710170115899](../typora-user-images/image-20210710170115899.png)
+
+
+
+```java
+public int findDuplicate(int[] nums) {
+        char[] temChar = new char[nums.length+1];
+        for (int i=0;i<nums.length;i++) {
+            if (temChar[nums[i]] == 1) {
+                return nums[i];
+            } else {
+                temChar[nums[i]] = 1;
+            }
+        }
+        throw new RuntimeException();
+    }
+```
+
+![image-20210710170530567](../typora-user-images/image-20210710170530567.png)
+
+
+
+**快慢指针：**
+
+快慢指针：fast 和 slow。nums[slow] 表示取慢指针对应的元素。 注意 nums 数组中的数字都是在 1 到 n 之间的(在数组中进行游走不会越界)，因为有重复数字的出现，所以这个游走必然是成环的，环的入口就是重复的元素，即按照寻找链表环入口的思路来做。
+
+fast 指针一次走两步，slow 指针一次走一步，若 nums 数组中有重复的数，即有环存在，则 fast 和 slow 指针一定会相遇。
+
+当 fast 和 slow 指针相遇时，令 fast 指针重新指向 nums 数组的开头，即 fast = 0，然后 fast 指针和 slow 指针均变为为一次只走一步，当 nums[slow] 和 nums[fast] 相等时，则找到了重复的整数，返回 nums[slow] 即可。
+
+链表中：慢指针 slow = slow.next；快指针 fast = fast.next.next
+
+数组中：慢指针 slow = nums[slow]；快指针 fast = nums[nums[fast]]，因为 nums 中的元素值都在 11 到 nn 之间（包括 11 和 nn），所以这样不会造成数组越界问题。
+
+```java
+class Solution {
+
+    public int findDuplicate(int[] nums) {
+        
+        int fast = 0, slow = 0;
+        while (true) {
+
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+            if (slow == fast) {
+
+                fast = 0;
+                while (nums[slow] != nums[fast]) {
+
+                    slow = nums[slow];
+                    fast = nums[fast];
+                }
+                return nums[slow];
+            }
+        }
+    }
+}
+```
+
+
+
+
+
+**二分查找解法：**
+
+
+
+二分查找的思路是先猜一个数（有效范围 [left..right] 里位于中间的数 mid），然后统计原始数组中 小于等于 mid 的元素的个数 cnt：
+
+如果 cnt 严格大于 mid。根据抽屉原理，重复元素就在区间 [left..mid] 里；
+否则，重复元素就在区间 [mid + 1..right] 里。
+
+```java
+public int findDuplicate(int[] nums) {
+     int l = 1, h = nums.length - 1;
+     while (l <= h) {
+         int mid = l + (h - l) / 2;
+         int cnt = 0;
+         for (int i = 0; i < nums.length; i++) {
+             if (nums[i] <= mid) cnt++;
+         }
+         if (cnt > mid) h = mid - 1;
+         else l = mid + 1;
+     }
+     return l;
+}
+```
+
+
+
+
+
+
+
+
 
 ### （12）[数组相邻差值的个数](github/Leetcode 题解 数组与矩阵.md#8-数组相邻差值的个数)
 
@@ -772,15 +1033,405 @@ class Solution {
 
 ### （1）[环形链表](https://leetcode-cn.com/problems/linked-list-cycle/)
 
+给定一个链表，判断链表中是否有环。
+
+如果链表中有某个节点，可以通过连续跟踪 next 指针再次到达，则链表中存在环。 为了表示给定链表中的环，我们使用整数 pos 来表示链表尾连接到链表中的位置（索引从 0 开始）。 如果 pos 是 -1，则在该链表中没有环。注意：pos 不作为参数进行传递，仅仅是为了标识链表的实际情况。
+
+如果链表中存在环，则返回 true 。 否则，返回 false 。
+
+进阶：
+
+你能用 O(1)（即，常量）内存解决此问题吗？
+
+示例 1：
+
+```
+输入：head = [3,2,0,-4], pos = 1
+输出：true
+解释：链表中有一个环，其尾部连接到第二个节点。
+```
+
+
+
+**暴力破解：** 
+
+```java
+ public boolean hasCycle(ListNode head) {
+        Set<ListNode> temSet = new HashSet<>();
+        
+        while (head != null) {
+            if (!temSet.add(head)) {
+                return true;
+            }
+            head = head.next;
+        }
+        
+        return false;
+    }
+```
+
+![image-20210711215228710](../typora-user-images/image-20210711215228710.png)
+
+
+
+**双指针：**
+
+```java
+public boolean hasCycle(ListNode head) {
+        if (head == null || head.next == null) {
+            return false;
+        }
+        ListNode slow = head;
+        ListNode fast = head.next;
+        while (slow != fast) {
+            if (fast == null || fast.next == null) {
+                return false;
+            }
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        return true;
+    }
+```
+
+![image-20210711220937390](../typora-user-images/image-20210711220937390.png)
+
+
+
+
+
+
+
+
+
 ### （2）[合并 k 个排序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/)
 
-### （3）[单链表反转]()
+给你一个链表数组，每个链表都已经按升序排列。
 
-### （4）[求链表的中间结点]()
+请你将所有链表合并到一个升序链表中，返回合并后的链表。
+
+ 
+
+示例 1：
+
+```
+输入：lists = [[1,4,5],[1,3,4],[2,6]]
+输出：[1,1,2,3,4,4,5,6]
+解释：链表数组如下：
+[
+  1->4->5,
+  1->3->4,
+  2->6
+]
+将它们合并到一个有序链表中得到。
+1->1->2->3->4->4->5->6
+```
+
+
+示例 2：
+
+```
+输入：lists = []
+输出：[]
+```
+
+
+示例 3：
+
+```
+输入：lists = [[]]
+输出：[]
+```
+
+ 
+
+提示：
+
+```
+k == lists.length
+0 <= k <= 10^4
+0 <= lists[i].length <= 500
+-10^4 <= lists[i][j] <= 10^4
+lists[i] 按 升序 排列
+lists[i].length 的总和不超过 10^4
+```
+
+
+
+
+
+**优先级队列：**
+
+```java
+public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) return null;
+        PriorityQueue<ListNode> queue = new PriorityQueue<>(lists.length, new Comparator<ListNode>() {
+            @Override
+            public int compare(ListNode o1, ListNode o2) {
+                if (o1.val < o2.val) return -1;
+                else if (o1.val == o2.val) return 0;
+                else return 1;
+            }
+        });
+        ListNode dummy = new ListNode(0);
+        ListNode p = dummy;
+        for (ListNode node : lists) {
+            if (node != null) queue.add(node);
+        }
+        while (!queue.isEmpty()) {
+            p.next = queue.poll();
+            p = p.next;
+            if (p.next != null) queue.add(p.next);
+        }
+        return dummy.next;
+
+
+    }
+```
+
+
+
+
+
+**分治法：**
+
+```java
+ public ListNode mergeKLists(ListNode[] lists) {
+        if (lists == null || lists.length == 0) return null;
+        return merge(lists, 0, lists.length - 1);
+    }
+
+    private ListNode merge(ListNode[] lists, int left, int right) {
+        if (left == right) return lists[left];
+        int mid = left + (right - left) / 2;
+        ListNode l1 = merge(lists, left, mid);
+        ListNode l2 = merge(lists, mid + 1, right);
+        return mergeTwoLists(l1, l2);
+    }
+
+    private ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        if (l1 == null) return l2;
+        if (l2 == null) return l1;
+        if (l1.val < l2.val) {
+            l1.next = mergeTwoLists(l1.next, l2);
+            return l1;
+        } else {
+            l2.next = mergeTwoLists(l1,l2.next);
+            return l2;
+        }
+    }
+```
+
+![image-20210711230116539](../typora-user-images/image-20210711230116539.png)
+
+
+
+
+
+### （3）[单链表反转](https://leetcode-cn.com/problems/reverse-linked-list/)
+
+给你单链表的头节点 `head` ，请你反转链表，并返回反转后的链表。
+
+**示例 1：**
+
+```
+输入：head = [1,2,3,4,5]
+输出：[5,4,3,2,1]
+```
+
+**示例 2：**
+
+```
+输入：head = [1,2]
+输出：[2,1]
+```
+
+
+
+**提示：**
+
+- 链表中节点的数目范围是 `[0, 5000]`
+- `-5000 <= Node.val <= 5000`
+
+
+
+**递归求解：**
+
+一直递归，直至最后一个节点。
+
+然后上一个节点的下下节点置为自身
+
+下个节点置为空。
+
+- 使用递归函数，一直递归到链表的最后一个结点，该结点就是反转后的头结点，记作 retret .
+- 此后，每次函数在返回的过程中，让当前结点的下一个结点的 nextnext 指针指向当前节点。
+- 同时让当前结点的 nextnext 指针指向 NULLNULL ，从而实现从链表尾部开始的局部反转
+- 当递归函数全部出栈后，链表反转完成。
+
+
+
+![img](../typora-user-images/8951bc3b8b7eb4da2a46063c1bb96932e7a69910c0a93d973bd8aa5517e59fc8.gif)
+
+```java
+public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        
+        ListNode result = reverseList(head.next);
+        head.next.next = head;
+        head.next = null;
+        return result;
+    }
+```
+
+![image-20210711230614859](../typora-user-images/image-20210711230614859.png)
+
+
+
+**非递归求解：**
+
+```java
+ public ListNode reverseList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        ListNode pre = null;
+        ListNode mid = head;
+        ListNode back = head.next;
+
+        while (back != null) {
+            ListNode next = back.next;
+            mid.next = pre;
+            back.next = mid;
+            if (next == null) {
+                break;
+            }
+
+            pre = mid;
+            mid = back;
+            back = next;
+        }
+
+        return back;
+    }
+```
+
+
+
+![image-20210711232104254](../typora-user-images/image-20210711232104254.png)
+
+
+
+
+
+- 定义两个指针： prepre 和 curcur ；prepre 在前 curcur 在后。
+- 每次让 prepre 的 nextnext 指向 curcur ，实现一次局部反转
+- 局部反转完成之后，prepre 和 curcur 同时往前移动一个位置
+- 循环上述过程，直至 prepre 到达链表尾部
+
+```java
+public ListNode reverseList(ListNode head) {
+        ListNode prev = null;
+        ListNode curr = head;
+        while (curr != null) {
+            ListNode nextTemp = curr.next;
+            curr.next = prev;
+            prev = curr;
+            curr = nextTemp;
+        }
+        return prev;
+    }
+```
+
+![img](../typora-user-images/9ce26a709147ad9ce6152d604efc1cc19a33dc5d467ed2aae5bc68463fdd2888.gif)
+
+
+
+
+
+### （4）[求链表的中间结点](https://leetcode-cn.com/problems/middle-of-the-linked-list/)
+
+给定一个头结点为 head 的非空单链表，返回链表的中间结点。
+
+如果有两个中间结点，则返回第二个中间结点。
+
+ 
+
+示例 1：
+
+```
+输入：[1,2,3,4,5]
+输出：此列表中的结点 3 (序列化形式：[3,4,5])
+返回的结点值为 3 。 (测评系统对该结点序列化表述是 [3,4,5])。
+注意，我们返回了一个 ListNode 类型的对象 ans，这样：
+ans.val = 3, ans.next.val = 4, ans.next.next.val = 5, 以及 ans.next.next.next = NULL.
+```
+
+
+示例 2：
+
+```
+输入：[1,2,3,4,5,6]
+输出：此列表中的结点 4 (序列化形式：[4,5,6])
+由于该列表有两个中间结点，值分别为 3 和 4，我们返回第二个结点。
+```
+
+
+
+**双指针：**
+
+使用两个指针变量，刚开始都位于链表的第 1 个结点，一个永远一次只走 1 步，一个永远一次只走 2 步，一个在前，一个在后，同时走。这样当快指针走完的时候，慢指针就来到了链表的中间位置。
+
+```java
+public ListNode middleNode(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        
+        ListNode slow = head;
+        ListNode fast = head.next;
+        
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        if (fast != null && fast.next == null) { //处理偶数节点的情况，如果是节点数量是单数，那么最后fast==null
+            slow = slow.next;
+        }
+        
+        return slow;
+    }
+```
+
+![image-20210711233522806](../typora-user-images/image-20210711233522806.png)
+
+
+
+
+
+```java
+public ListNode middleNode(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        
+        ListNode slow = head;
+        ListNode fast = head;
+        
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        
+        return slow;
+    }
+```
+
+![image-20210711233732744](../typora-user-images/image-20210711233732744.png)
 
 ### （5）[找出两个链表的交点](github/Leetcode 题解 链表.md#1-找出两个链表的交点)
-
-### （6）[链表反转](github/Leetcode 题解 链表.md#2-链表反转)
 
 ### （7）[归并两个有序的链表](github/Leetcode 题解 链表.md#3-归并两个有序的链表)
 
