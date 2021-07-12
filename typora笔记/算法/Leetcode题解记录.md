@@ -1431,7 +1431,85 @@ public ListNode middleNode(ListNode head) {
 
 ![image-20210711233732744](../typora-user-images/image-20210711233732744.png)
 
-### （5）[找出两个链表的交点](github/Leetcode 题解 链表.md#1-找出两个链表的交点)
+### （5）[找出两个链表的交点](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/)
+
+给你两个单链表的头节点 headA 和 headB ，请你找出并返回两个单链表相交的起始节点。如果两个链表没有交点，返回 null 。
+
+示例 1：
+
+```
+输入：intersectVal = 8, listA = [4,1,8,4,5], listB = [5,0,1,8,4,5], skipA = 2, skipB = 3
+输出：Intersected at '8'
+解释：相交节点的值为 8 （注意，如果两个链表相交则不能为 0）。
+从各自的表头开始算起，链表 A 为 [4,1,8,4,5]，链表 B 为 [5,0,1,8,4,5]。
+在 A 中，相交节点前有 2 个节点；在 B 中，相交节点前有 3 个节点
+```
+
+
+
+
+
+**hash法：**
+
+```java
+public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        Set<ListNode> temMap = new HashSet<>();
+
+        while (headA != null) {
+            temMap.add(headA);
+            headA = headA.next;
+        }
+        while (headB != null) {
+            if (!temMap.add(headB)) {
+                return headB;
+            }
+            headB = headB.next;
+        }
+        return null;
+    }
+```
+
+![1626079791929](../typora-user-images/1626079791929.png)
+
+
+
+
+
+设 A 的长度为 a + c，B 的长度为 b + c，其中 c 为尾部公共部分长度，可知 a + c + b = b + c + a。
+
+当访问 A 链表的指针访问到链表尾部时，令它从链表 B 的头部开始访问链表 B；同样地，当访问 B 链表的指针访问到链表尾部时，令它从链表 A 的头部开始访问链表 A。这样就能控制访问 A 和 B 两个链表的指针能同时访问到交点。
+
+如果不存在交点，那么 a + b = b + a，以下实现代码中 l1 和 l2 会同时为 null，从而退出循环。
+
+
+
+如果只是判断是否存在交点，那么就是另一个问题，即 [编程之美 3.6]() 的问题。有两种解法：
+
+- 把第一个链表的结尾连接到第二个链表的开头，看第二个链表是否存在环；
+- 或者直接比较两个链表的最后一个节点是否相同。
+
+```java
+public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+    ListNode l1 = headA, l2 = headB;
+    while (l1 != l2) {
+        l1 = (l1 == null) ? headB : l1.next;
+        l2 = (l2 == null) ? headA : l2.next;
+    }
+    return l1;
+}
+```
+
+![1626081289298](../typora-user-images/1626081289298.png)
+
+
+
+
+
+
+
+
+
+
 
 ### （7）[归并两个有序的链表](github/Leetcode 题解 链表.md#3-归并两个有序的链表)
 
