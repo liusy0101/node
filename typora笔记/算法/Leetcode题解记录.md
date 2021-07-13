@@ -1772,7 +1772,105 @@ public ListNode removeNthFromEnd(ListNode head, int n) {
 
 
 
-### （10）[ 交换链表中的相邻结点](github/Leetcode 题解 链表.md#6-交换链表中的相邻结点)
+### （10）[ 交换链表中的相邻结点](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)
+
+给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。
+
+你不能只是单纯的改变节点内部的值，而是需要实际的进行节点交换。
+
+ 
+
+示例 1：
+
+```
+输入：head = [1,2,3,4]
+输出：[2,1,4,3]
+```
+
+
+示例 2：
+
+```
+输入：head = []
+输出：[]
+```
+
+
+示例 3：
+
+```
+输入：head = [1]
+输出：[1]
+```
+
+
+
+
+**前置指针：**
+
+借用一个前置指针。用来指明前驱节点，否则后面置换的时候无法更新前驱节点的下一个节点。
+
+```java
+public ListNode swapPairs(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        ListNode pre = new ListNode();
+        pre.next = head;
+        ListNode result = pre;
+        ListNode first = head;
+
+        while (first != null && first.next != null) {
+            ListNode temNode  = first.next.next;
+            first.next.next = first;
+            if (pre != null) {
+                pre.next = first.next;
+            }
+            first.next = temNode;
+
+            pre = first;
+            first = first.next;
+
+        }
+        return result.next;
+    }
+```
+
+![image-20210713234322327](../typora-user-images/image-20210713234322327.png)
+
+
+
+**递归解法：**
+
+递归写法要观察本级递归的解决过程，形成抽象模型，因为递归本质就是不断重复相同的事情。而不是去思考完整的调用栈，一级又一级，无从下手。如图所示，我们应该关注一级调用小单元的情况，也就是单个f(x)。
+
+其中我们应该关心的主要有三点：
+
+1. 返回值
+2. 调用单元做了什么
+3. 终止条件
+
+- 返回值：交换完成的子链表
+- 调用单元：设需要交换的两个点为 head 和 next，head 连接后面交换完成的子链表，next 连接 head，完成交换
+- 终止条件：head 为空指针或者 next 为空指针，也就是当前无节点或者只有一个节点，无法进行交换
+
+```java
+class Solution {
+    public ListNode swapPairs(ListNode head) {
+        if(head == null || head.next == null){
+            return head;
+        }
+        ListNode next = head.next;
+        head.next = swapPairs(next.next);
+        next.next = head;
+        return next;
+    }
+}
+```
+
+
+
+
 
 ### （11）[ 链表求和](github/Leetcode 题解 链表.md#7-链表求和)
 
