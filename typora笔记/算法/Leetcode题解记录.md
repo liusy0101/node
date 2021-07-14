@@ -1872,7 +1872,169 @@ class Solution {
 
 
 
-### （11）[ 链表求和](github/Leetcode 题解 链表.md#7-链表求和)
+### （11）[ 链表求和](https://leetcode-cn.com/problems/sum-lists-lcci/)
+
+给定两个用链表表示的整数，每个节点包含一个数位。
+
+这些数位是反向存放的，也就是个位排在链表首部。
+
+编写函数对这两个整数求和，并用链表形式返回结果。
+
+ 
+
+示例：
+
+```
+输入：(7 -> 1 -> 6) + (5 -> 9 -> 2)，即617 + 295
+输出：2 -> 1 -> 9，即912
+```
+
+
+
+**归并法：**
+
+类似于归并算法，并设置一个标识位，标识上一个位置的数值是否大于0，如果大于0，就在当前值上加1。
+
+```java
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode result = new ListNode(0);
+        ListNode tem = result;
+
+        boolean overTen = false;
+        while (l1 != null && l2 != null) {
+            int curVal = l1.val + l2.val + (overTen ? 1:0);
+            overTen = curVal>=10;
+            tem.next  = new ListNode(curVal % 10);
+            if (result == null) {
+                result = tem;
+            }
+            tem = tem.next;
+            l1 = l1.next;
+            l2 = l2.next;
+        }
+
+        while (l1 != null) {
+            int curVal = l1.val + (overTen ? 1:0);
+            overTen = curVal>=10;
+            tem.next  = new ListNode(curVal % 10);
+            tem = tem.next;
+            l1 = l1.next;
+        }
+        while (l2 != null) {
+            int curVal = l2.val + (overTen ? 1:0);
+            overTen = curVal>=10;
+            tem.next  = new ListNode(curVal % 10);
+            tem = tem.next;
+            l2 = l2.next;
+        }
+        if (overTen) {
+            tem.next = new ListNode(1);
+        }
+
+        return result.next;
+
+    }
+```
+
+![image-20210714235610722](../typora-user-images/image-20210714235610722.png)
+
+
+
+**递归求解：**
+
+```java
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+       return recursion(l1,l2,false);
+
+    }
+
+     private ListNode recursion(ListNode l1, ListNode l2, boolean overTen) {
+        if (l1 == null && l2 == null && !overTen) {
+            return null;
+        }
+        int curVal = ((l1 == null)? 0: l1.val) + ((l2 == null)? 0: l2.val) + (overTen?1:0);
+        ListNode result = new ListNode(curVal % 10);
+        result.next = recursion(l1==null?null:l1.next,l2==null?null:l2.next,curVal >= 10);
+        return result;
+    }
+```
+
+![image-20210714235538566](../typora-user-images/image-20210714235538566.png)
+
+
+
+进阶：思考一下，假设这些数位是正向存放的，又该如何解决呢?
+
+示例：
+
+```
+输入：(6 -> 1 -> 7) + (2 -> 9 -> 5)，即617 + 295
+输出：9 -> 1 -> 2，即912
+```
+
+**使用栈：**
+
+```java
+public ListNode addTwoNumbers2(ListNode l1, ListNode l2) {
+
+        Stack<Integer> first = new Stack<>();
+        Stack<Integer> second = new Stack<>();
+        Stack<Integer> resultStack = new Stack<>();
+
+        while (l1 != null) {
+            first.push(l1.val);
+            l1 = l1.next;
+        }
+        while (l2 != null) {
+            second.push(l2.val);
+            l2 = l2.next;
+        }
+
+        boolean overTen = false;
+        while (!first.isEmpty() && !second.isEmpty()) {
+            int curVal = first.pop() + second.pop() + (overTen ? 1:0);
+            overTen = curVal>=10;
+            resultStack.push(curVal%10);
+        }
+
+        while (!first.isEmpty()) {
+            int curVal = first.pop() + (overTen ? 1:0);
+            overTen = curVal>=10;
+            resultStack.push(curVal%10);
+        }
+        while (!second.isEmpty()) {
+            int curVal = second.pop() + (overTen ? 1:0);
+            overTen = curVal>=10;
+            resultStack.push(curVal%10);
+        }
+        if (overTen) {
+            resultStack.push(1);
+        }
+
+        ListNode result = new ListNode(0);
+        ListNode tem = result;
+
+        while (!resultStack.isEmpty()) {
+            tem.next = new ListNode(resultStack.pop());
+            tem = tem.next;
+        }
+        return result.next;
+    }
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### （12）[ 回文链表](github/Leetcode 题解 链表.md#8-回文链表)
 
