@@ -2036,7 +2036,77 @@ public ListNode addTwoNumbers2(ListNode l1, ListNode l2) {
 
 
 
-### （12）[ 回文链表](github/Leetcode 题解 链表.md#8-回文链表)
+### （12）[ 回文链表](https://leetcode-cn.com/problems/palindrome-linked-list/)
+
+请判断一个链表是否为回文链表。
+
+**示例 1:**
+
+```
+输入: 1->2
+输出: false
+```
+
+**示例 2:**
+
+```
+输入: 1->2->2->1
+输出: true
+```
+
+**进阶：**
+你能否用 O(n) 时间复杂度和 O(1) 空间复杂度解决此题？
+
+
+
+**双指针：**
+
+- 遍历一遍，然后反转前半部分链表，直到快指针到链表尾部
+- 如果节点数量是奇数，那么需要让慢指针往下走一步
+- 然后对比前半部分反转的链表和慢指针链表
+
+```java
+public boolean isPalindrome(ListNode head) {
+       if (head == null || head.next == null) {
+            return true;
+        }
+
+
+        ListNode pre = null,resert = null;
+        ListNode slow = head,fast = head;
+
+        while (fast != null && fast.next != null) {
+            pre = slow;
+            slow = slow.next;
+            fast = fast.next.next;
+
+            pre.next = resert;
+            resert = pre;
+        }
+
+        if (fast != null) {
+            slow = slow.next;
+        }
+
+        while (resert != null && slow != null) {
+            if (resert.val != slow.val) {
+                return false;
+            }
+            resert = resert.next;
+            slow = slow.next;
+        }
+
+        return true;
+    }
+```
+
+![image-20210716002319478](../typora-user-images/image-20210716002319478.png)
+
+
+
+
+
+
 
 ### （13）[ 分隔链表](github/Leetcode 题解 链表.md#9-分隔链表)
 
