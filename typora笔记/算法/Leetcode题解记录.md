@@ -2124,7 +2124,165 @@ public boolean isPalindrome(ListNode head) {
 
 ### （1）[有效的括号](https://leetcode-cn.com/problems/valid-parentheses/)
 
+给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串 s ，判断字符串是否有效。
+
+有效字符串需满足：
+
+左括号必须用相同类型的右括号闭合。
+左括号必须以正确的顺序闭合。
+
+
+示例 1：
+
+```
+输入：s = "()"
+输出：true
+```
+
+```java
+public static boolean isValid(String s) {
+        if (s.length() % 2 ==1) {
+            return false;
+        }
+
+        Map<Character,Character> r2l = new HashMap<>();
+        r2l.put(')','(');
+        r2l.put('}','{');
+        r2l.put(']','[');
+
+        Stack<Character> left = new Stack<>();
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (r2l.get(c) != null) {
+                if (left.isEmpty() || r2l.get(c) != left.pop()) {
+                    return false;
+                }
+            } else {
+                left.push(c);
+            }
+        }
+
+        return left.isEmpty();
+    }
+```
+
+![1626425352970](../typora-user-images/1626425352970.png)
+
 ### （2）[最长有效的括号](https://leetcode-cn.com/problems/longest-valid-parentheses/)
+
+给你一个只包含 '(' 和 ')' 的字符串，找出最长有效（格式正确且连续）括号子串的长度。
+
+示例 1：
+
+```
+输入：s = "(()"
+输出：2
+解释：最长有效括号子串是 "()"
+```
+
+
+
+**栈：**
+
+利用栈将可形成完整的“（）”的下标加入list，
+
+然后对list进行排序
+
+最长有效的括号即是list中最长连续递增的数值个数。
+
+```java
+public static int longestValidParentheses(String s) {
+        if (s == null || s.length()<=1) {
+            return 0;
+        }
+        char left = '(';
+        Stack<Integer> stack = new Stack<>();
+        List<Integer> res = new ArrayList<>();
+        int result = 0;
+
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (left == c) {
+                stack.push(i);
+            } else {
+                if(!stack.isEmpty()) {
+                    res.add(stack.pop());
+                    res.add(i);
+                }
+            }
+        }
+        Collections.sort(res);
+        int tem = 1;
+        for (int i = 1; i < res.size(); i++) {
+            if (res.get(i) == res.get(i-1)+1) {
+                tem+=1;
+                result = Math.max(result,tem);
+            } else {
+                tem=1;
+            }
+        }
+
+        return result;
+    }
+```
+
+![1626428102745](../typora-user-images/1626428102745.png)
+
+
+
+**动态规划：**
+
+ 有**最长**这个字眼，可以考虑尝试使用 **动态规划** 进行分析。这是一个 **最值型** 动态规划的题目。 
+
+动态规划题目分析的 4 个步骤：
+
+- 确定状态
+  - 研究最优策略的最后一步
+  - 化为子问题
+- 转移方程
+  - 根据子问题定义得到
+- 初始条件和边界情况
+- 计算顺序
+
+
+
+我们用 dp[i] 表示以 i 结尾的最长有效括号；
+
+当 s[i] 为 (,dp[i] 必然等于 0，因为不可能组成有效的括号；
+
+那么 s[i] 为 )
+
+2.1 当 s[i-1] 为 (，那么 dp[i] = dp[i-2] + 2；
+
+2.2 当 s[i-1] 为 ) 并且 s[i-dp[i-1] - 1] 为 (，那么 dp[i] = dp[i-1] + 2 + dp[i-dp[i-1]-2]；
+
+时间复杂度：O(n)
+
+```java
+class Solution {
+    public int longestValidParentheses(String s) {
+        if (s == null || s.length() == 0) return 0;
+        int[] dp = new int[s.length()];
+        int res = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (i > 0 && s.charAt(i) == ')') {
+                if (s.charAt(i - 1) == '(') {
+                    dp[i] = (i - 2 >= 0 ? dp[i - 2] + 2 : 2);
+                } else if (s.charAt(i - 1) == ')' && i - dp[i - 1] - 1 >= 0 && s.charAt(i - dp[i - 1] - 1) == '(') {
+                    dp[i] = dp[i - 1] + 2 + (i - dp[i - 1] - 2 >= 0 ? dp[i - dp[i - 1] - 2] : 0);
+                }
+            }
+            res = Math.max(res, dp[i]);
+        }
+        return res;
+    }
+}
+```
+
+![1626432097092](../typora-user-images/1626432097092.png)
+
+
 
 ### （3）[逆波兰表达式求值](https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/)
 
