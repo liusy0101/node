@@ -2370,13 +2370,184 @@ public int evalRPN(String[] tokens) {
 
 ### （5）[用队列实现栈](github/Leetcode 题解 栈和队列.md#2-用队列实现栈)
 
-### （6）[最小值栈](github/Leetcode 题解 栈和队列.md#3-最小值栈)
+### （6）[最小值栈](https://leetcode-cn.com/problems/min-stack-lcci/)
 
-### （7）[用栈实现括号匹配](github/Leetcode 题解 栈和队列.md#4-用栈实现括号匹配)
+请设计一个栈，除了常规栈支持的pop与push函数以外，还支持min函数，该函数返回栈元素中的最小值。执行push、pop和min操作的时间复杂度必须为O(1)。
 
-### （8）[数组中元素与下一个比它大的元素之间的距离](github/Leetcode 题解 栈和队列.md#5-数组中元素与下一个比它大的元素之间的距离)
 
-### （9）[循环数组中比当前元素大的下一个元素](github/Leetcode 题解 栈和队列.md#6-循环数组中比当前元素大的下一个元素)
+示例：
+
+```java
+MinStack minStack = new MinStack();
+minStack.push(-2);
+minStack.push(0);
+minStack.push(-3);
+minStack.getMin();   --> 返回 -3.
+minStack.pop();
+minStack.top();      --> 返回 0.
+minStack.getMin();   --> 返回 -2.
+```
+
+
+
+**使用优先级队列进行辅助：**
+
+```java
+class MinStack {
+
+    Stack<Integer> temStack = null;
+    PriorityQueue<Integer> queue = null;
+
+    /** initialize your data structure here. */
+    public MinStack() {
+        temStack = new Stack<>();
+        queue = new PriorityQueue<>();
+    }
+    
+    public void push(int x) {
+        temStack.push(x);
+        queue.add(x);
+    }
+    
+    public void pop() {
+        queue.remove(temStack.pop());
+    }
+    
+    public int top() {
+        return temStack.peek();
+    }
+    
+    public int getMin() {
+        return queue.peek();
+    }
+}
+```
+
+![image-20210718232651591](../typora-user-images/image-20210718232651591.png)
+
+
+
+**利用辅助栈：**
+
+在辅助栈中，存放着每一位主栈元素对应的最小值。
+
+```java
+class MinStack {
+    Deque<Integer> xStack;
+    Deque<Integer> minStack;
+
+    public MinStack() {
+        xStack = new LinkedList<Integer>();
+        minStack = new LinkedList<Integer>();
+        minStack.push(Integer.MAX_VALUE);
+    }
+    
+    public void push(int x) {
+        xStack.push(x);
+        minStack.push(Math.min(minStack.peek(), x));
+    }
+    
+    public void pop() {
+        xStack.pop();
+        minStack.pop();
+    }
+    
+    public int top() {
+        return xStack.peek();
+    }
+    
+    public int getMin() {
+        return minStack.peek();
+    }
+}
+```
+
+![image-20210718233235049](../typora-user-images/image-20210718233235049.png)
+
+
+
+### （7）[数组中元素与下一个比它大的元素之间的距离](ghttps://leetcode-cn.com/problems/daily-temperatures/)
+
+请根据每日 气温 列表 temperatures ，请计算在每一天需要等几天才会有更高的温度。如果气温在这之后都不会升高，请在该位置用 0 来代替。
+
+示例 1:
+
+```
+输入: temperatures = [73,74,75,71,69,72,76,73]
+输出: [1,1,4,2,1,1,0,0]
+```
+
+
+示例 2:
+
+```
+输入: temperatures = [30,40,50,60]
+输出: [1,1,1,0]
+```
+
+
+
+
+
+**暴力破解：**
+
+使用双层for循环
+
+```java
+public int[] dailyTemperatures(int[] temperatures) {
+        int len = temperatures.length;
+
+        int result[] = new int[len];
+        result[len-1] = 0;
+
+        for (int i = 0; i < len-1; i++) {
+            for (int j=i+1;j<len;j++) {
+                if (temperatures[j]>temperatures[i]) {
+                    result[i] = j - i;
+                    break;
+                }
+            }
+        }
+
+        return result;
+    }
+```
+
+![image-20210718234938608](../typora-user-images/image-20210718234938608.png)
+
+
+
+
+
+**栈：**
+
+遍历整个数组，如果栈不空，且当前数字大于栈顶元素，那么如果直接入栈的话就不是 递减栈 ，所以需要取出栈顶元素，由于当前数字大于栈顶元素的数字，而且一定是第一个大于栈顶元素的数，直接求出下标差就是二者的距离。
+
+继续看新的栈顶元素，直到当前数字小于等于栈顶元素停止，然后将数字入栈，这样就可以一直保持递减栈，且每个数字和第一个大于它的数的距离也可以算出来。
+
+```java
+public int[] dailyTemperatures(int[] temperatures) {
+        int len = temperatures.length;
+
+        int result[] = new int[len];
+        Stack<Integer> temStack = new Stack<>();
+
+        for (int i = 0; i < len; i++) {
+            while (!temStack.isEmpty() && temperatures[i]>temperatures[temStack.peek()]) {
+                result[temStack.peek()] = i - temStack.pop();
+            }
+            temStack.push(i);
+        }
+
+        return result;
+    }
+```
+
+![image-20210719000124895](../typora-user-images/image-20210719000124895.png)
+
+
+
+### （8）[循环数组中比当前元素大的下一个元素](github/Leetcode 题解 栈和队列.md#6-循环数组中比当前元素大的下一个元素)
 
 
 
