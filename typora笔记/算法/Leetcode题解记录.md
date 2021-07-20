@@ -8,7 +8,7 @@
 
 # Leetcode题解记录
 
-
+从 2021年7月4号开始。
 
 
 
@@ -2547,7 +2547,100 @@ public int[] dailyTemperatures(int[] temperatures) {
 
 
 
-### （8）[循环数组中比当前元素大的下一个元素](github/Leetcode 题解 栈和队列.md#6-循环数组中比当前元素大的下一个元素)
+### （8）[循环数组中比当前元素大的下一个元素](https://leetcode-cn.com/problems/next-greater-element-ii/)
+
+给定一个循环数组（最后一个元素的下一个元素是数组的第一个元素），输出每个元素的下一个更大元素。数字 x 的下一个更大的元素是按数组遍历顺序，这个数字之后的第一个比它更大的数，这意味着你应该循环地搜索它的下一个更大的数。如果不存在，则输出 -1。
+
+示例 1:
+
+```
+输入: [1,2,1]
+输出: [2,-1,2]
+解释: 第一个 1 的下一个更大的数是 2；
+数字 2 找不到下一个更大的数； 
+第二个 1 的下一个最大的数需要循环搜索，结果也是 2。
+```
+
+
+
+**栈+set：**
+
+判断当前数据是否比栈顶数据大，如果是，那就是第一个比栈顶元素大的元素，用while循环判断。
+
+当前元素下标如果已经在栈中存在，那么说明没有比当前元素大的元素（利用一个char数组）。
+
+```java
+public int[] nextGreaterElements(int[] nums) {
+        Stack<Integer> stack = new Stack<>();
+    
+
+        int len = nums.length;
+        int result[] = new int[len];
+        char []c = new char[len];
+        int forNum = 0;
+
+        while (forNum<2) {
+            forNum++;
+            for (int i = 0; i < len; i++) {
+                while (!stack.isEmpty() && nums[i]>nums[stack.peek()]) {
+                    if (result[stack.peek()] == 0) {
+                        c[stack.peek()] = 0;
+                        result[stack.pop()] = nums[i];
+                    } else {
+                        c[stack.pop()] = 0;
+                    }
+                }
+                if (!stack.isEmpty() && c[i] == 1) {
+                    result[i] = -1;
+                    c[i] = 0;
+                }
+                stack.push(i);
+                c[i] = 1;
+            }
+
+        }
+
+        return result;
+    }
+```
+
+![image-20210720095808314](../typora-user-images/image-20210720095808314.png)
+
+
+
+
+
+
+
+**单调栈 + 循环数组：**
+
+单调栈中保存的是下标，从栈底到栈顶的下标在数组 \textit{nums}nums 中对应的值是单调不升的。
+
+每次我们移动到数组中的一个新的位置 ii，我们就将当前单调栈中所有对应值小于 \textit{nums}[i]nums[i] 的下标弹出单调栈，这些值的下一个更大元素即为 \textit{nums}[i]nums[i]（证明很简单：如果有更靠前的更大元素，那么这些位置将被提前弹出栈）。随后我们将位置 ii 入栈。
+
+但是注意到只遍历一次序列是不够的，例如序列 [2,3,1][2,3,1]，最后单调栈中将剩余 [3,1][3,1]，其中元素 [1][1] 的下一个更大元素还是不知道的。
+
+一个朴素的思想是，我们可以把这个循环数组「拉直」，即复制该序列的前 n-1n−1 个元素拼接在原序列的后面。这样我们就可以将这个新序列当作普通序列，用上文的方法来处理。
+
+而在本题中，我们不需要显性地将该循环数组「拉直」，而只需要在处理时对下标取模即可。
+
+```java
+ public int[] nextGreaterElements(int[] nums) {
+        int n = nums.length;
+        int[] ret = new int[n];
+        Arrays.fill(ret, -1);
+        Deque<Integer> stack = new LinkedList<Integer>();
+        for (int i = 0; i < n * 2 - 1; i++) {
+            while (!stack.isEmpty() && nums[stack.peek()] < nums[i % n]) {
+                ret[stack.pop()] = nums[i % n];
+            }
+            stack.push(i % n);
+        }
+        return ret;
+    }
+```
+
+![image-20210720100052778](../typora-user-images/image-20210720100052778.png)
 
 
 
@@ -2559,21 +2652,404 @@ public int[] dailyTemperatures(int[] temperatures) {
 
 ### （1）[设计一个双端队列](https://leetcode-cn.com/problems/design-circular-deque/)
 
+设计实现双端队列。
+你的实现需要支持以下操作：
+
+```
+MyCircularDeque(k)：构造函数,双端队列的大小为k。
+insertFront()：将一个元素添加到双端队列头部。 如果操作成功返回 true。
+insertLast()：将一个元素添加到双端队列尾部。如果操作成功返回 true。
+deleteFront()：从双端队列头部删除一个元素。 如果操作成功返回 true。
+deleteLast()：从双端队列尾部删除一个元素。如果操作成功返回 true。
+getFront()：从双端队列头部获得一个元素。如果双端队列为空，返回 -1。
+getRear()：获得双端队列的最后一个元素。 如果双端队列为空，返回 -1。
+isEmpty()：检查双端队列是否为空。
+isFull()：检查双端队列是否满了。
+```
+
+
+示例：
+
+```
+MyCircularDeque circularDeque = new MycircularDeque(3); // 设置容量大小为3
+circularDeque.insertLast(1);			        // 返回 true
+circularDeque.insertLast(2);			        // 返回 true
+circularDeque.insertFront(3);			        // 返回 true
+circularDeque.insertFront(4);			        // 已经满了，返回 false
+circularDeque.getRear();  				// 返回 2
+circularDeque.isFull();				        // 返回 true
+circularDeque.deleteLast();			        // 返回 true
+circularDeque.insertFront(4);			        // 返回 true
+circularDeque.getFront();				// 返回 4
+```
+
+ 
+
+提示：
+
+```
+所有值的范围为 [1, 1000]
+操作次数的范围为 [1, 1000]
+请不要使用内置的双端队列库。
+```
+
+
+
+**数组：**
+
+利用数组做底层存储结构
+
+`head`表示头指针
+
+`tail`表示尾指针
+
+容量定为k+1，因为tail指针位置不存放数据
+
+判断队列是否已满： (tail+1) % n == head
+
+判断队列是否为空：tail == head
+
+
+
+```java
+class MyCircularDeque {
+
+   int items[] = null;
+    int head = 0;
+    int tail = 0;
+    int capacity = 0;
+
+    /** Initialize your data structure here. Set the size of the deque to be k. */
+    public MyCircularDeque(int k) {
+        items = new int[k+1];
+        capacity = k+1;
+    }
+    
+    /** Adds an item at the front of Deque. Return true if the operation is successful. */
+    public boolean insertFront(int value) {
+        if (isFull()) {
+            return false;
+        }
+        if (head == 0) {
+            items[capacity-1] = value;
+            head = capacity -1;
+        } else {
+            items[--head] = value;
+        }
+        return true;
+    }
+    
+    /** Adds an item at the rear of Deque. Return true if the operation is successful. */
+    public boolean insertLast(int value) {
+        if (isFull()) {
+            return false;
+        }
+        if (tail == capacity -1) {
+            items[tail] = value;
+            tail = 0;
+        } else {
+            items[tail++] = value;
+        }
+        return true;
+    }
+    
+    /** Deletes an item from the front of Deque. Return true if the operation is successful. */
+    public boolean deleteFront() {
+        if (isEmpty()) {
+            return false;
+        }
+        if (head == capacity-1) {
+            head = 0;
+        } else {
+            head++;
+        }
+        return true;
+    }
+    
+    /** Deletes an item from the rear of Deque. Return true if the operation is successful. */
+    public boolean deleteLast() {
+        if (isEmpty()) {
+            return false;
+        }
+        if (tail == 0) {
+            tail = capacity - 1;
+        } else {
+            tail--;
+        }
+        return true;
+    }
+    
+    /** Get the front item from the deque. */
+    public int getFront() {
+        if (isEmpty()) {
+            return -1;
+        }
+        return items[head];
+    }
+    
+    /** Get the last item from the deque. */
+    public int getRear() {
+        if (isEmpty()) {
+            return -1;
+        }
+        if (tail == 0) {
+            return items[capacity -1];
+        } else {
+            return items[tail - 1];
+        }
+    }
+    
+    /** Checks whether the circular deque is empty or not. */
+    public boolean isEmpty() {
+        return head == tail;
+    }
+    
+    /** Checks whether the circular deque is full or not. */
+    public boolean isFull() {
+        return (tail+1)%capacity == head;
+    }
+}
+```
+
+![image-20210720222222184](../typora-user-images/image-20210720222222184.png)
+
+
+
 ### （2）[滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/)
 
+给你一个整数数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 k 个数字。滑动窗口每次只向右移动一位。
 
+返回滑动窗口中的最大值。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [1,3,-1,-3,5,3,6,7], k = 3
+输出：[3,3,5,5,6,7]
+解释：
+滑动窗口的位置                最大值
+
+---------------               -----
+
+[1  3  -1] -3  5  3  6  7       3
+ 1 [3  -1  -3] 5  3  6  7       3
+ 1  3 [-1  -3  5] 3  6  7       5
+ 1  3  -1 [-3  5  3] 6  7       5
+ 1  3  -1  -3 [5  3  6] 7       6
+ 1  3  -1  -3  5 [3  6  7]      7
+```
+
+示例 2：
+
+```
+输入：nums = [1], k = 1
+输出：[1]
+```
+
+
+示例 3：
+
+```
+输入：nums = [1,-1], k = 1
+输出：[1,-1]
+```
+
+
+示例 4：
+
+```
+输入：nums = [9,11], k = 2
+输出：[11]
+```
+
+
+示例 5：
+
+```
+输入：nums = [4,-2], k = 2
+输出：[4]
+```
+
+
+提示：
+
+```
+1 <= nums.length <= 105
+-104 <= nums[i] <= 104
+1 <= k <= nums.length
+```
+
+
+
+**双端队列：**
+
+只要遍历该数组，同时在双端队列的头去维护当前窗口的最大值（在遍历过程中，发现当前元素比队列中的元素大，就将原来队列中的元素删除），在整个遍历的过程中我们再记录下每一个窗口的最大值到结果数组中。
+
+
+
+```java
+public int[] maxSlidingWindow(int[] nums, int k) {
+        int result[] = new int[nums.length - k + 1];
+
+        Deque<Integer> deque = new ArrayDeque<>();
+
+        for (int i = 0; i < nums.length; i++) {
+            while (i>0 && !deque.isEmpty() && nums[i] > deque.getLast()) {
+                deque.removeLast();
+            }
+            deque.addLast(nums[i]);
+
+            if (i>= k && nums[i-k]==deque.getFirst()) {
+                deque.removeFirst();
+            }
+            if (i+1>=k) {
+                result[i-k+1] = deque.getFirst();
+            }
+        }
+
+        return result;
+    }
+```
+
+![image-20210720230454983](../typora-user-images/image-20210720230454983.png)
+
+
+
+
+
+**单调队列：**
+
+上述方法存储的是数值，这次存储的是下标
+
+用较简单的方法保证了队列长度不会超过k个
+
+```java
+public int[] maxSlidingWindow(int[] nums, int k) {
+        Deque<Integer> deque = new ArrayDeque<Integer>();
+        int[] ans = new int[nums.length - k + 1];
+        for (int i = 0; i < nums.length; ++i) {
+            while (!deque.isEmpty() && nums[i] >= nums[deque.peekLast()]) {
+                deque.pollLast();
+            }
+            deque.offerLast(i);
+            while (deque.peekFirst() <= i - k) {
+                deque.pollFirst();
+            }
+            if (i+1>=k) {
+                ans[i - k + 1] = nums[deque.peekFirst()];
+            }
+        }
+        return ans;
+    }
+```
+
+![image-20210720231928052](../typora-user-images/image-20210720231928052.png)
 
 
 
 ## 五、哈希表
 
-### （1）[数组中两个数的和为给定值](github/Leetcode 题解 哈希表.md#1-数组中两个数的和为给定值)
+### （1）[判断数组是否含有重复元素](https://leetcode-cn.com/problems/contains-duplicate/submissions/)
 
-### （2）[判断数组是否含有重复元素](github/Leetcode 题解 哈希表.md#2-判断数组是否含有重复元素)
+给定一个整数数组，判断是否存在重复元素。
 
-### （3）[最长和谐序列](github/Leetcode 题解 哈希表.md#3-最长和谐序列)
+如果存在一值在数组中出现至少两次，函数返回 true 。如果数组中每个元素都不相同，则返回 false 。
 
-### （4）[最长连续序列](github/Leetcode 题解 哈希表.md#4-最长连续序列)
+ 
+
+示例 1:
+
+```
+输入: [1,2,3,1]
+输出: true
+```
+
+
+示例 2:
+
+```
+输入: [1,2,3,4]
+输出: false
+```
+
+
+
+**使用set：**
+
+```java
+public boolean containsDuplicate(int[] nums) {
+        Set<Integer> set = new HashSet<>();
+
+        for (int i=0;i<nums.length;i++) {
+            if (!set.add(nums[i])) {
+                return true;
+            }
+        }
+        return false;
+    }
+```
+
+![image-20210720232945098](../typora-user-images/image-20210720232945098.png)
+
+
+
+
+
+### （2）[最长和谐序列](https://leetcode-cn.com/problems/longest-harmonious-subsequence/)
+
+和谐数组是指一个数组里元素的最大值和最小值之间的差别 正好是 1 。
+
+现在，给你一个整数数组 nums ，请你在所有可能的子序列中找到最长的和谐子序列的长度。
+
+数组的子序列是一个由数组派生出来的序列，它可以通过删除一些元素或不删除元素、且不改变其余元素的顺序而得到。
+
+示例 1：
+
+```
+输入：nums = [1,3,2,2,5,2,3,7]
+输出：5
+解释：最长的和谐子序列是 [3,2,2,2,3]
+```
+
+
+
+两次遍历：
+
+第一次遍历：确定每个元素对应的个数
+
+第二次遍历：确定是否有比当前元素大于1的
+
+```java
+public int findLHS(int[] nums) {
+        Map<Integer,Integer> num2count = new HashMap<>();
+
+        for (int num : nums) {
+            if (num2count.get(num) != null) {
+                num2count.put(num,num2count.get(num)+1);
+            } else {
+                num2count.put(num,1);
+            }
+        }
+        
+        int max = 0;
+
+        for (Integer curNum : num2count.keySet()) {
+            if (num2count.get(curNum+1) != null) {
+                max = Math.max(max, num2count.get(curNum) + num2count.get(curNum+1));
+            }
+        }
+        
+        return max;     
+    }
+```
+
+
+
+
+
+### （3）[最长连续序列](github/Leetcode 题解 哈希表.md#4-最长连续序列)
 
 
 
