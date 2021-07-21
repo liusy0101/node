@@ -3049,7 +3049,118 @@ public int findLHS(int[] nums) {
 
 
 
-### （3）[最长连续序列](github/Leetcode 题解 哈希表.md#4-最长连续序列)
+### （3）[最长连续序列](https://leetcode-cn.com/problems/longest-consecutive-sequence/)
+
+给定一个未排序的整数数组 nums ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
+
+请你设计并实现时间复杂度为 O(n) 的算法解决此问题。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [100,4,200,1,3,2]
+输出：4
+解释：最长数字连续序列是 [1, 2, 3, 4]。它的长度为 4。
+```
+
+
+示例 2：
+
+```
+输入：nums = [0,3,7,2,5,8,4,6,0,1]
+输出：9
+```
+
+
+提示：
+
+```
+0 <= nums.length <= 10^5
+-10^9 <= nums[i] <= 10^9
+```
+
+
+
+**用两个set：**
+
+第一个set记录数组中的数字
+
+第二个set记录已经查找过的数字，避免重复查找
+
+```java
+public int longestConsecutive(int[] nums) {
+         Set<Integer> temSet = new HashSet<>();
+        Set<Integer> temSet2 = new HashSet<>();
+
+        int result = 0;
+
+        for (int num : nums) {
+            temSet.add(num);
+        }
+
+        Iterator<Integer> iterator = temSet.iterator();
+
+        while (iterator.hasNext()) {
+            Integer curNum = iterator.next();
+            if (temSet2.add(curNum)) {
+                int temResult = 1;
+                while (temSet.contains(curNum+1)) {
+                    temSet2.add(++curNum);
+                    temResult++;
+                }
+                result = Math.max(result,temResult);
+            }
+
+        }
+
+        return result;
+    }
+```
+
+![image-20210721215606805](../typora-user-images/image-20210721215606805.png)
+
+
+
+
+
+考虑以其为起点，不断尝试匹配 x+1, x+2,⋯ 是否存在，假设最长匹配到了 x+y，那么以 x 为起点的最长连续序列即为 x, x+1, x+2,⋯,x+y，其长度为 y+1，我们不断枚举并更新答案即可。
+
+```java
+public int longestConsecutive(int[] nums) {
+        Set<Integer> num_set = new HashSet<Integer>();
+        for (int num : nums) {
+            num_set.add(num);
+        }
+
+        int longestStreak = 0;
+
+        for (int num : num_set) {
+            if (!num_set.contains(num - 1)) {
+                int currentNum = num;
+                int currentStreak = 1;
+
+                while (num_set.contains(currentNum + 1)) {
+                    currentNum += 1;
+                    currentStreak += 1;
+                }
+
+                longestStreak = Math.max(longestStreak, currentStreak);
+            }
+        }
+
+        return longestStreak;
+    }
+```
+
+![image-20210721220958881](../typora-user-images/image-20210721220958881.png)
+
+
+
+
+
+
 
 
 
@@ -3057,21 +3168,191 @@ public int findLHS(int[] nums) {
 
 ### （1）[爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/)
 
+假设你正在爬楼梯。需要 n 阶你才能到达楼顶。
+
+每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+注意：给定 n 是一个正整数。
+
+示例 1：
+
+```
+输入： 2
+输出： 2
+解释： 有两种方法可以爬到楼顶。
+
+1.  1 阶 + 1 阶
+2.  2 阶
+```
+
+示例 2：
+
+```
+输入： 3
+输出： 3
+解释： 有三种方法可以爬到楼顶。
+
+1.  1 阶 + 1 阶 + 1 阶
+2.  1 阶 + 2 阶
+3.  2 阶 + 1 阶
+```
+
+
+
+**递归解法：**
+
+```java
+public static int climbStairs(int n) {
+        
+        if (n == 1 || n == 2) {
+            return n;
+        }
+        
+        return climbStairs(n-1) + climbStairs(n-2);
+    }
+```
+
+
+
+
+
+**动态规划：**
+
+从上述递归解法中得知
+
+1、当`n=1`或`n=2`时，可以直接返回
+
+2、当`n=3`时，那么就直接可以由以下公式推导出来
+
+```
+f(n) = f(n-1) + f(n-2) , n>=3
+f(1) = 1
+f(2) = 2
+```
+
+
+
+```java
+public int climbStairs(int n) {
+        if (n == 1 || n == 2) {
+            return n;
+        }
+        int []result = new int[n+1];
+        result[1] = 1;
+        result[2] = 2;
+
+        int tem  = 3;
+        while (tem<=n) {
+            result[tem] = result[tem-1] + result[tem-2];
+            tem++;
+        }
+
+        return result[n];
+    }
+```
+
+
+
+```java
+public int climbStairs(int n) {
+        int p = 0, q = 0, r = 1;
+        for (int i = 1; i <= n; ++i) {
+            p = q; 
+            q = r; 
+            r = p + q;
+        }
+        return r;
+    }
+```
+
+
+
 
 
 
 
 ## 七、排序
 
-### （1）归并排序
+### （1）[归并排序](https://leetcode-cn.com/problems/sort-an-array/)
+
+给你一个整数数组 nums，请你将该数组升序排列。
+
+示例 1：
+
+```
+输入：nums = [5,2,3,1]
+输出：[1,2,3,5]
+```
+
+```java
+public  int[] sortArray(int[] nums) {
+        return mergeSort(nums,0,nums.length-1);
+    }
+
+
+    public  int[] mergeSort(int[] nums, int start , int end) {
+        if (start>=end) {
+            return new int[]{nums[start]};
+        } else {
+            int mid = (start + end) / 2;
+            return merge(mergeSort(nums,start,mid),mergeSort(nums,mid+1,end));
+        }
+    }
+
+    public  int[] merge(int[] nums1,int[] nums2) {
+        int i=0,j=0;
+
+
+        int index = 0;
+        int result[] = new int[nums1.length + nums2.length];
+
+        while (i<nums1.length && j<nums2.length) {
+            if (nums1[i] <= nums2[j]) {
+                result[index++] = nums1[i++];
+            } else {
+                result[index++] = nums2[j++];
+            }
+        }
+
+        while (i<nums1.length) {
+            result[index++] = nums1[i++];
+        }
+
+        while (j<nums2.length) {
+            result[index++] = nums2[j++];
+        }
+
+        return result;
+    }
+```
+
+![image-20210721232459047](../typora-user-images/image-20210721232459047.png)
+
+
+
+**排序链表：**
+
+https://leetcode-cn.com/problems/sort-list/
+
+
+
+
 
 ### （2）快速排序
 
+
+
 ### （3）插入排序
+
+
 
 ### （4）冒泡排序
 
+
+
 ### （5）选择排序
+
+
 
 ### （6）O(n)时间复杂度内找到一组数据的第K大元素
 
