@@ -3430,21 +3430,146 @@ class Solution {
 
 
 
-### （3）插入排序
+### （3）[插入排序](https://leetcode-cn.com/problems/sort-an-array/)
+
+
+
+```java
+public int[] sortArray(int[] nums) {
+        int n = nums.length;
+        if (n <= 1) return nums;
+
+        for (int i = 1; i < n; ++i) {
+            int value = nums[i];
+            int j = i - 1;
+            // 查找插入的位置
+            for (; j >= 0; --j) {
+                if (nums[j] > value) {
+                    nums[j+1] = nums[j];  // 数据移动
+                } else {
+                    break;
+                }
+            }
+            nums[j+1] = value; // 插入数据
+        }
+        return nums;
+    }
+```
+
+![image-20210726225208036](../typora-user-images/image-20210726225208036.png)
 
 
 
 ### （4）冒泡排序
 
+当某次冒泡操作已经没数据交换时，说明已经达到完全有序，就不用继续执行后续的冒泡操作了。
+
+```java
+public int[] sortArray(int[] nums) {
+        int n = nums.length;
+
+        for (int i = 0; i < n; i++) {
+            boolean flag = false;
+            for (int j = i+1; j < nums.length; j++) {
+                if (nums[j]<nums[i]) {
+                    int tem = nums[i];
+                    nums[i] = nums[j];
+                    nums[j] = tem;
+                    flag = true;
+                }
+            }
+            if (!flag) {
+                break;
+            }
+
+        }
+
+        return nums;
+    }
+}
+```
+
 
 
 ### （5）选择排序
+
+每次选择剩余元素最小的一个进行排序
+
+```java
+public static int[] sortArray(int[] nums) {
+        if (nums.length <= 1) {
+            return nums;
+        }
+
+
+        for (int i = 0; i < nums.length; i++) {
+            int mix = nums[i];
+            int index = i;
+
+            for (int j = i+1; j < nums.length; j++) {
+                if (mix>nums[j]) {
+                    mix = nums[j];
+                    index = j;
+                }
+            }
+            int tem = nums[i];
+            nums[i] = nums[index];
+            nums[index] = tem;
+        }
+        return nums;
+    }
+```
 
 
 
 ### （6）O(n)时间复杂度内找到一组数据的第K大元素
 
 ### （7）堆排序
+
+
+
+```java
+//构建大顶堆
+private static int[] buildHeap(int[] a) {
+        int n = a.length;
+        for (int i = n/2; i >= 1; --i) {
+            heapify(a, n, i);
+        }
+
+        return a;
+    }
+
+    private static void heapify(int[] a, int n, int i) {
+        while (true) {
+            int maxPos = i;
+            if (i*2 < n && a[i] < a[i*2]) maxPos = i*2;
+            if (i*2+1 < n && a[maxPos] < a[i*2+1]) maxPos = i*2+1;
+            if (maxPos == i) break;
+            swap(a, i, maxPos);
+            i = maxPos;
+        }
+    }
+
+    private static void swap(int[] a, int i, int maxPos) {
+        int tem = a[i];
+        a[i] = a[maxPos];
+        a[maxPos] = tem;
+    }
+
+
+// n表示数据的个数，数组a中的数据从下标1到n的位置。
+public static void sort(int[] a) {
+  buildHeap(a);
+  int k = a.length;
+  while (k > 1) {
+    swap(a, 1, k);
+    --k;
+    heapify(a, k, 1);
+  }
+}
+```
+
+
 
 	-  [Kth Element](github/Leetcode 题解 排序.md#1-kth-element)
 
