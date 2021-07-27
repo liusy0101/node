@@ -3596,6 +3596,97 @@ public static void sort(int[] a) {
 
 ### （3）[x的平方根](https://leetcode-cn.com/problems/sqrtx/)
 
+实现 int sqrt(int x) 函数。
+
+计算并返回 x 的平方根，其中 x 是非负整数。
+
+由于返回类型是整数，结果只保留整数的部分，小数部分将被舍去。
+
+示例 1:
+
+```
+输入: 4
+输出: 2
+```
+
+
+示例 2:
+
+```
+输入: 8
+输出: 2
+说明: 8 的平方根是 2.82842..., 
+     由于返回类型是整数，小数部分将被舍去。
+```
+
+
+
+**二分解法：**
+
+```java
+public int mySqrt(int x) {
+        if (x <= 1) {
+            return x;
+        }
+
+        int left = 1;
+        int right = x / 2;
+        // 在区间 [left..right] 查找目标元素
+        while (left < right) {
+            int mid = left + (right - left + 1) / 2;
+            // 注意：这里为了避免乘法溢出，改用除法
+            if (mid > x / mid) {
+                // 下一轮搜索区间是 [left..mid - 1]
+                right = mid - 1;
+            } else {
+                // 下一轮搜索区间是 [mid..right]
+                left = mid;
+            }
+        }
+        return left;
+    }
+```
+
+![image-20210728000454925](../typora-user-images/image-20210728000454925.png)
+
+
+
+
+
+**牛顿迭代法：**
+
+首先随便猜一个近似值 xx，然后不断令 xx 等于 xx 和 a/xa/x 的平均数，迭代个六七次后 xx 的值就已经相当精确了。
+
+例如，我想求根号 2等于多少。假如我猜测的结果为 4，虽然错的离谱，但你可以看到使用牛顿迭代法后这个值很快就趋近于根号 2了：
+
+> ( 4 + 2/ 4 ) / 2 = 2.25
+>
+> ( 2.25 + 2/ 2.25 ) / 2 = 1.56944..
+>
+> ( 1.56944..+ 2/1.56944..) / 2 = 1.42189..
+>
+> ( 1.42189..+ 2/1.42189..) / 2 = 1.41423..
+>
+> ….
+
+
+
+![image-20210728001129634](../typora-user-images/image-20210728001129634.png)
+
+```java
+ public int mySqrt(int a) {
+        long x = a;
+        while (x * x > a) x = (x + a / x) / 2;
+        return (int)x;
+    }
+```
+
+![image-20210728000925101](../typora-user-images/image-20210728000925101.png)
+
+
+
+
+
 ### （4）[大于给定元素的最小元素](github/Leetcode 题解 二分查找.md#2-大于给定元素的最小元素)
 
 ### （5）[有序数组的 Single Element](github/Leetcode 题解 二分查找.md#3-有序数组的-single-element)
