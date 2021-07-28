@@ -3687,11 +3687,267 @@ public int mySqrt(int x) {
 
 
 
-### （4）[大于给定元素的最小元素](github/Leetcode 题解 二分查找.md#2-大于给定元素的最小元素)
+### （4）[大于给定元素的最小元素](https://leetcode-cn.com/problems/find-smallest-letter-greater-than-target/)
 
-### （5）[有序数组的 Single Element](github/Leetcode 题解 二分查找.md#3-有序数组的-single-element)
+给你一个排序后的字符列表 letters ，列表中只包含小写英文字母。另给出一个目标字母 target，请你寻找在这一有序列表里比目标字母大的最小字母。
 
-### （6）[第一个错误的版本](github/Leetcode 题解 二分查找.md#4-第一个错误的版本)
+在比较时，字母是依序循环出现的。举个例子：
+
+如果目标字母 target = 'z' 并且字符列表为 letters = ['a', 'b']，则答案返回 'a'
+
+
+示例：
+
+```
+输入:
+letters = ["c", "f", "j"]
+target = "a"
+输出: "c"
+```
+
+
+
+**二分解法：**
+
+取 left = 0, right = lettersSize-1，相当于在区间 [left, right]中查找；
+
+如果 letters[mid] > target，则在区间 [left, mid-1] 中查找；
+
+否则在区间 [mid + 1, right] 中查找；
+
+当 letters[mid] == target 时，也在区间 [mid + 1, right]中查找，因为题目要求查找比目标字母大的最小字母，所有得在查找到 letters[mid] == target 时，还需要在 mid 的右侧查找
+
+
+
+```java
+public char nextGreatestLetter(char[] letters, char target) {
+        int len = letters.length;
+
+        int start = 0,end = len-1;
+
+        while (start<=end) {
+            int mid = start+(end-start)/2;
+            if (letters[mid]<=target) {
+                start = mid+1;
+            } else {
+                end = mid-1;
+            }
+        }
+    	//由于是循环的，所以需要特殊处理最后一个
+        if (end>=len-1) {
+            return letters[0];
+        }
+        return letters[end+1];
+    }
+```
+
+![image-20210728222734544](../typora-user-images/image-20210728222734544.png)
+
+
+
+
+
+
+
+### （5）[有序数组的 Single Element](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/)
+
+给定一个只包含整数的有序数组，每个元素都会出现两次，唯有一个数只会出现一次，找出这个数。
+
+ 
+
+示例 1:
+
+```
+输入: nums = [1,1,2,3,3,4,4,8,8]
+输出: 2
+```
+
+
+示例 2:
+
+```
+输入: nums =  [3,3,7,7,10,11,11]
+输出: 10
+```
+
+
+提示:
+
+```
+1 <= nums.length <= 105
+0 <= nums[i] <= 105
+```
+
+
+
+**二分解法：**
+
+- 首先将 lo 和 hi 指向数组首尾两个元素。然后进行二分搜索将数组搜索空间减半，直到找到单一元素或者仅剩一个元素为止。当搜索空间只剩一个元素，则该元素就是单个元素。
+
+- 在每个循环迭代中，我们确定 mid，变量 halvesAreEven = (hi - mid) % 2 == 0。 通过查看中间元素同一元素为哪一个（左侧子数组中的最后一个元素或右侧子数组中的第一个元素），我们可以通过变量 halvesAreEven 确定现在哪一侧元素个数为奇数，并更新 lo 和 hi。
+
+- 最难的部分是根据 mid 和 halvesAreEven 的值正确更新 lo 和 hi。我们通过下图来帮助我们理解。
+
+  
+
+  
+
+例子 1：中间元素的同一元素在右边，且被 mid 分成两半的数组为偶数。
+
+我们将右子数组的第一个元素移除后，则右子数组元素个数变成奇数，我们应将 lo 设置为 mid + 2。
+
+![在这里插入图片描述](../typora-user-images/08f1ff0fa20c9963ae4f5aafb7c6317df713b5eb562064ba8b7644c1d773c626-file_1576478245275)
+
+例子 2：中间元素的同一元素在右边，且被 mid 分成两半的数组为奇数。
+
+我们将右子数组的第一个元素移除后，则右子数组的元素个数变为偶数，我们应将 hi 设置为 mid - 1。
+
+![在这里插入图片描述](../typora-user-images/8481e9a41430c85977693dbad0d12de7df96a7064d13edd6eb359f7d8ccbcf99-file_1576478245283)
+
+例子 3：中间元素的同一元素在左边，且被 mid 分成两半的数组为偶数。
+
+我们将左子数组的最后一个元素移除后，则左子数组的元素个数变为奇数，我们应将 hi 设置为 mid - 2。
+
+![在这里插入图片描述](../typora-user-images/186af681e3fced71c9588d9422accc7832062b24d33c343edecd9aef2e0c6ba1-file_1576478245286)
+
+例子 4：中间元素的同一元素在左边，且被 mid 分成两半的数组为奇数。
+
+我们将左子数组的最后一个元素移除后，则左子数组的元素个数变为偶数，我们应将 lo 设置为 mid + 1。
+
+![在这里插入图片描述](../typora-user-images/067fab9a30b1b278da9e633de7b627931cdab5444d0f99e7142eb2907bff4431-file_1576478245290)
+
+```java
+public static int singleNonDuplicate(int[] nums) {
+        int len = nums.length;
+        if (len == 1) {
+            return nums[0];
+        }
+        int start = 0, end = len-1;
+
+        while (start<end) {
+            int mid = (start+end) >> 1;
+            boolean isSingle = (end - mid) % 2 == 1;
+            if (!isSingle) {
+                if (nums[mid] == nums[mid-1]) {
+                    end = mid-2;
+                } else if (nums[mid] == nums[mid+1]){
+                    start = mid+2;
+                } else {
+                    return nums[mid];
+                }
+            } else {
+                if (nums[mid] == nums[mid-1]) {
+                    start = mid+1;
+                } else if (nums[mid] == nums[mid+1]){
+                    end = mid-1;
+                } else {
+                    return nums[mid];
+                }
+            }
+        }
+
+        return nums[start];
+    }
+```
+
+
+
+![image-20210728230911769](../typora-user-images/image-20210728230911769.png)
+
+
+
+
+
+**仅对偶数索引进行搜索：**
+
+- 奇数长度的数组首尾元素索引都为偶数，因此我们可以将 lo 和 hi 设置为数组首尾。
+- 我们需要确保 mid 是偶数，如果为奇数，则将其减 1。
+- 然后，我们检查 mid 的元素是否与其后面的索引相同。
+- 如果相同，则我们知道 mid 不是单个元素。且单个元素在 mid 之后。则我们将 lo 设置为 mid + 2。
+- 如果不是，则我们知道单个元素位于 mid，或者在 mid 之前。我们将 hi 设置为 mid。
+- 一旦 lo == hi，则当前搜索空间为 1 个元素，那么该元素为单个元素，我们将返回它。
+
+```java
+public int singleNonDuplicate(int[] nums) {
+        int lo = 0;
+        int hi = nums.length - 1;
+        while (lo < hi) {
+            int mid = lo + (hi - lo) / 2;
+            if (mid % 2 == 1) mid--;
+            if (nums[mid] == nums[mid + 1]) {
+                lo = mid + 2;
+            } else {
+                hi = mid;
+            }
+        }
+        return nums[lo];
+    }
+```
+
+![image-20210728231521410](../typora-user-images/image-20210728231521410.png)
+
+
+
+
+
+### （6）[第一个错误的版本](https://leetcode-cn.com/problems/first-bad-version/)
+
+你是产品经理，目前正在带领一个团队开发新的产品。不幸的是，你的产品的最新版本没有通过质量检测。由于每个版本都是基于之前的版本开发的，所以错误的版本之后的所有版本都是错的。
+
+假设你有 n 个版本 [1, 2, ..., n]，你想找出导致之后所有版本出错的第一个错误的版本。
+
+你可以通过调用 bool isBadVersion(version) 接口来判断版本号 version 是否在单元测试中出错。实现一个函数来查找第一个错误的版本。你应该尽量减少对调用 API 的次数。
+
+
+示例 1：
+
+```
+输入：n = 5, bad = 4
+输出：4
+解释：
+调用 isBadVersion(3) -> false 
+调用 isBadVersion(5) -> true 
+调用 isBadVersion(4) -> true
+所以，4 是第一个错误的版本。
+```
+
+
+示例 2：
+
+```
+输入：n = 1, bad = 1
+输出：1
+```
+
+
+提示：
+
+1 <= bad <= n <= 231 - 1
+
+
+
+**二分解法：**
+
+将左右边界分别初始化为 1 和 n，其中 n 是给定的版本数量。设定左右边界之后，每次我们都依据左右边界找到其中间的版本，检查其是否为正确版本。如果该版本为正确版本，那么第一个错误的版本必然位于该版本的右侧，我们缩紧左边界；否则第一个错误的版本必然位于该版本及该版本的左侧，我们缩紧右边界。
+
+```java
+public class Solution extends VersionControl {
+    public int firstBadVersion(int n) {
+        int start = 1,end = n;
+        while(start<end) {
+            int mid = start + (end-start)/2;
+            if (isBadVersion(mid)) {
+                end = mid;
+            } else {
+                start = mid+1;
+            }
+        }
+        return start;
+    }
+}
+```
+
+![image-20210728233224416](../typora-user-images/image-20210728233224416.png)
 
 ### （7）[旋转数组的最小数字](github/Leetcode 题解 二分查找.md#5-旋转数组的最小数字)
 
