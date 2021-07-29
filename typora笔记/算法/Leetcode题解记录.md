@@ -3949,9 +3949,214 @@ public class Solution extends VersionControl {
 
 ![image-20210728233224416](../typora-user-images/image-20210728233224416.png)
 
-### （7）[旋转数组的最小数字](github/Leetcode 题解 二分查找.md#5-旋转数组的最小数字)
+### （7）[旋转数组的最小数字](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
 
-### （8）[查找区间](github/Leetcode 题解 二分查找.md#6-查找区间)
+已知一个长度为 n 的数组，预先按照升序排列，经由 1 到 n 次 旋转 后，得到输入数组。例如，原数组 nums = [0,1,2,4,5,6,7] 在变化后可能得到：
+若旋转 4 次，则可以得到 [4,5,6,7,0,1,2]
+若旋转 7 次，则可以得到 [0,1,2,4,5,6,7]
+注意，数组 [a[0], a[1], a[2], ..., a[n-1]] 旋转一次 的结果为数组 [a[n-1], a[0], a[1], a[2], ..., a[n-2]] 。
+
+给你一个元素值 互不相同 的数组 nums ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 最小元素 。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [3,4,5,1,2]
+输出：1
+解释：原数组为 [1,2,3,4,5] ，旋转 3 次得到输入数组。
+```
+
+
+示例 2：
+
+```
+输入：nums = [4,5,6,7,0,1,2]
+输出：0
+解释：原数组为 [0,1,2,4,5,6,7] ，旋转 4 次得到输入数组。
+```
+
+
+示例 3：
+
+```
+输入：nums = [11,13,15,17]
+输出：11
+解释：原数组为 [11,13,15,17] ，旋转 4 次得到输入数组。
+```
+
+
+提示：
+
+```
+n == nums.length
+1 <= n <= 5000
+-5000 <= nums[i] <= 5000
+nums 中的所有整数 互不相同
+nums 原来是一个升序排序的数组，并进行了 1 至 n 次旋转
+```
+
+
+
+**二分法：**
+
+初始值 start = 0，end = n-1
+
+判断中间下标的值是否小于当前最后一个元素
+
+如果小于，那么后半部分就是升序的，那么最小值就在 [start,mid]中间，更新end = mid
+
+反之，最小值在[mid+1,end]之间，更新start = mid+1
+
+```java
+public int findMin(int[] nums) {
+        int n = nums.length;
+        int start = 0,end = n-1;
+        while (start<end) {
+            int mid = start + (end-start) / 2;
+            if (nums[mid]<=nums[end]) {
+                end = mid;
+            } else {
+                start = mid+1;
+            }
+        }
+
+        return nums[start];
+    }
+```
+
+![image-20210729230948159](../typora-user-images/image-20210729230948159.png)
+
+
+
+
+
+### （8）[查找区间](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
+
+给定一个按照升序排列的整数数组 nums，和一个目标值 target。找出给定目标值在数组中的开始位置和结束位置。
+
+如果数组中不存在目标值 target，返回 [-1, -1]。
+
+进阶：
+
+你可以设计并实现时间复杂度为 O(log n) 的算法解决此问题吗？
+
+
+示例 1：
+
+```
+输入：nums = [5,7,7,8,8,10], target = 8
+输出：[3,4]
+```
+
+
+示例 2：
+
+```
+输入：nums = [5,7,7,8,8,10], target = 6
+输出：[-1,-1]
+```
+
+
+示例 3：
+
+```
+输入：nums = [], target = 0
+输出：[-1,-1]
+```
+
+
+
+**二分解法：**
+
+1、先找到第一个等于target的值
+
+2、再找到最后一个等于target的值
+
+```java
+public static int[] searchRange(int[] nums, int target) {
+
+        int n = nums.length;
+        int result[] = new int[]{-1,-1};
+        if (n == 0) {
+            return result;
+        }
+
+        int start = 0,end = n-1;
+
+        while (start<end) {
+            int mid = start + (end-start)/2;
+            if (nums[mid]>=target) {
+                end = mid;
+            } else {
+                start = mid+1;
+            }
+        }
+        if (nums[start] == target) {
+            result[0] = start;
+        }
+        start = 0;
+        end = n-1;
+
+        while (start<end) {
+            if (start+1 == end) {
+                break;
+            }
+            int mid = start + (end-start)/2;
+            if (nums[mid]<=target) {
+                start = mid;
+            } else {
+                end = mid-1;
+            }
+        }
+        if (nums[start] == target) {
+            result[1] = start;
+        }
+        if (nums[end] == target) {
+            result[1] = end;
+        }
+
+        return result;
+    }
+```
+
+
+
+![image-20210729234806909](../typora-user-images/image-20210729234806909.png)
+
+
+
+可以用二分查找找出第一个位置和最后一个位置，但是寻找的方法有所不同，需要实现两个二分查找。我们将寻找  target 最后一个位置，转换成寻找 target+1 第一个位置，再往前移动一个位置。这样我们只需要实现一个二分查找代码即可。
+
+
+
+```java
+public int[] searchRange(int[] nums, int target) {
+    int first = findFirst(nums, target);
+    int last = findFirst(nums, target + 1) - 1;
+    if (first == nums.length || nums[first] != target) {
+        return new int[]{-1, -1};
+    } else {
+        return new int[]{first, Math.max(first, last)};
+    }
+}
+
+private int findFirst(int[] nums, int target) {
+    int l = 0, h = nums.length; // 注意 h 的初始值
+    while (l < h) {
+        int m = l + (h - l) / 2;
+        if (nums[m] >= target) {
+            h = m;
+        } else {
+            l = m + 1;
+        }
+    }
+    return l;
+}
+```
+
+
 
 
 
