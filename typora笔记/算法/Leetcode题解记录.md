@@ -4180,7 +4180,214 @@ private int findFirst(int[] nums, int target) {
 
 ### （3）[反转字符串](https://leetcode-cn.com/problems/reverse-string/)
 
+写一个函数，其作用是将输入的字符串反转过来。输入字符串以字符数组 char[] 的形式给出。
+
+不要给另外的数组分配额外的空间，你必须原地修改输入数组、使用 O(1) 的额外空间解决这一问题。
+
+你可以假设数组中的所有字符都是 ASCII 码表中的可打印字符。
+
+ 示例 1：
+
+```
+输入：["h","e","l","l","o"]
+输出：["o","l","l","e","h"]
+```
+
+
+示例 2：
+
+```
+输入：["H","a","n","n","a","h"]
+输出：["h","a","n","n","a","H"]
+```
+
+
+
+遍历前半部分元素，将下标为 `i` 和 `n-i-1` 的元素进行互换
+
+```java
+public void reverseString(char[] s) {
+        int len = s.length;
+
+        for (int i=0;i<(len/2);i++) {
+            char tem = s[i];
+            s[i] = s[len-i-1];
+            s[len-i-1] = tem;
+        }
+         
+    }
+```
+
+![image-20210801001547865](../typora-user-images/image-20210801001547865.png)
+
+
+
+
+
+
+
 ### （4）[翻转字符串里的单词](https://leetcode-cn.com/problems/reverse-words-in-a-string/)
+
+给你一个字符串 s ，逐个翻转字符串中的所有 单词 。
+
+单词 是由非空格字符组成的字符串。s 中使用至少一个空格将字符串中的 单词 分隔开。
+
+请你返回一个翻转 s 中单词顺序并用单个空格相连的字符串。
+
+说明：
+
+输入字符串 s 可以在前面、后面或者单词间包含多余的空格。
+翻转后单词间应当仅用一个空格分隔。
+翻转后的字符串中不应包含额外的空格。
+
+
+示例 1：
+
+```
+输入：s = "the sky is blue"
+输出："blue is sky the"
+```
+
+
+
+
+提示：
+
+```
+1 <= s.length <= 104
+s 包含英文大小写字母、数字和空格 ' '
+s 中 至少存在一个 单词
+```
+
+
+进阶：
+
+请尝试使用 O(1) 额外空间复杂度的原地解法。
+
+
+
+
+
+**使用栈和队列：**
+
+用队列存储每个字符，遇到空格则将队列清空，输出到栈中。
+
+```java
+public String reverseWords(String s) {
+        Stack<String> stack = new Stack();
+        Queue<Character> temQ = new LinkedBlockingQueue<>();
+
+        s = s.trim() + " ";
+        for (int i = 0; i < s.length() ; i++) {
+            if (s.charAt(i) == ' ') {
+                if (temQ.isEmpty()) {
+                    continue;
+                }
+                StringBuilder sb = new StringBuilder();
+                while (!temQ.isEmpty()) {
+                    sb.append(temQ.poll());
+                }
+                stack.push(sb.toString());
+            } else {
+                temQ.offer(s.charAt(i));
+            }
+        }
+
+
+
+        StringBuilder result = new StringBuilder();
+        while (!stack.isEmpty()) {
+            result.append(stack.pop() + " ");
+        }
+        return result.toString().trim();
+    }
+```
+
+![image-20210801003600737](../typora-user-images/image-20210801003600737.png)
+
+
+
+
+
+**原地：**
+
+```java
+class Solution {
+   /**
+     * 不使用Java内置方法实现
+     * <p>
+     * 1.去除首尾以及中间多余空格
+     * 2.反转整个字符串
+     * 3.反转各个单词
+     */
+    public String reverseWords(String s) {
+        // System.out.println("ReverseWords.reverseWords2() called with: s = [" + s + "]");
+        // 1.去除首尾以及中间多余空格
+        StringBuilder sb = removeSpace(s);
+        // 2.反转整个字符串
+        reverseString(sb, 0, sb.length() - 1);
+        // 3.反转各个单词
+        reverseEachWord(sb);
+        return sb.toString();
+    }
+
+    private StringBuilder removeSpace(String s) {
+        // System.out.println("ReverseWords.removeSpace() called with: s = [" + s + "]");
+        int start = 0;
+        int end = s.length() - 1;
+        while (s.charAt(start) == ' ') start++;
+        while (s.charAt(end) == ' ') end--;
+        StringBuilder sb = new StringBuilder();
+        while (start <= end) {
+            char c = s.charAt(start);
+            if (c != ' ' || sb.charAt(sb.length() - 1) != ' ') {
+                sb.append(c);
+            }
+            start++;
+        }
+        // System.out.println("ReverseWords.removeSpace returned: sb = [" + sb + "]");
+        return sb;
+    }
+
+    /**
+     * 反转字符串指定区间[start, end]的字符
+     */
+    public void reverseString(StringBuilder sb, int start, int end) {
+        // System.out.println("ReverseWords.reverseString() called with: sb = [" + sb + "], start = [" + start + "], end = [" + end + "]");
+        while (start < end) {
+            char temp = sb.charAt(start);
+            sb.setCharAt(start, sb.charAt(end));
+            sb.setCharAt(end, temp);
+            start++;
+            end--;
+        }
+        // System.out.println("ReverseWords.reverseString returned: sb = [" + sb + "]");
+    }
+
+    private void reverseEachWord(StringBuilder sb) {
+        int start = 0;
+        int end = 1;
+        int n = sb.length();
+        while (start < n) {
+            while (end < n && sb.charAt(end) != ' ') {
+                end++;
+            }
+            reverseString(sb, start, end - 1);
+            start = end + 1;
+            end = start + 1;
+        }
+    }
+}
+
+```
+
+![image-20210801005547560](../typora-user-images/image-20210801005547560.png)
+
+
+
+
+
+
 
 ### （5）[字符串转换整数 (atoi)](https://leetcode-cn.com/problems/string-to-integer-atoi/)
 
