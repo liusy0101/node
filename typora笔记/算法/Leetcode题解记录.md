@@ -4391,13 +4391,280 @@ class Solution {
 
 ### （5）[字符串转换整数 (atoi)](https://leetcode-cn.com/problems/string-to-integer-atoi/)
 
-### （6）[字符串循环移位包含](github/Leetcode 题解 字符串.md#1-字符串循环移位包含)
+请你来实现一个 myAtoi(string s) 函数，使其能将字符串转换成一个 32 位有符号整数（类似 C/C++ 中的 atoi 函数）。
 
-### （7）[字符串循环移位](github/Leetcode 题解 字符串.md#2-字符串循环移位)
+函数 myAtoi(string s) 的算法如下：
 
-### （8）[字符串中单词的翻转](github/Leetcode 题解 字符串.md#3-字符串中单词的翻转)
+读入字符串并丢弃无用的前导空格
+检查下一个字符（假设还未到字符末尾）为正还是负号，读取该字符（如果有）。 确定最终结果是负数还是正数。 如果两者都不存在，则假定结果为正。
+读入下一个字符，直到到达下一个非数字字符或到达输入的结尾。字符串的其余部分将被忽略。
+将前面步骤读入的这些数字转换为整数（即，"123" -> 123， "0032" -> 32）。如果没有读入数字，则整数为 0 。必要时更改符号（从步骤 2 开始）。
+如果整数数超过 32 位有符号整数范围 [−231,  231 − 1] ，需要截断这个整数，使其保持在这个范围内。具体来说，小于 −231 的整数应该被固定为 −231 ，大于 231 − 1 的整数应该被固定为 231 − 1 。
+返回整数作为最终结果。
+注意：
 
-### （9）[两个字符串包含的字符是否完全相同](github/Leetcode 题解 字符串.md#4-两个字符串包含的字符是否完全相同)
+本题中的空白字符只包括空格字符 ' ' 。
+除前导空格或数字后的其余字符串外，请勿忽略 任何其他字符。
+
+
+示例 1：
+
+```
+输入：s = "42"
+输出：42
+解释：加粗的字符串为已经读入的字符，插入符号是当前读取的字符。
+第 1 步："42"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："42"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："42"（读入 "42"）
+           ^
+解析得到整数 42 。
+由于 "42" 在范围 [-231, 231 - 1] 内，最终结果为 42 。
+```
+
+
+示例 2：
+
+```
+输入：s = "   -42"
+输出：-42
+解释：
+第 1 步："   -42"（读入前导空格，但忽视掉）
+            ^
+第 2 步："   -42"（读入 '-' 字符，所以结果应该是负数）
+             ^
+第 3 步："   -42"（读入 "42"）
+               ^
+解析得到整数 -42 。
+由于 "-42" 在范围 [-231, 231 - 1] 内，最终结果为 -42 。
+```
+
+
+示例 3：
+
+```
+输入：s = "4193 with words"
+输出：4193
+解释：
+第 1 步："4193 with words"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："4193 with words"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："4193 with words"（读入 "4193"；由于下一个字符不是一个数字，所以读入停止）
+             ^
+解析得到整数 4193 。
+由于 "4193" 在范围 [-231, 231 - 1] 内，最终结果为 4193 。
+```
+
+
+示例 4：
+
+```
+输入：s = "words and 987"
+输出：0
+解释：
+第 1 步："words and 987"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："words and 987"（当前没有读入字符，因为这里不存在 '-' 或者 '+'）
+         ^
+第 3 步："words and 987"（由于当前字符 'w' 不是一个数字，所以读入停止）
+         ^
+解析得到整数 0 ，因为没有读入任何数字。
+由于 0 在范围 [-231, 231 - 1] 内，最终结果为 0 。
+```
+
+
+示例 5：
+
+```
+输入：s = "-91283472332"
+输出：-2147483648
+解释：
+第 1 步："-91283472332"（当前没有读入字符，因为没有前导空格）
+         ^
+第 2 步："-91283472332"（读入 '-' 字符，所以结果应该是负数）
+          ^
+第 3 步："-91283472332"（读入 "91283472332"）
+                     ^
+解析得到整数 -91283472332 。
+由于 -91283472332 小于范围 [-2^31, 2^31 - 1] 的下界，最终结果被截断为 -2^31 = -2147483648 。
+```
+
+
+提示：
+
+```
+0 <= s.length <= 200
+s 由英文字母（大写和小写）、数字（0-9）、' '、'+'、'-' 和 '.' 组成
+```
+
+
+
+**暴力解法：**
+
+```java
+public static int myAtoi(String s) {
+        s = s.trim();
+        if (s.isEmpty()) {
+            return 0;
+        }
+        int start = 0;
+        while (s.charAt(start) == ' ') {
+            start++;
+        }
+        StringBuilder numStr = new StringBuilder();
+        boolean isMinus = false;
+        if (s.charAt(start) == '-') {
+            start++;
+            isMinus = true;
+        } else if (s.charAt(start) == '+') {
+            start++;
+        } else if (s.charAt(start) > '9') {
+            return 0;
+        }
+
+
+        for (int i = start; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c < '0' || c > '9') {
+                break;
+            } else {
+                numStr.append(c);
+            }
+        }
+
+        if (numStr.toString().isEmpty()) {
+            return 0;
+        }
+
+        int result = 0;
+        try {
+           result =  Integer.valueOf(isMinus ? "-" + numStr.toString(): numStr.toString());
+        } catch (NumberFormatException e) {
+            result = isMinus ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        }
+
+
+        return result;
+    }
+```
+
+![image-20210801223507554](../typora-user-images/image-20210801223507554.png)
+
+
+
+
+
+
+
+```java
+public int myAtoi(String str) {
+        str = str.trim();
+        if (str.length() == 0) return 0;
+    	//判断第一个字符是否是数字或者是 正负号
+        if (!Character.isDigit(str.charAt(0))
+            && str.charAt(0) != '-' && str.charAt(0) != '+')
+            return 0;
+        long ans = 0L;
+        boolean neg = str.charAt(0) == '-';
+        int i = !Character.isDigit(str.charAt(0)) ? 1 : 0;
+        while (i < str.length() && Character.isDigit(str.charAt(i))) {
+            ans = ans * 10 + (str.charAt(i++) - '0');
+            if (!neg && ans > Integer.MAX_VALUE) {
+                ans = Integer.MAX_VALUE;
+                break;
+            }
+            if (neg && ans > 1L + Integer.MAX_VALUE) {
+                ans = 1L + Integer.MAX_VALUE;
+                break;
+            }
+        }
+        return neg ? (int) -ans : (int) ans;
+    }
+```
+
+![image-20210801223634362](../typora-user-images/image-20210801223634362.png)
+
+
+
+### （6）[字符串循环移位包含]()
+
+```php
+s1 = AABCD, s2 = CDAA
+Return : true
+```
+
+给定两个字符串 s1 和 s2，要求判定 s2 是否能够被 s1 做循环移位得到的字符串包含。
+
+```java
+public static boolean solution(String s1,String s2) {
+        s1 = new StringBuilder().append(s1).append(s1).toString();
+        return s1.contains(s2);
+    }
+```
+
+
+
+### （9）[两个字符串包含的字符是否完全相同](https://leetcode-cn.com/problems/valid-anagram/)
+
+给定两个字符串 s 和 t ，编写一个函数来判断 t 是否是 s 的字母异位词。
+
+注意：若 s 和 t 中每个字符出现的次数都相同，则称 s 和 t 互为字母异位词。
+
+ 
+
+示例 1:
+
+```
+输入: s = "anagram", t = "nagaram"
+输出: true
+```
+
+
+示例 2:
+
+```
+输入: s = "rat", t = "car"
+输出: false
+```
+
+
+提示:
+
+```
+1 <= s.length, t.length <= 5 * 104
+s 和 t 仅包含小写字母
+```
+
+
+
+```java
+public boolean isAnagram(String s, String t) {
+         if (s.length() != t.length()) {
+            return false;
+        }
+        int[] temChar = new int[26];
+
+        for (int i = 0; i < s.length(); i++) {
+            temChar[s.charAt(i) - 'a']++;
+        }
+
+        for (int i = 0; i < t.length(); i++) {
+                temChar[t.charAt(i)-'a']--;
+                if (temChar[t.charAt(i)-'a']<0) {
+                    return false;
+                }
+        }
+        return true;
+    }
+```
+
+![image-20210801232657454](../typora-user-images/image-20210801232657454.png)
+
+
+
+
 
 ### （10）[计算一组字符集合可以组成的回文字符串的最大长度](github/Leetcode 题解 字符串.md#5-计算一组字符集合可以组成的回文字符串的最大长度)
 
