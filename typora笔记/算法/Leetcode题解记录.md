@@ -4666,13 +4666,304 @@ public boolean isAnagram(String s, String t) {
 
 
 
-### （10）[计算一组字符集合可以组成的回文字符串的最大长度](github/Leetcode 题解 字符串.md#5-计算一组字符集合可以组成的回文字符串的最大长度)
+### （10）[最长回文串](https://leetcode-cn.com/problems/longest-palindrome/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)
 
-### （11）[字符串同构](github/Leetcode 题解 字符串.md#6-字符串同构)
+给定一个包含大写字母和小写字母的字符串，找到通过这些字母构造成的最长的回文串。
 
-### （12）[回文子字符串个数](github/Leetcode 题解 字符串.md#7-回文子字符串个数)
+在构造过程中，请注意区分大小写。比如 "Aa" 不能当做一个回文字符串。
 
-### （13）[判断一个整数是否是回文数](github/Leetcode 题解 字符串.md#8-判断一个整数是否是回文数)
+注意:
+假设字符串的长度不会超过 1010。
+
+示例 1:
+
+```
+输入: "abccccdd"
+
+输出: 7
+
+解释:可以构造的最长的回文串是"dccaccd", 它的长度是 7。
+```
+
+
+
+可以将每个字符使用偶数次，使得它们根据回文中心对称。在这之后，如果有剩余的字符，可以再取出一个，作为回文中心。
+
+
+
+**哈希：**
+
+```java
+public int longestPalindrome(String s) {
+        Map<Character,Integer> mapTem = new HashMap<>();
+
+        for (int i = 0; i < s.length(); i++) {
+            mapTem.put(s.charAt(i),mapTem.getOrDefault(s.charAt(i),0)+1);
+        }
+
+        int result = 0;
+        boolean hasSingle = false;
+        Iterator<Map.Entry<Character, Integer>> iterator = mapTem.entrySet().iterator();
+        while (iterator.hasNext()) {
+            int currValue = iterator.next().getValue();
+            result +=  currValue / 2 * 2;
+            if (currValue % 2 == 1) {
+                hasSingle = true;
+            }
+            
+        }
+        return hasSingle ? result+1: result;
+    }
+```
+
+![image-20210802220645467](../typora-user-images/image-20210802220645467.png)
+
+
+
+
+
+**数组：**
+
+
+
+```java
+public int longestPalindrome(String s) {
+        int[] temArr = new int['z'-'A'+1];
+
+        for (int i = 0; i < s.length(); i++) {
+            temArr[s.charAt(i)-'A']++;
+        }
+
+        int result = 0;
+        boolean hasSingle = false;
+        for (int i = 0; i < temArr.length; i++) {
+            result += temArr[i] / 2 * 2;
+            if (temArr[i] % 2 == 1) {
+                hasSingle = true;
+            }
+        }
+
+        return hasSingle ? result+1: result;
+    }
+```
+
+![image-20210802220940378](../typora-user-images/image-20210802220940378.png)
+
+
+
+### （11）[字符串同构](https://leetcode-cn.com/problems/isomorphic-strings/)
+
+给定两个字符串 s 和 t，判断它们是否是同构的。
+
+如果 s 中的字符可以按某种映射关系替换得到 t ，那么这两个字符串是同构的。
+
+每个出现的字符都应当映射到另一个字符，同时不改变字符的顺序。不同字符不能映射到同一个字符上，相同字符只能映射到同一个字符上，字符可以映射到自己本身。
+
+ 
+
+示例 1:
+
+```
+输入：s = "egg", t = "add"
+输出：true
+```
+
+
+示例 2：
+
+```
+输入：s = "foo", t = "bar"
+输出：false
+```
+
+
+示例 3：
+
+```
+输入：s = "paper", t = "title"
+输出：true
+```
+
+
+提示：
+
+```
+可以假设 s 和 t 长度相同。
+```
+
+
+
+**哈希双映射：**
+
+```java
+public boolean isIsomorphic(String s, String t) {
+        Map<Character, Character> s2t = new HashMap<Character, Character>();
+        Map<Character, Character> t2s = new HashMap<Character, Character>();
+        int len = s.length();
+        for (int i = 0; i < len; ++i) {
+            char x = s.charAt(i), y = t.charAt(i);
+            if ((s2t.containsKey(x) && s2t.get(x) != y) || (t2s.containsKey(y) && t2s.get(y) != x)) {
+                return false;
+            }
+            s2t.put(x, y);
+            t2s.put(y, x);
+        }
+        return true;
+    }
+```
+
+![image-20210802224119748](../typora-user-images/image-20210802224119748.png)
+
+
+
+### （12）[回文子字符串个数](https://leetcode-cn.com/problems/palindromic-substrings/)
+
+给定一个字符串，你的任务是计算这个字符串中有多少个回文子串。
+
+具有不同开始位置或结束位置的子串，即使是由相同的字符组成，也会被视作不同的子串。
+
+ 
+
+示例 1：
+
+```
+输入："abc"
+输出：3
+解释：三个回文子串: "a", "b", "c"
+```
+
+
+示例 2：
+
+```
+输入："aaa"
+输出：6
+解释：6个回文子串: "a", "a", "a", "aa", "aa", "aaa"
+```
+
+
+
+
+
+**中心扩展：**
+
+挨个遍历，只不过，中心可能是1个字符也可能是2个字符而已，
+
+不可能出现3个字符作为中心的情况，因为3个字符作为中心的话，他就是回文了，等于1个字符作为中心的情况
+
+```java
+public int countSubstrings(String s) {
+        int num = 0;
+        int n = s.length(); 
+        for(int i=0;i<n;i++)//遍历回文中心点
+        {
+            for(int j=0;j<=1;j++)//j=0,中心是一个点，j=1,中心是两个点
+            {
+                int l = i;
+                int r = i+j;
+                while(l>=0 && r<n && s.charAt(l--)==s.charAt(r++))num++;
+            }
+        }
+        return num;
+    }
+```
+
+![image-20210802230635564](../typora-user-images/image-20210802230635564.png)
+
+
+
+
+
+
+
+
+
+
+
+### （13）[判断一个整数是否是回文数](https://leetcode-cn.com/problems/palindrome-number/)
+
+给你一个整数 x ，如果 x 是一个回文整数，返回 true ；否则，返回 false 。
+
+回文数是指正序（从左向右）和倒序（从右向左）读都是一样的整数。例如，121 是回文，而 123 不是。
+
+ 
+
+示例 1：
+
+```
+输入：x = 121
+输出：true
+```
+
+
+示例 2：
+
+```
+输入：x = -121
+输出：false
+解释：从左向右读, 为 -121 。 从右向左读, 为 121- 。因此它不是一个回文数。
+```
+
+
+
+
+
+```java
+public boolean isPalindrome(int x) {
+        if (x<0) {
+            return false;
+        }
+        if (x < 10) {
+            return true;
+        }
+        int tem = x;
+        int[] temArr = new int[10];
+        int i=0;
+        while (x!=0) {
+            temArr[i++] = x % 10;
+            x = x/10;
+        }
+
+        int temSum = 0;
+        for (int j = 0;j < i ; j++) {
+            temSum = temSum * 10 + temArr[j];
+        }
+
+        return temSum == tem;
+    }
+```
+
+![image-20210802235207706](../typora-user-images/image-20210802235207706.png)
+
+
+
+
+
+```java
+public boolean isPalindrome(int x) {
+        // 特殊情况：
+        // 如上所述，当 x < 0 时，x 不是回文数。
+        // 同样地，如果数字的最后一位是 0，为了使该数字为回文，
+        // 则其第一位数字也应该是 0
+        // 只有 0 满足这一属性
+        if (x < 0 || (x % 10 == 0 && x != 0)) {
+            return false;
+        }
+
+        int revertedNumber = 0;
+        while (x > revertedNumber) {
+            revertedNumber = revertedNumber * 10 + x % 10;
+            x /= 10;
+        }
+
+        // 当数字长度为奇数时，我们可以通过 revertedNumber/10 去除处于中位的数字。
+        // 例如，当输入为 12321 时，在 while 循环的末尾我们可以得到 x = 12，revertedNumber = 123，
+        // 由于处于中位的数字不影响回文（它总是与自己相等），所以我们可以简单地将其去除。
+        return x == revertedNumber || x == revertedNumber / 10;
+    }
+```
+
+![image-20210802235450508](../typora-user-images/image-20210802235450508.png)
 
 ### （14）[统计二进制字符串中连续 1 和连续 0 数量相同的子字符串个数](github/Leetcode 题解 字符串.md#9-统计二进制字符串中连续-1-和连续-0-数量相同的子字符串个数)
 
