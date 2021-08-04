@@ -5139,9 +5139,116 @@ public static int hammingDistance(int x, int y) {
     }
 ```
 
+![1628084296552](../typora-user-images/1628084296552.png)
 
 
-### （2）[数组中唯一一个不重复的元素](github/Leetcode 题解 位运算.md#2-数组中唯一一个不重复的元素)
+
+```java
+public static int hammingDistance(int x, int y) {
+        int count = 0;
+        for (int i = 31; i >=0; i--) {
+            int temX = x>>i;
+            int temY = y>>i;
+            if ((temX == 0 && temY != 0) || (temY == 0 && temX != 0)) {
+                count++;
+            }
+            if (temX != 0) {
+                x -= (1 << i);
+            }
+            if (temY != 0) {
+                y -= (1 << i);
+            }
+        }
+        return count;
+    }
+```
+
+![1628086734025](../typora-user-images/1628086734025.png)
+
+
+
+
+
+**异或：**
+
+![1628087018710](../typora-user-images/1628087018710.png)
+
+计算 x 和 y之间的汉明距离，可以先计算 x⊕*y*，然后统计结果中等于 1 的位数。
+
+现在，原始问题转换为位计数问题
+
+```java
+class Solution {
+    public int hammingDistance(int x, int y) {
+        return Integer.bitCount(x ^ y);
+    }
+}
+```
+
+
+
+### （2）[数组中唯一一个不重复的元素](https://leetcode-cn.com/problems/single-number/)
+
+给定一个非空整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
+
+说明：
+
+你的算法应该具有线性时间复杂度。 你可以不使用额外空间来实现吗？
+
+示例 1:
+
+```
+输入: [2,2,1]
+输出: 1
+```
+
+
+示例 2:
+
+```
+输入: [4,1,2,1,2]
+输出: 4
+```
+
+
+
+**异或：**
+
+遍历整个数组，依次进行异或操作，
+
+如果有相同的数字，会相互抵消
+
+如果有不同的数字，最后会剩下这个数字
+
+
+
+异或运算有以下三个性质。
+
+- 任何数和 0 做异或运算，结果仍然是原来的数，即 a^0 = a
+- 任何数和其自身做异或运算，结果是 0，即 a^a = 0
+- 异或运算满足交换律和结合律，即a^b^a = b^a^a = b^(a^a) = b^0 = b
+
+
+
+
+
+```java
+public int singleNumber(int[] nums) {
+        int tem = 0;
+        for (int i = 0; i < nums.length; i++) {
+            tem^=nums[i];
+        }
+        return tem;
+    }
+```
+
+![1628087949774](../typora-user-images/1628087949774.png)
+
+
+
+
+
+
 
 ### （3）[找出数组中缺失的那个数](github/Leetcode 题解 位运算.md#3-找出数组中缺失的那个数)
 
