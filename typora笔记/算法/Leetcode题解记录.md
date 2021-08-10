@@ -5781,7 +5781,87 @@ public boolean isPowerOfFour(int n) {
 
 ### （9）[判断一个数的位级表示是否不会出现连续的 0 和 1](github/Leetcode 题解 位运算.md#9-判断一个数的位级表示是否不会出现连续的-0-和-1)
 
-### （10）[求一个数的补码](github/Leetcode 题解 位运算.md#10-求一个数的补码)
+### （10）[求一个数的补码](https://leetcode-cn.com/problems/number-complement/)
+
+给你一个 **正** 整数 `num` ，输出它的补数。补数是对该数的二进制表示取反。
+
+
+
+示例 1：
+
+```
+输入：num = 5
+输出：2
+解释：5 的二进制表示为 101（没有前导零位），其补数为 010。所以你需要输出 2 。
+```
+
+
+示例 2：
+
+```
+输入：num = 1
+输出：0
+解释：1 的二进制表示为 1（没有前导零位），其补数为 0。所以你需要输出 0 。
+```
+
+
+提示：
+
+```
+给定的整数 num 保证在 32 位带符号整数的范围内。
+num >= 1
+你可以假定二进制数不包含前导零位。
+```
+
+
+
+```JAVA
+public int findComplement(int num) {
+        char tem[] = new char[32];
+
+        for (int i = 31; i >= 0; i--) {
+            if (num>>i != 0) {
+                tem[i] = '1';
+                num -= 1<<i;
+            } else {
+                tem[i] = '0';
+            }
+        }
+
+
+        int index = 31;
+        for (int i = 31; i >= 0; i--) {
+            if (tem[i] == '1') {
+                index = i;
+                break;
+            }
+        }
+
+        int result = 0;
+        for (int i = 0; i <= index ; i++) {
+            result += (tem[i] == '1')? 0 : 1<<i;
+        }
+        return result;
+    }
+```
+
+![image-20210811002003760](../typora-user-images/image-20210811002003760.png)
+
+
+
+对于 00000101，要求补码可以将它与 00000111 进行异或操作。那么问题就转换为求掩码 00000111。
+
+```java
+public int findComplement(int num) {
+        if (num == 0) return 1;
+        int mask = 1 << 30;
+        while ((num & mask) == 0) mask >>= 1;
+        mask = (mask << 1) - 1;
+        return num ^ mask;
+    }
+```
+
+![image-20210811002844300](../typora-user-images/image-20210811002844300.png)
 
 ### （11）[实现整数的加法](https://leetcode-cn.com/problems/sum-of-two-integers/)
 
