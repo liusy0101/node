@@ -5972,13 +5972,369 @@ public int getSum(int a, int b) {
 
 ## 十二、双指针
 
-### （1）[有序数组的 Two Sum](github/Leetcode 题解 双指针.md#1-有序数组的-two-sum)
+### （1）[有序数组的 Two Sum](https://leetcode-cn.com/problems/two-sum-ii-input-array-is-sorted/)
 
-### （2）[两数平方和](github/Leetcode 题解 双指针.md#2-两数平方和)
+给定一个已按照 升序排列  的整数数组 numbers ，请你从数组中找出两个数满足相加之和等于目标数 target 。
 
-### （3）[反转字符串中的元音字符](github/Leetcode 题解 双指针.md#3-反转字符串中的元音字符)
+函数应该以长度为 2 的整数数组的形式返回这两个数的下标值。numbers 的下标 从 1 开始计数 ，所以答案数组应当满足 1 <= answer[0] < answer[1] <= numbers.length 。
 
-### （4）[回文字符串](github/Leetcode 题解 双指针.md#4-回文字符串)
+你可以假设每个输入只对应唯一的答案，而且你不可以重复使用相同的元素。
+
+
+示例 1：
+
+```
+输入：numbers = [2,7,11,15], target = 9
+输出：[1,2]
+解释：2 与 7 之和等于目标数 9 。因此 index1 = 1, index2 = 2 。
+```
+
+
+示例 2：
+
+```
+输入：numbers = [2,3,4], target = 6
+输出：[1,3]
+```
+
+
+示例 3：
+
+```
+输入：numbers = [-1,0], target = -1
+输出：[1,2]
+```
+
+
+提示：
+
+```
+2 <= numbers.length <= 3 * 10^4
+-1000 <= numbers[i] <= 1000
+numbers 按 递增顺序 排列
+-1000 <= target <= 1000
+仅存在一个有效答案
+```
+
+
+
+**双指针：**
+
+使用双指针，一个指针指向值较小的元素，一个指针指向值较大的元素。指向较小元素的指针从头向尾遍历，指向较大元素的指针从尾向头遍历。
+
+- 如果两个指针指向元素的和 sum == target，那么得到要求的结果；
+- 如果 sum \> target，移动较大的元素，使 sum 变小一些；
+- 如果 sum \< target，移动较小的元素，使 sum 变大一些。
+
+```java
+public int[] twoSum(int[] numbers, int target) {
+         int i  = 0 , j = numbers.length-1;
+
+        while (i<j) {
+            int sum  = numbers[i] + numbers[j];
+            if (sum == target) {
+                return new int[]{i+1,j+1};
+            } else if (sum > target){
+                j--;
+            } else {
+                i++;
+            }
+        }
+        return null;
+    }
+```
+
+![image-20210811220934989](../typora-user-images/image-20210811220934989.png)
+
+
+
+
+
+
+
+
+
+### （2）[两数平方和](https://leetcode-cn.com/problems/sum-of-square-numbers/)
+
+给定一个非负整数 c ，你要判断是否存在两个整数 a 和 b，使得 a^2 + b^2 = c 。
+
+ 
+
+示例 1：
+
+```
+输入：c = 5
+输出：true
+解释：1 * 1 + 2 * 2 = 5
+```
+
+
+示例 2：
+
+```
+输入：c = 3
+输出：false
+```
+
+
+示例 3：
+
+```
+输入：c = 4
+输出：true
+```
+
+
+示例 4：
+
+```
+输入：c = 2
+输出：true
+```
+
+
+示例 5：
+
+```
+输入：c = 1
+输出：true
+```
+
+
+提示：
+
+```
+0 <= c <= 2^31 - 1
+```
+
+
+
+1、先算出c的平方根 d 的大致数字
+
+2、然后在0~d 进行双指针查找
+
+```java
+public boolean judgeSquareSum(int c) {
+        if (c == 0 || c == 1) {
+            return true;
+        }
+
+        int i = 0, j = c/2;
+
+        while (i<j) {
+            int mid = i + (j-i+1)/2;
+            if (mid > c/mid) {
+                j = mid-1;
+            } else {
+                i = mid;
+            }
+        }
+        j = i;
+        i = 0;
+
+
+        while (i<=j) {
+            long currVal = i*i + j*j;
+            if (currVal == c) {
+                return true;
+            } else if (currVal < c){
+                i++;
+            } else {
+                j--;
+            }
+        }
+        return false;
+    }
+```
+
+![image-20210811223813231](../typora-user-images/image-20210811223813231.png)
+
+
+
+也可直接调用java的平方根函数
+
+```java
+public boolean judgeSquareSum(int c) {
+        long left = 0;
+        long right = (long) Math.sqrt(c);
+        while (left <= right) {
+            long sum = left * left + right * right;
+            if (sum == c) {
+                return true;
+            } else if (sum > c) {
+                right--;
+            } else {
+                left++;
+            }
+        }
+        return false;
+    }
+```
+
+![image-20210811224504429](../typora-user-images/image-20210811224504429.png)
+
+
+
+### （3）[反转字符串中的元音字符](https://leetcode-cn.com/problems/reverse-vowels-of-a-string/)
+
+编写一个函数，以字符串作为输入，反转该字符串中的元音字母。
+
+ 
+
+示例 1：
+
+```
+输入："hello"
+输出："holle"
+```
+
+
+示例 2：
+
+```
+输入："leetcode"
+输出："leotcede"
+```
+
+
+提示：
+
+```
+元音字母不包含字母 "y" 。
+```
+
+
+
+
+
+```java
+Set<Character> temSet = new HashSet<>();
+        temSet.add('a');
+        temSet.add('e');
+        temSet.add('i');
+        temSet.add('o');
+        temSet.add('u');
+        temSet.add('A');
+        temSet.add('E');
+        temSet.add('I');
+        temSet.add('O');
+        temSet.add('U');
+
+        char[] temChar = s.toCharArray();
+
+        int i = 0 ,j = temChar.length-1;
+
+        while (i<=j) {
+            char jc = temChar[j];
+            char ic = temChar[i];
+            if (temSet.contains(jc) && temSet.contains(ic)) {
+                char tem = jc;
+                temChar[j] = ic;
+                temChar[i] = tem;
+                i++;
+                j--;
+            } else {
+                if (temSet.contains(ic)) {
+                    j--;
+                } else if (temSet.contains(jc)){
+                    i++;
+                } else {
+                    i++;
+                    j--;
+                }
+            }
+        }
+
+        return new String(temChar);
+```
+
+![image-20210811230001330](../typora-user-images/image-20210811230001330.png)
+
+
+
+
+
+
+
+
+
+
+
+### （4）[回文字符串](https://leetcode-cn.com/problems/valid-palindrome-ii/)
+
+给定一个非空字符串 s，最多删除一个字符。判断是否能成为回文字符串。
+
+ 
+
+示例 1:
+
+```
+输入: s = "aba"
+输出: true
+```
+
+
+示例 2:
+
+```
+输入: s = "abca"
+输出: true
+解释: 你可以删除c字符。
+```
+
+
+示例 3:
+
+```
+输入: s = "abc"
+输出: false
+```
+
+
+提示:
+
+```
+1 <= s.length <= 10^5
+s 由小写英文字母组成
+```
+
+
+
+
+
+**贪心算法：**
+
+定义左右指针，初始时分别指向字符串的第一个字符和最后一个字符，每次判断左右指针指向的字符是否相同，如果不相同，则不是回文串；如果相同，则将左右指针都往中间移动一位，直到左右指针相遇，则字符串是回文串。
+
+如果不相同，验证 s[low+1,high] 或者是 s[low,high-1] 是否为回文字符串 
+
+```java
+public boolean validPalindrome(String s) {
+        int low = 0, high = s.length() - 1;
+        while (low < high) {
+            char c1 = s.charAt(low), c2 = s.charAt(high);
+            if (c1 == c2) {
+                ++low;
+                --high;
+            } else {
+                return validPalindrome(s, low, high - 1) || validPalindrome(s, low + 1, high);
+            }
+        }
+        return true;
+    }
+
+    public boolean validPalindrome(String s, int low, int high) {
+        for (int i = low, j = high; i < j; ++i, --j) {
+            char c1 = s.charAt(i), c2 = s.charAt(j);
+            if (c1 != c2) {
+                return false;
+            }
+        }
+        return true;
+    }
+```
+
+![image-20210811231948020](../typora-user-images/image-20210811231948020.png)
 
 ### （5）[归并两个有序数组](github/Leetcode 题解 双指针.md#5-归并两个有序数组)
 
