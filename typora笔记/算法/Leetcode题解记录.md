@@ -6488,7 +6488,70 @@ public boolean hasCycle(ListNode head) {
 
 ![image-20210812235733218](../typora-user-images/image-20210812235733218.png)
 
-### （7）[最长子序列](github/Leetcode 题解 双指针.md#7-最长子序列)
+### （7）[最长子序列](https://leetcode-cn.com/problems/longest-word-in-dictionary-through-deleting/)
+
+给你一个字符串 s 和一个字符串数组 dictionary 作为字典，找出并返回字典中最长的字符串，该字符串可以通过删除 s 中的某些字符得到。
+
+如果答案不止一个，返回长度最长且字典序最小的字符串。如果答案不存在，则返回空字符串。
+
+ 
+
+示例 1：
+
+```
+输入：s = "abpcplea", dictionary = ["ale","apple","monkey","plea"]
+输出："apple"
+```
+
+
+示例 2：
+
+```
+输入：s = "abpcplea", dictionary = ["a","b","c"]
+输出："a"
+```
+
+
+提示：
+
+```
+1 <= s.length <= 1000
+1 <= dictionary.length <= 1000
+1 <= dictionary[i].length <= 1000
+s 和 dictionary[i] 仅由小写英文字母组
+```
+
+
+
+
+
+通过删除字符串 s 中的一个字符能得到字符串 t，可以认为 t 是 s 的子序列，我们可以使用双指针来判断一个字符串是否为另一个字符串的子序列。
+
+```java
+public String findLongestWord(String s, List<String> dictionary) {
+        int maxLen = 0;
+        String result = "";
+
+        for (String sub : dictionary) {
+            int i = 0 ,j = 0;
+            while (i<s.length() && j<sub.length()) {
+                if (s.charAt(i) == sub.charAt(j)) {
+                    j++;
+                } 
+                i++;
+            }
+            if (j == sub.length()) {
+                if (j>maxLen || (j == maxLen && result.compareTo(sub)>0)) {
+                    result = sub;
+                    maxLen = j;
+                }
+            }
+        }
+        return result;
+    }
+```
+
+![image-20210815005807560](C:/Users/Administrator/Desktop/image-20210815005807560.png)
 
 
 
