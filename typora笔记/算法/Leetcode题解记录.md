@@ -6688,7 +6688,175 @@ public class Bintree {
 
 ### （3）实现二叉树前、中、后序以及按层遍历
 
+经典的方法有三种，前序遍历、中序遍历和后序遍历。
+
+其中，前、中、后序，表示的是节点与它的左右子树节点遍历打印的先后顺序。
+
+1. 前序遍历是指，对于树中的任意节点来说，先打印这个节点，然后再打印它的左子树，最后打印它的右子树。
+2. 中序遍历是指，对于树中的任意节点来说，先打印它的左子树，然后再打印它本身，最后打印它的右子树。
+3. 后序遍历是指，对于树中的任意节点来说，先打印它的左子树，然后再打印它的右子树，最后打印这个节点本身。
+
+
+
+**前序遍历：**
+
+```java
+private static void frontTraver(Node root) {
+    System.out.println(root.getValue());
+    if (root.getLeft() != null) {
+        frontTraver(root.getLeft());
+    }
+    if (root.getRight() != null) {
+        frontTraver(root.getRight());
+    }
+}
+```
+
+
+
+**中序遍历：**
+
+```java
+private static void middleTraver(Node root) {
+
+        if (root.getLeft() != null) {
+            middleTraver(root.getLeft());
+        }
+        System.out.println(root.getValue());
+        if (root.getRight() != null) {
+            middleTraver(root.getRight());
+        }
+    }
+```
+
+
+
+**后序遍历：**
+
+```java
+private static void backendTraver(Node root) {
+        if (root.getLeft() != null) {
+            backendTraver(root.getLeft());
+        }
+        if (root.getRight() != null) {
+            backendTraver(root.getRight());
+        }
+        System.out.println(root.getValue());
+    }
+```
+
+
+
+
+
+**按层遍历：**
+
+```java
+private static void levelTraver(Node root) {
+        Queue<Node> queue = new LinkedBlockingQueue<>();
+
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            Node poll = queue.poll();
+            System.out.println(poll.getValue());
+            if (poll.getLeft() != null) {
+                queue.add(poll.getLeft());
+            }
+            if (poll.getRight() != null) {
+                queue.add(poll.getRight());
+            }
+        }
+
+    }
+```
+
+
+
+
+
+
+
 ### （4）[翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/)
+
+翻转一棵二叉树。
+
+示例：
+
+输入：
+
+          4
+        /   \
+      2       7
+     / \     / \
+    1   3   6   9
+
+输出：
+
+          4
+        /   \
+      7      2
+     / \    / \
+    9   6  3   1
+
+
+**使用队列：**
+
+```java
+public TreeNode invertTree(TreeNode root) {
+        if (root == null) {
+            return root;
+        }
+        Queue<TreeNode> queue = new LinkedBlockingQueue<>();
+        
+        queue.add(root);
+        
+        while (!queue.isEmpty()) {
+            TreeNode poll = queue.poll();
+            TreeNode tem = poll.left;
+            poll.left = poll.right;
+            poll.right = tem;
+            
+            if (poll.left != null) {
+                queue.add(poll.left);
+            } 
+            
+            if (poll.right != null) {
+                queue.add(poll.right);
+            }
+        }
+        return root;
+    }
+```
+
+
+
+![image-20210816234036920](../typora-user-images/image-20210816234036920.png)
+
+
+
+
+
+**递归：**
+
+从根节点开始，递归地对树进行遍历，并从叶子节点先开始翻转。如果当前遍历到的节点 root 的左右两棵子树都已经翻转，那么我们只需要交换两棵子树的位置，即可完成以 root 为根节点的整棵子树的翻转。
+
+```java
+public TreeNode invertTree(TreeNode root) {
+        if (root == null) {
+            return null;
+        }
+        TreeNode left = invertTree(root.left);
+        TreeNode right = invertTree(root.right);
+        root.left = right;
+        root.right = left;
+        return root;
+    }
+```
+
+![image-20210816234229504](../typora-user-images/image-20210816234229504.png)
+
+
 
 ### （5）[二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
 
