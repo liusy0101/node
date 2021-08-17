@@ -6860,6 +6860,77 @@ public TreeNode invertTree(TreeNode root) {
 
 ### （5）[二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
 
+给定一个二叉树，找出其最大深度。
+
+二叉树的深度为根节点到最远叶子节点的最长路径上的节点数。
+
+说明: 叶子节点是指没有子节点的节点。
+
+示例：
+给定二叉树 [3,9,20,null,null,15,7]，
+
+        3
+       / \
+      9  20
+        /  \
+       15   7
+
+返回它的最大深度 3 。
+
+
+
+**深度优先搜索：**
+
+```java
+public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        } else {
+            int leftHeight = maxDepth(root.left);
+            int rightHeight = maxDepth(root.right);
+            return Math.max(leftHeight, rightHeight) + 1;
+        }
+    }
+```
+
+![image-20210818000549020](../typora-user-images/image-20210818000549020.png)
+
+
+
+
+
+**广度优先搜索：**
+
+```java
+public int maxDepth2(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        Queue<TreeNode> queue = new LinkedBlockingQueue<>();
+
+        queue.add(root);
+        int ans = 0;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            while (size > 0) {
+                TreeNode node = queue.poll();
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+                size--;
+            }
+            ans++;
+        }
+        return ans;
+
+    }
+```
+
+![image-20210818001157828](../typora-user-images/image-20210818001157828.png)
+
 ### （6）[验证二叉查找树](https://leetcode-cn.com/problems/validate-binary-search-tree/)
 
 ### （7）[路径总和](https://leetcode-cn.com/problems/path-sum/)
