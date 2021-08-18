@@ -6933,7 +6933,199 @@ public int maxDepth2(TreeNode root) {
 
 ### （6）[验证二叉查找树](https://leetcode-cn.com/problems/validate-binary-search-tree/)
 
+给定一个二叉树，判断其是否是一个有效的二叉搜索树。
+
+假设一个二叉搜索树具有如下特征：
+
+- 节点的左子树只包含小于当前节点的数。
+
+- 节点的右子树只包含大于当前节点的数。
+
+- 所有左子树和右子树自身必须也是二叉搜索树。
+
+  
+
+  示例 1:
+
+```
+输入:
+    2
+   / \
+  1   3
+输出: true
+```
+
+
+示例 2:
+
+```
+输入:
+    5
+   / \
+  1   4
+     / \
+    3   6
+输出: false
+解释: 输入为: [5,1,4,null,null,3,6]。
+     根节点的值为 5 ，但是其右子节点值为 4 。
+```
+
+
+
+
+
+
+**中序遍历：**
+
+二叉查找树经过中序遍历之后就是有序的。
+
+```java
+public static boolean isValidBST(TreeNode root) {
+        List<Integer> list = new ArrayList<>();
+        middleTrave(root,list);
+
+        for (int i = 1; i < list.size(); i++) {
+            if (list.get(i) <= list.get(i-1)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    private static void middleTrave(TreeNode root, List<Integer> list) {
+
+        if (root.left != null) {
+            middleTrave(root.left,list);
+        }
+        list.add(root.val);
+        if (root.right != null) {
+            middleTrave(root.right,list);
+        }
+    }
+```
+
+![image-20210818231825070](../typora-user-images/image-20210818231825070.png)
+
+
+
+
+
+**递归：**
+
+设计一个递归函数 helper(root, lower, upper) 来递归判断，函数表示考虑以 root 为根的子树，判断子树中所有节点的值是否都在 (l,r) 的范围内（注意是开区间）。如果 root 节点的值 val 不在 (l,r) 的范围内说明不满足条件直接返回，否则我们要继续递归调用检查它的左右子树是否满足，如果都满足才说明这是一棵二叉搜索树。
+
+```java
+public boolean isValidBST(TreeNode root) {
+        return isValidBST(root, Long.MIN_VALUE, Long.MAX_VALUE);
+    }
+
+    public boolean isValidBST(TreeNode node, long lower, long upper) {
+        if (node == null) {
+            return true;
+        }
+        if (node.val <= lower || node.val >= upper) {
+            return false;
+        }
+        return isValidBST(node.left, lower, node.val) && isValidBST(node.right, node.val, upper);
+    }
+```
+
+![image-20210818233129621](../typora-user-images/image-20210818233129621.png)
+
+
+
 ### （7）[路径总和](https://leetcode-cn.com/problems/path-sum/)
+
+给你二叉树的根节点 root 和一个表示目标和的整数 targetSum ，判断该树中是否存在 根节点到叶子节点 的路径，这条路径上所有节点值相加等于目标和 targetSum 。
+
+叶子节点 是指没有子节点的节点。
+
+ 
+
+示例 1：
+
+```
+输入：root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22
+输出：true
+```
+
+
+示例 2：
+
+```
+输入：root = [1,2,3], targetSum = 5
+输出：false
+```
+
+
+
+
+提示：
+
+```
+树中节点的数目在范围 [0, 5000] 内
+-1000 <= Node.val <= 1000
+-1000 <= targetSum <= 1000
+```
+
+
+
+**递归：**
+
+```java
+public boolean hasPathSum(TreeNode root, int sum) {
+        if (root == null) {
+            return false;
+        }
+        if (root.left == null && root.right == null) {
+            return sum == root.val;
+        }
+        return hasPathSum(root.left, sum - root.val) || hasPathSum(root.right, sum - root.val);
+    }
+```
+
+![image-20210818235219011](../typora-user-images/image-20210818235219011.png)
+
+
+
+
+
+**广度优先搜索：**
+
+```java
+public boolean hasPathSum(TreeNode root, int sum) {
+        if (root == null) {
+            return false;
+        }
+        Queue<TreeNode> queNode = new LinkedList<TreeNode>();
+        Queue<Integer> queVal = new LinkedList<Integer>();
+        queNode.offer(root);
+        queVal.offer(root.val);
+        while (!queNode.isEmpty()) {
+            TreeNode now = queNode.poll();
+            int temp = queVal.poll();
+            if (now.left == null && now.right == null) {
+                if (temp == sum) {
+                    return true;
+                }
+                continue;
+            }
+            if (now.left != null) {
+                queNode.offer(now.left);
+                queVal.offer(now.left.val + temp);
+            }
+            if (now.right != null) {
+                queNode.offer(now.right);
+                queVal.offer(now.right.val + temp);
+            }
+        }
+        return false;
+    }
+
+```
+
+
 
 ### （8）递归
 
