@@ -7151,9 +7151,132 @@ public boolean hasPathSum(TreeNode root, int sum) {
 
 ### （10）前中后序遍历
 
-  [1. 非递归实现二叉树的前序遍历](github/Leetcode 题解 树.md#1-非递归实现二叉树的前序遍历)
-  [2. 非递归实现二叉树的后序遍历](github/Leetcode 题解 树.md#2-非递归实现二叉树的后序遍历)
-  [3. 非递归实现二叉树的中序遍历](github/Leetcode 题解 树.md#3-非递归实现二叉树的中序遍历)
+  [1. 非递归实现二叉树的前序遍历](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/)
+
+给你二叉树的根节点 `root` ，返回它节点值的 **前序** 遍历。
+
+ 
+
+**示例 1：**
+
+```
+输入：root = [1,null,2,3]
+输出：[1,2,3]
+```
+
+**提示：**
+
+- 树中节点数目在范围 `[0, 100]` 内
+- `-100 <= Node.val <= 100`
+
+
+
+**利用栈：**
+
+```java
+public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+
+        if (root == null) {
+            return result;
+        }
+
+        Stack<TreeNode> stack = new Stack<>();
+
+        stack.push(root);
+
+        while (!stack.isEmpty()) {
+            TreeNode poll = stack.pop();
+            result.add(poll.val);
+
+            if (poll.right != null) {
+                stack.add(poll.right);
+            }
+            if (poll.left != null) {
+                stack.add(poll.left);
+            }
+        }
+
+        return result;
+    }
+```
+
+![image-20210819232127954](../typora-user-images/image-20210819232127954.png)
+
+  [2. 非递归实现二叉树的后序遍历](https://leetcode-cn.com/problems/binary-tree-postorder-traversal/)
+
+给定一个二叉树，返回它的 后序 遍历。
+
+示例:
+
+```
+输入: [1,null,2,3]  
+
+输出: [3,2,1]
+```
+
+
+
+前序遍历为 root -\> left -\> right，后序遍历为 left -\> right -\> root。可以修改前序遍历成为 root -\> right -\> left，那么这个顺序就和后序遍历正好相反。
+
+```java
+public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> ret = new ArrayList<>();
+        Stack<TreeNode> stack = new Stack<>();
+        stack.push(root);
+        while (!stack.isEmpty()) {
+            TreeNode node = stack.pop();
+            if (node == null) continue;
+            ret.add(node.val);
+            stack.push(node.left);
+            stack.push(node.right);
+        }
+        Collections.reverse(ret);
+        return ret;
+    }
+```
+
+![image-20210819233421985](../typora-user-images/image-20210819233421985.png)
+
+
+
+  [3. 非递归实现二叉树的中序遍历](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/)
+
+给定一个二叉树的根节点 `root` ，返回它的 **中序** 遍历。
+
+ 
+
+**示例 1：**
+
+```
+输入：root = [1,null,2,3]
+输出：[1,3,2]
+```
+
+
+
+```java
+public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> ret = new ArrayList<>();
+        if (root == null) return ret;
+        Stack<TreeNode> stack = new Stack<>();
+        TreeNode cur = root;
+        while (cur != null || !stack.isEmpty()) {
+            while (cur != null) {
+                stack.push(cur);
+                cur = cur.left;
+            }
+            TreeNode node = stack.pop();
+            ret.add(node.val);
+            cur = node.right;
+        }
+        return ret;
+    }
+```
+
+![image-20210819234644874](../typora-user-images/image-20210819234644874.png)
+
+
 
 ### （11）BST
 
