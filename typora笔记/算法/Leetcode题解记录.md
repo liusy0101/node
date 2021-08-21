@@ -7130,8 +7130,176 @@ public boolean hasPathSum(TreeNode root, int sum) {
 ### （8）递归
 
   [1. 树的高度](github/Leetcode 题解 树.md#1-树的高度)
-  [2. 平衡树](github/Leetcode 题解 树.md#2-平衡树)
-  [3. 两节点的最长路径](github/Leetcode 题解 树.md#3-两节点的最长路径)
+
+给定一个二叉树，找出其最大深度。
+
+二叉树的深度为根节点到最远叶子节点的最长路径上的节点数。
+
+说明: 叶子节点是指没有子节点的节点。
+
+示例：
+
+     给定二叉树 [3,9,20,null,null,15,7]，
+        3
+       / \
+      9  20
+        /  \
+       15   7
+    返回它的最大深度 3 。   
+
+
+**广度遍历：**
+
+```java
+public int maxDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        Queue<TreeNode> queue = new LinkedBlockingQueue<>();
+
+        queue.add(root);
+        int ans = 0;
+        while (!queue.isEmpty()) {
+            int size = queue.size();
+            while (size > 0) {
+                TreeNode node = queue.poll();
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+                size--;
+            }
+            ans++;
+        }
+        return ans;
+}
+```
+
+
+
+
+
+
+
+  [2. 平衡树](https://leetcode-cn.com/problems/balanced-binary-tree/)
+
+给定一个二叉树，判断它是否是高度平衡的二叉树。
+
+本题中，一棵高度平衡二叉树定义为：
+
+一个二叉树每个节点 的左右两个子树的高度差的绝对值不超过 1 。
+
+ 
+
+示例 1：
+
+```
+输入：root = [3,9,20,null,null,15,7]
+输出：true
+```
+
+
+示例 2：
+
+```
+输入：root = [1,2,2,3,3,null,null,4,4]
+输出：false
+```
+
+
+示例 3：
+
+```
+输入：root = []
+输出：true
+```
+
+
+提示：
+
+```
+树中的节点数在范围 [0, 5000] 内
+-10^4 <= Node.val <= 10^4
+```
+
+
+
+```java
+private boolean result = true;
+
+    public boolean isBalanced(TreeNode root) {
+        maxDepth(root);
+        return result;
+    }
+
+    public int maxDepth(TreeNode root) {
+        if (root == null) return 0;
+        int l = maxDepth(root.left);
+        int r = maxDepth(root.right);
+        if (Math.abs(l - r) > 1) result = false;
+        return 1 + Math.max(l, r);
+    }
+```
+
+![image-20210821225042138](../typora-user-images/image-20210821225042138.png)
+
+
+
+
+
+  [3. 两节点的最长路径](https://leetcode-cn.com/problems/diameter-of-binary-tree/)
+
+给定一棵二叉树，你需要计算它的直径长度。一棵二叉树的直径长度是任意两个结点路径长度中的最大值。这条路径可能穿过也可能不穿过根结点。
+
+ 
+
+示例 :
+给定二叉树
+
+          1
+         / \
+        2   3
+       / \     
+      4   5    
+返回 3, 它的长度是路径 [4,2,1,3] 或者 [5,2,1,3]。
+
+ 
+
+注意：两结点之间的路径长度是以它们之间边的数目表示。
+
+
+
+**深度优先：**
+
+首先我们知道一条路径的长度为该路径经过的节点数减一，所以求直径（即求路径长度的最大值）等效于求路径经过节点数的最大值减一。
+
+而任意一条路径均可以被看作由某个节点为起点，从其左儿子和右儿子向下遍历的路径拼接得到。
+
+
+
+```java
+private int max = 0;
+
+public int diameterOfBinaryTree(TreeNode root) {
+    depth(root);
+    return max;
+}
+
+private int depth(TreeNode root) {
+    if (root == null) return 0;
+    int leftDepth = depth(root.left);
+    int rightDepth = depth(root.right);
+    max = Math.max(max, leftDepth + rightDepth); //将每个节点最大直径(左子树深度+右子树深度)当前最大值比较并取大者
+    return Math.max(leftDepth, rightDepth) + 1; //返回节点深度
+}
+```
+
+![image-20210821230958047](../typora-user-images/image-20210821230958047.png)
+
+
+
   [4. 翻转树](github/Leetcode 题解 树.md#4-翻转树)
   [5. 归并两棵树](github/Leetcode 题解 树.md#5-归并两棵树)
   [6. 判断路径和是否等于一个数](github/Leetcode 题解 树.md#6-判断路径和是否等于一个数)
