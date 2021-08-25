@@ -7632,8 +7632,186 @@ public List<Integer> inorderTraversal(TreeNode root) {
 
 ### （11）BST
 
-  [1. 修剪二叉查找树](github/Leetcode 题解 树.md#1-修剪二叉查找树)
-  [2. 寻找二叉查找树的第 k 个元素](github/Leetcode 题解 树.md#2-寻找二叉查找树的第-k-个元素)
+  [1. 修剪二叉查找树](https://leetcode-cn.com/problems/trim-a-binary-search-tree/)
+
+给你二叉搜索树的根节点 root ，同时给定最小边界low 和最大边界 high。通过修剪二叉搜索树，使得所有节点的值在[low, high]中。修剪树不应该改变保留在树中的元素的相对结构（即，如果没有被移除，原有的父代子代关系都应当保留）。 可以证明，存在唯一的答案。
+
+所以结果应当返回修剪好的二叉搜索树的新的根节点。注意，根节点可能会根据给定的边界发生改变。
+
+ 
+
+示例 1：
+
+```
+输入：root = [1,0,2], low = 1, high = 2
+输出：[1,null,2]
+```
+
+
+示例 2：
+
+```
+输入：root = [3,0,4,null,2,null,null,1], low = 1, high = 3
+输出：[3,2,null,1]
+```
+
+
+示例 3：
+
+```
+输入：root = [1], low = 1, high = 2
+输出：[1]
+```
+
+
+示例 4：
+
+```
+输入：root = [1,null,2], low = 1, high = 3
+输出：[1,null,2]
+```
+
+
+示例 5：
+
+```
+输入：root = [1,null,2], low = 2, high = 4
+输出：[2]
+```
+
+
+提示：
+
+```
+树中节点数在范围 [1, 10^4] 内
+0 <= Node.val <= 10^4
+树中每个节点的值都是唯一的
+题目数据保证输入是一棵有效的二叉搜索树
+0 <= low <= high <= 10^4
+```
+
+
+
+**递归：**
+
+由于是二叉搜索树，
+
+当 node.val > high，那么修剪后的二叉树必定出现在节点的左边。
+
+类似地，当 node.val < low，那么修剪后的二叉树出现在节点的右边。否则，将会修剪树的两边。
+
+
+
+```java
+public TreeNode trimBST(TreeNode root, int low, int high) {
+       if (root == null) {
+            return null;
+        }
+
+        if (root.val<low) {
+            root.left = null;
+            root = trimBST(root.right,low,high);
+        } else if (root.val>high) {
+            root.right = null;
+            root = trimBST(root.left,low,high);
+        } else {
+            root.left = trimBST(root.left,low,high);
+            root.right = trimBST(root.right,low,high);
+        }
+
+        return root;
+    }
+```
+
+![image-20210825233318774](../typora-user-images/image-20210825233318774.png)
+
+
+
+
+
+  [2. 寻找二叉查找树的第 k 个元素](https://leetcode-cn.com/problems/kth-smallest-element-in-a-bst/)
+
+给定一个二叉搜索树的根节点 root ，和一个整数 k ，请你设计一个算法查找其中第 k 个最小元素（从 1 开始计数）。
+
+ 
+
+示例 1：
+
+```
+输入：root = [3,1,4,null,2], k = 1
+输出：1
+```
+
+
+示例 2：
+
+```
+输入：root = [5,3,6,2,4,null,null,1], k = 3
+输出：3
+```
+
+
+
+
+提示：
+
+```
+树中的节点数为 n 。
+1 <= k <= n <= 10^4
+0 <= Node.val <= 10^4
+```
+
+
+
+**中序遍历：**
+
+```java
+public ArrayList<Integer> inorder(TreeNode root, ArrayList<Integer> arr) {
+    if (root == null) return arr;
+    inorder(root.left, arr);
+    arr.add(root.val);
+    inorder(root.right, arr);
+    return arr;
+  }
+
+  public int kthSmallest(TreeNode root, int k) {
+    ArrayList<Integer> nums = inorder(root, new ArrayList<Integer>());
+    return nums.get(k - 1);
+  }
+```
+
+![image-20210826000132775](../typora-user-images/image-20210826000132775.png)
+
+
+
+
+
+**迭代：**
+
+利用栈进行迭代
+
+```java
+public int kthSmallest(TreeNode root, int k) {
+    LinkedList<TreeNode> stack = new LinkedList<TreeNode>();
+
+    while (true) {
+      while (root != null) {
+        stack.add(root);
+        root = root.left;
+      }
+      root = stack.removeLast();
+      if (--k == 0) return root.val;
+      root = root.right;
+    }
+  }
+```
+
+![image-20210826000236155](../typora-user-images/image-20210826000236155.png)
+
+
+
+
+
   [3. 把二叉查找树每个节点的值都加上比它大的节点的值](github/Leetcode 题解 树.md#3-把二叉查找树每个节点的值都加上比它大的节点的值)
   [4. 二叉查找树的最近公共祖先](github/Leetcode 题解 树.md#4-二叉查找树的最近公共祖先)
   [5. 二叉树的最近公共祖先](github/Leetcode 题解 树.md#5-二叉树的最近公共祖先)
