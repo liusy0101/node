@@ -7812,7 +7812,117 @@ public int kthSmallest(TreeNode root, int k) {
 
 
 
-  [3. 把二叉查找树每个节点的值都加上比它大的节点的值](github/Leetcode 题解 树.md#3-把二叉查找树每个节点的值都加上比它大的节点的值)
+  [3.把二叉搜索树转换为累加树](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/)
+
+给出二叉 搜索 树的根节点，该树的节点值各不相同，请你将其转换为累加树（Greater Sum Tree），使每个节点 node 的新值等于原树中大于或等于 node.val 的值之和。
+
+示例 1：
+
+![img](../typora-user-images/tree.png)
+
+```
+输入：[4,1,6,0,2,5,7,null,null,null,3,null,null,null,8]
+输出：[30,36,21,36,35,26,15,null,null,null,33,null,null,null,8]
+```
+
+示例 2：
+
+```
+输入：root = [0,null,1]
+输出：[1,null,1]
+```
+
+
+示例 3：
+
+```
+输入：root = [1,0,2]
+输出：[3,3,2]
+```
+
+
+示例 4：
+
+```
+输入：root = [3,2,4,1]
+输出：[7,9,4,10]
+```
+
+
+提示：
+
+```
+树中的节点数介于 0 和 10^4 之间。
+每个节点的值介于 -10^4 和 10^4 之间。
+树中的所有值 互不相同 。
+给定的树为二叉搜索树。
+```
+
+
+
+**深度遍历：**
+
+
+
+```java
+public TreeNode convertBST(TreeNode root) {
+        Stack<TreeNode> stack = new Stack<>();
+
+        stack.add(new TreeNode(0));
+        TreeNode tem = root;
+
+        int lastResult = 0;
+
+        while (!stack.isEmpty()) {
+            while (root != null) {
+                stack.push(root);
+                root = root.right;
+            }
+
+            TreeNode pop = stack.pop();
+            pop.val+=lastResult;
+            lastResult = pop.val;
+
+            if (pop.left != null) {
+                root = pop.left;
+            }
+
+        }
+        return tem;
+    }
+```
+
+
+
+
+
+**递归：**
+
+```java
+private int sum = 0;
+
+public TreeNode convertBST(TreeNode root) {
+    traver(root);
+    return root;
+}
+
+private void traver(TreeNode node) {
+    if (node == null) return;
+    traver(node.right);
+    sum += node.val;
+    node.val = sum;
+    traver(node.left);
+}
+```
+
+
+
+
+
+
+
+
+
   [4. 二叉查找树的最近公共祖先](github/Leetcode 题解 树.md#4-二叉查找树的最近公共祖先)
   [5. 二叉树的最近公共祖先](github/Leetcode 题解 树.md#5-二叉树的最近公共祖先)
   [6. 从有序数组中构造二叉查找树](github/Leetcode 题解 树.md#6-从有序数组中构造二叉查找树)
