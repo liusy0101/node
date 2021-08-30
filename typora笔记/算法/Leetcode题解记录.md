@@ -8039,7 +8039,67 @@ p 和 q 均存在于给定的二叉树中。
 
 
 
-  [6. 从有序数组中构造二叉查找树](github/Leetcode 题解 树.md#6-从有序数组中构造二叉查找树)
+  [6. 从有序数组中构造二叉查找树](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/)
+
+给你一个整数数组 nums ，其中元素已经按 升序 排列，请你将其转换为一棵 高度平衡 二叉搜索树。
+
+高度平衡 二叉树是一棵满足「每个节点的左右两个子树的高度差的绝对值不超过 1 」的二叉树。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [-10,-3,0,5,9]
+输出：[0,-3,9,-10,null,5]
+解释：[0,-10,5,null,-3,null,9] 也将被视为正确答案：
+```
+
+示例 2：
+
+```
+输入：nums = [1,3]
+输出：[3,1]
+解释：[1,3] 和 [3,1] 都是高度平衡二叉搜索树。
+```
+
+
+
+
+
+选择中间位置左边的数字作为根节点，则根节点的下标为 mid = (start + end) / 2;，此处的除法为整数除法。
+
+依次循环递归左右节点。
+
+```java
+public TreeNode sortedArrayToBST(int[] nums) {
+        return transToBST(nums,0,nums.length-1);
+    }
+
+    private TreeNode transToBST(int[] nums, int start, int end) {
+        if (start>end) {
+            return null;
+        }
+        int mid = (start + end) / 2;
+        TreeNode node = new TreeNode(nums[mid]);
+        node.right = transToBST(nums,mid+1,end);
+        node.left = transToBST(nums,start,mid-1);
+        return node;
+    }
+```
+
+![image-20210830223941106](../typora-user-images/image-20210830223941106.png)
+
+
+
+
+
+
+
+
+
+
+
   [7. 根据有序链表构造平衡的二叉查找树](github/Leetcode 题解 树.md#7-根据有序链表构造平衡的二叉查找树)
   [8. 在二叉查找树中寻找两个节点，使它们的和为一个给定值](github/Leetcode 题解 树.md#8-在二叉查找树中寻找两个节点，使它们的和为一个给定值)
   [9. 在二叉查找树中查找两个节点之差的最小绝对值](github/Leetcode 题解 树.md#9-在二叉查找树中查找两个节点之差的最小绝对值)
@@ -8055,6 +8115,137 @@ p 和 q 均存在于给定的二叉树中。
 ## 十四、堆
 
 ### （1）实现一个小顶堆、大顶堆、优先级队列
+
+
+
+**小顶堆：**
+
+```java
+public class MinHeap {
+
+
+
+    int heapArray[];
+
+    int capacity = 0;
+    int currSize = 0;
+
+
+    public MinHeap(int initSize) {
+        this.heapArray = new int[initSize];
+        this.capacity = initSize;
+        this.currSize = 0;
+    }
+
+
+
+    public void insert(int val) {
+        if (currSize>=capacity) {
+            return;
+        }
+
+        int index = ++currSize;
+        heapArray[index] = val;
+
+
+        //开始堆化
+
+        while (index>0 && heapArray[index/2] < val) {
+            heapArray[index] = heapArray[index/2];
+            heapArray[index/2] = val;
+            index = index/2;
+        }
+    }
+
+
+
+    public void deleteMin () {
+
+        heapArray[1] = heapArray[currSize--];
+
+        int swapIndex = 0;
+        //然后堆化
+        int currentVal = heapArray[1];
+        while (true) {
+            int index = 1;
+            if (index*2<capacity && heapArray[index*2]<currentVal)  {
+                swapIndex = index*2;
+            }
+            if (index*2+1<capacity && heapArray[index*2+1]<heapArray[swapIndex]) {
+                swapIndex = index*2+1;
+            }
+            if (swapIndex == index) {
+                break;
+            }
+            heapArray[index] = heapArray[swapIndex];
+            heapArray[swapIndex] = currentVal;
+            index = swapIndex;
+        }
+
+    }
+```
+
+
+
+
+
+
+
+**大顶堆：**
+
+```java
+
+public class Heap {
+  private int[] a; // 数组，从下标1开始存储数据
+  private int n;  // 堆可以存储的最大数据个数
+  private int count; // 堆中已经存储的数据个数
+
+  public Heap(int capacity) {
+    a = new int[capacity + 1];
+    n = capacity;
+    count = 0;
+  }
+
+  public void insert(int data) {
+    if (count >= n) return; // 堆满了
+    ++count;
+    a[count] = data;
+    int i = count;
+    while (i/2 > 0 && a[i] > a[i/2]) { // 自下往上堆化
+      swap(a, i, i/2); // swap()函数作用：交换下标为i和i/2的两个元素
+      i = i/2;
+    }
+  }
+    
+    
+    
+public void removeMax() {
+  if (count == 0) return -1; // 堆中没有数据
+  a[1] = a[count];
+  --count;
+  heapify(a, count, 1);
+}
+
+private void heapify(int[] a, int n, int i) { // 自上往下堆化
+  while (true) {
+    int maxPos = i;
+    if (i*2 <= n && a[i] < a[i*2]) maxPos = i*2;
+    if (i*2+1 <= n && a[maxPos] < a[i*2+1]) maxPos = i*2+1;
+    if (maxPos == i) break;
+    swap(a, i, maxPos);
+    i = maxPos;
+  }
+}
+ }
+```
+
+
+
+
+
+
+
+
 
 ### （2）实现堆排序
 
