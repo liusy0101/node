@@ -8415,9 +8415,171 @@ public int findContentChildren(int[] grid, int[] size) {
 
 
 
-### （2）[不重叠的区间个数](github/Leetcode 题解 贪心思想.md#2-不重叠的区间个数)
+### （2）[不重叠的区间个数](https://leetcode-cn.com/problems/non-overlapping-intervals/)
 
-### （3）[投飞镖刺破气球](github/Leetcode 题解 贪心思想.md#3-投飞镖刺破气球)
+给定一个区间的集合，找到需要移除区间的最小数量，使剩余区间互不重叠。
+
+注意:
+
+可以认为区间的终点总是大于它的起点。
+区间 [1,2] 和 [2,3] 的边界相互“接触”，但没有相互重叠。
+示例 1:
+
+```
+输入: [ [1,2], [2,3], [3,4], [1,3] ]
+
+输出: 1
+解释: 移除 [1,3] 后，剩下的区间没有重叠。
+```
+
+
+示例 2:
+
+```
+输入: [ [1,2], [1,2], [1,2] ]
+
+输出: 2
+
+解释: 你需要移除两个 [1,2] 来使剩下的区间没有重叠。
+```
+
+
+示例 3:
+
+```
+输入: [ [1,2], [2,3] ]
+
+输出: 0
+
+解释: 你不需要移除任何区间，因为它们已经是无重叠的了。
+```
+
+
+
+先计算最多能组成的不重叠区间个数，然后用区间总个数减去不重叠区间的个数。
+
+在每次选择中，区间的结尾最为重要，选择的区间结尾越小，留给后面的区间的空间越大，那么后面能够选择的区间个数也就越大。
+
+按区间的结尾进行排序，每次选择结尾最小，并且和前一个区间不重叠的区间。
+
+```java
+public int eraseOverlapIntervals(int[][] intervals) {
+        if (intervals.length == 0) {
+            return 0;
+        }
+
+        Arrays.sort(intervals, Comparator.comparingInt(o->o[1]));
+
+        int count = 1;
+
+        int end = intervals[0][1];
+
+        for (int i = 1; i < intervals.length; i++) {
+
+            if (intervals[i][0] < end) {
+                continue;
+            }
+
+            end = intervals[i][1];
+            count++;
+        }
+
+        return intervals.length - count;
+    }
+```
+
+![image-20210905232149201](../typora-user-images/image-20210905232149201.png)
+
+
+
+
+
+
+
+### （3）[用最少数量的箭引爆气球](https://leetcode-cn.com/problems/minimum-number-of-arrows-to-burst-balloons/)
+
+在二维空间中有许多球形的气球。对于每个气球，提供的输入是水平方向上，气球直径的开始和结束坐标。由于它是水平的，所以纵坐标并不重要，因此只要知道开始和结束的横坐标就足够了。开始坐标总是小于结束坐标。
+
+一支弓箭可以沿着 x 轴从不同点完全垂直地射出。在坐标 x 处射出一支箭，若有一个气球的直径的开始和结束坐标为 xstart，xend， 且满足  xstart ≤ x ≤ xend，则该气球会被引爆。可以射出的弓箭的数量没有限制。 弓箭一旦被射出之后，可以无限地前进。我们想找到使得所有气球全部被引爆，所需的弓箭的最小数量。
+
+给你一个数组 points ，其中 points [i] = [xstart,xend] ，返回引爆所有气球所必须射出的最小弓箭数。
+
+
+示例 1：
+
+```
+输入：points = [[10,16],[2,8],[1,6],[7,12]]
+输出：2
+解释：对于该样例，x = 6 可以射爆 [2,8],[1,6] 两个气球，以及 x = 11 射爆另外两个气球
+```
+
+
+示例 2：
+
+```
+输入：points = [[1,2],[3,4],[5,6],[7,8]]
+输出：4
+```
+
+
+示例 3：
+
+```
+输入：points = [[1,2],[2,3],[3,4],[4,5]]
+输出：2
+```
+
+
+提示：
+
+```
+1 <= points.length <= 10^4
+points[i].length == 2
+-2^31 <= xstart < xend <= 2^31 - 1
+```
+
+
+
+
+
+**排序+贪心：**
+
+考虑所有气球中右边界位置最靠左的那一个，那么一定有一支箭的射出位置就是它的右边界（否则就没有箭可以将其引爆了）。当我们确定了一支箭之后，我们就可以将这支箭引爆的所有气球移除，并从剩下未被引爆的气球中，再选择右边界位置最靠左的那一个，确定下一支箭，直到所有的气球都被引爆。
+
+
+
+```java
+public int findMinArrowShots(int[][] points) {
+        Arrays.sort(points, Comparator.comparingInt(o -> o[1]));
+
+        int startIndex = 0;
+
+        int count = 1;
+
+        for (int i = 1; i < points.length; i++) {
+            if (points[i][0]>points[startIndex][1]) { //每次跟当前气球的最右边界进行比较，如果有重叠，那么就可以引爆
+                count++;
+                startIndex = i;
+            }
+        }
+        
+        return count;
+    }
+```
+
+![image-20210905234033137](../typora-user-images/image-20210905234033137.png)
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### （4）[根据身高和序号重组队列](github/Leetcode 题解 贪心思想.md#4-根据身高和序号重组队列)
 
