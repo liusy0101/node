@@ -8661,11 +8661,242 @@ public int[][] reconstructQueue(int[][] people) {
 
 
 
-### （5）[买卖股票最大的收益](github/Leetcode 题解 贪心思想.md#5-买卖股票最大的收益)
+### （5）[买卖股票最大的收益](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
 
-### （6）[买卖股票的最大收益 II](github/Leetcode 题解 贪心思想.md#6-买卖股票的最大收益-ii)
+给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
 
-### （7）[种植花朵](github/Leetcode 题解 贪心思想.md#7-种植花朵)
+你只能选择 某一天 买入这只股票，并选择在 未来的某一个不同的日子 卖出该股票。设计一个算法来计算你所能获取的最大利润。
+
+返回你可以从这笔交易中获取的最大利润。如果你不能获取任何利润，返回 0 。
+
+ 
+
+示例 1：
+
+```
+输入：[7,1,5,3,6,4]
+输出：5
+解释：在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+     注意利润不能是 7-1 = 6, 因为卖出价格需要大于买入价格；同时，你不能在买入前卖出股票。
+```
+
+
+示例 2：
+
+```
+输入：prices = [7,6,4,3,1]
+输出：0
+解释：在这种情况下, 没有交易完成, 所以最大利润为 0。
+```
+
+
+提示：
+
+```
+1 <= prices.length <= 10^5
+0 <= prices[i] <= 10^4
+```
+
+
+
+
+
+只需记录前面一个最小的数字
+
+```java
+public int maxProfit(int[] prices) {
+        int n = prices.length;
+        if (n == 0) return 0;
+        int soFarMin = prices[0];
+        int max = 0;
+        for (int i = 1; i < n; i++) {
+            if (soFarMin > prices[i]) soFarMin = prices[i];
+            else max = Math.max(max, prices[i] - soFarMin);
+        }
+        return max;
+    }
+```
+
+![image-20210912222209412](../typora-user-images/image-20210912222209412.png)
+
+
+
+
+
+
+
+
+
+### （6）[买卖股票的最大收益 II](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)
+
+给定一个数组 prices ，其中 prices[i] 是一支给定股票第 i 天的价格。
+
+设计一个算法来计算你所能获取的最大利润。你可以尽可能地完成更多的交易（多次买卖一支股票）。
+
+注意：你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+
+ 
+
+示例 1:
+
+```
+输入: prices = [7,1,5,3,6,4]
+输出: 7
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。
+     随后，在第 4 天（股票价格 = 3）的时候买入，在第 5 天（股票价格 = 6）的时候卖出, 这笔交易所能获得利润 = 6-3 = 3 。
+```
+
+
+示例 2:
+
+```
+输入: prices = [1,2,3,4,5]
+输出: 4
+解释: 在第 1 天（股票价格 = 1）的时候买入，在第 5 天 （股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。
+     注意你不能在第 1 天和第 2 天接连购买股票，之后再将它们卖出。因为这样属于同时参与了多笔交易，你必须在再次购买前出售掉之前的股票。
+```
+
+
+示例 3:
+
+```
+输入: prices = [7,6,4,3,1]
+输出: 0
+解释: 在这种情况下, 没有交易完成, 所以最大利润为 0。
+```
+
+
+提示：
+
+```
+1 <= prices.length <= 3 * 10^4
+0 <= prices[i] <= 10
+```
+
+
+
+
+
+简化成从每天交易一次（有涨就交易）
+
+
+
+对于 [a, b, c, d]，如果有 a \<= b \<= c \<= d ，那么最大收益为 d - a。而 d - a = (d - c) + (c - b) + (b - a) ，因此当访问到一个 prices[i] 且 prices[i] - prices[i-1] \> 0，那么就把 prices[i] - prices[i-1] 添加到收益中。
+
+```java
+ public int maxProfit(int[] prices) {
+        int result  = 0;
+        
+        if (prices.length <= 1) {
+            return result;
+        }
+
+        for (int i = 1; i < prices.length; i++) {
+            if (prices[i]>prices[i-1]) {
+                result += prices[i] - prices[i-1];
+            }
+        }
+        
+        return result;
+    }
+```
+
+![image-20210912222350280](../typora-user-images/image-20210912222350280.png)
+
+### （7）[种植花朵](https://leetcode-cn.com/problems/can-place-flowers/)
+
+假设有一个很长的花坛，一部分地块种植了花，另一部分却没有。可是，花不能种植在相邻的地块上，它们会争夺水源，两者都会死去。
+
+给你一个整数数组  flowerbed 表示花坛，由若干 0 和 1 组成，其中 0 表示没种植花，1 表示种植了花。另有一个数 n ，能否在不打破种植规则的情况下种入 n 朵花？能则返回 true ，不能则返回 false。
+
+ 
+
+示例 1：
+
+```
+输入：flowerbed = [1,0,0,0,1], n = 1
+输出：true
+```
+
+
+示例 2：
+
+```
+输入：flowerbed = [1,0,0,0,1], n = 2
+输出：false
+```
+
+
+提示：
+
+```
+1 <= flowerbed.length <= 2 * 10^4
+flowerbed[i] 为 0 或 1
+flowerbed 中不存在相邻的两朵花
+0 <= n <= flowerbed.length
+```
+
+
+
+**暴力解法：**
+
+```java
+public boolean canPlaceFlowers(int[] flowerbed, int n) {
+        int len = flowerbed.length;
+        if (n == 0) {
+            return true;
+        }
+        if (len == 1) {
+            if (flowerbed[0] == 0) {
+                return n == 1;
+            } else {
+                return n == 0;
+            }
+        }
+        
+
+        for (int i = 0; i < len && n>0; i++) {
+            if (flowerbed[i] == 1 
+                    || (flowerbed[i] == 0 && ((i>0 && flowerbed[i-1] == 1) || (i<len-1 && flowerbed[i+1] == 1)) )) {
+                continue;
+            } else {
+                flowerbed[i] = 1;
+                n--;
+            }
+        }
+
+        return n == 0;
+    }
+```
+
+![image-20210912224654524](../typora-user-images/image-20210912224654524.png)
+
+
+
+
+
+```java
+ public boolean canPlaceFlowers(int[] flowerbed, int n) {
+        int len = flowerbed.length;
+        int cnt = 0;
+        for (int i = 0; i < len && cnt < n; i++) {
+            if (flowerbed[i] == 1) {
+                continue;
+            }
+            int pre = i == 0 ? 0 : flowerbed[i - 1];
+            int next = i == len - 1 ? 0 : flowerbed[i + 1];
+            if (pre == 0 && next == 0) {
+                cnt++;
+                flowerbed[i] = 1;
+            }
+        }
+        return cnt >= n;
+    }
+```
+
+![image-20210912225414762](../typora-user-images/image-20210912225414762.png)
+
+
 
 ### （8）[判断是否为子序列](github/Leetcode 题解 贪心思想.md#8-判断是否为子序列)
 
