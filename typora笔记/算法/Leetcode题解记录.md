@@ -8898,9 +8898,197 @@ public boolean canPlaceFlowers(int[] flowerbed, int n) {
 
 
 
-### （8）[判断是否为子序列](github/Leetcode 题解 贪心思想.md#8-判断是否为子序列)
+### （8）[判断是否为子序列](https://leetcode-cn.com/problems/is-subsequence/)
 
-### （9）[修改一个数成为非递减数组](github/Leetcode 题解 贪心思想.md#9-修改一个数成为非递减数组)
+给定字符串 s 和 t ，判断 s 是否为 t 的子序列。
+
+字符串的一个子序列是原始字符串删除一些（也可以不删除）字符而不改变剩余字符相对位置形成的新字符串。（例如，"ace"是"abcde"的一个子序列，而"aec"不是）。
+
+进阶：
+
+如果有大量输入的 S，称作 S1, S2, ... , Sk 其中 k >= 10亿，你需要依次检查它们是否为 T 的子序列。在这种情况下，你会怎样改变代码？
+
+ 
+
+示例 1：
+
+```
+输入：s = "abc", t = "ahbgdc"
+输出：true
+```
+
+
+示例 2：
+
+```
+输入：s = "axc", t = "ahbgdc"
+输出：false
+```
+
+
+提示：
+
+```
+0 <= s.length <= 100
+0 <= t.length <= 10^4
+两个字符串都只由小写字符组成。
+```
+
+
+
+
+
+双指针，类似字符串一一对比
+
+```java
+public boolean isSubsequence(String s, String t) {
+        int sLen = s.length();
+        int tLen = t.length();
+
+        int i=0,j=0;
+
+        while (i<tLen && j<sLen) {
+            if (t.charAt(i) == s.charAt(j)) {
+                j++;
+            }
+            i++;
+        }
+        
+        return j == sLen;
+    }
+```
+
+![image-20210913224331695](../typora-user-images/image-20210913224331695.png)
+
+
+
+
+
+```java
+public boolean isSubsequence(String s, String t) {
+        int index = -1;
+        for (char c : s.toCharArray()) {
+            index = t.indexOf(c, index + 1);
+            if (index == -1) {
+                return false;
+            }
+        }
+        return true;
+    }
+```
+
+![image-20210913224709946](../typora-user-images/image-20210913224709946.png)
+
+
+
+
+
+**动态规划：**
+
+![image-20210913225712347](../typora-user-images/image-20210913225712347.png)
+
+```java
+public boolean isSubsequence(String s, String t) {
+        int n = s.length(), m = t.length();
+
+        int[][] f = new int[m + 1][26];
+        for (int i = 0; i < 26; i++) {
+            f[m][i] = m;
+        }
+
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = 0; j < 26; j++) {
+                if (t.charAt(i) == j + 'a')
+                    f[i][j] = i;
+                else
+                    f[i][j] = f[i + 1][j];
+            }
+        }
+        int add = 0;
+        for (int i = 0; i < n; i++) {
+            if (f[add][s.charAt(i) - 'a'] == m) {
+                return false;
+            }
+            add = f[add][s.charAt(i) - 'a'] + 1;
+        }
+        return true;
+    }
+```
+
+![image-20210913225652476](../typora-user-images/image-20210913225652476.png)
+
+
+
+
+
+
+
+### （9）[修改一个数成为非递减数组](https://leetcode-cn.com/problems/non-decreasing-array/)
+
+给你一个长度为 n 的整数数组，请你判断在 最多 改变 1 个元素的情况下，该数组能否变成一个非递减数列。
+
+我们是这样定义一个非递减数列的： 对于数组中任意的 i (0 <= i <= n-2)，总满足 nums[i] <= nums[i + 1]。
+
+ 
+
+示例 1:
+
+```
+输入: nums = [4,2,3]
+输出: true
+解释: 你可以通过把第一个4变成1来使得它成为一个非递减数列。
+```
+
+
+示例 2:
+
+```
+输入: nums = [4,2,1]
+输出: false
+解释: 你不能在只改变一个元素的情况下将其变为非递减数列。
+```
+
+
+提示：
+
+```
+1 <= n <= 10 ^ 4
+10 ^ 5 <= nums[i] <= 10 ^ 5
+```
+
+
+
+
+
+在出现 nums[i] \< nums[i - 1] 时，需要考虑的是应该修改数组的哪个数，使得本次修改能使 i 之前的数组成为非递减数组，并且   **不影响后续的操作**  。优先考虑令 nums[i - 1] = nums[i]，因为如果修改 nums[i] = nums[i - 1] 的话，那么 nums[i] 这个数会变大，就有可能比 nums[i + 1] 大，从而影响了后续操作。还有一个比较特别的情况就是 nums[i] \< nums[i - 2]，修改 nums[i - 1] = nums[i] 不能使数组成为非递减数组，只能修改 nums[i] = nums[i - 1]。
+
+```java
+public boolean checkPossibility(int[] nums) {
+        int cnt = 0;
+        for (int i = 1; i < nums.length && cnt < 2; i++) {
+            if (nums[i] >= nums[i - 1]) {
+                continue;
+            }
+            cnt++;
+            if (i - 2 >= 0 && nums[i - 2] > nums[i]) {
+                nums[i] = nums[i - 1];
+            } else {
+                nums[i - 1] = nums[i];
+            }
+        }
+        return cnt <= 1;
+    }
+```
+
+![image-20210913230953945](../typora-user-images/image-20210913230953945.png)
+
+
+
+
+
+
+
+
 
 ### （10）[子数组最大的和](github/Leetcode 题解 贪心思想.md#10-子数组最大的和)
 
