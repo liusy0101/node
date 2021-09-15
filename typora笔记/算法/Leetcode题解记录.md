@@ -9090,7 +9090,129 @@ public boolean checkPossibility(int[] nums) {
 
 
 
-### （10）[子数组最大的和](github/Leetcode 题解 贪心思想.md#10-子数组最大的和)
+### （10）[子数组最大的和](https://leetcode-cn.com/problems/maximum-subarray/)
+
+给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [-2,1,-3,4,-1,2,1,-5,4]
+输出：6
+解释：连续子数组 [4,-1,2,1] 的和最大，为 6 。
+```
+
+
+示例 2：
+
+```
+输入：nums = [1]
+输出：1
+```
+
+
+示例 3：
+
+```
+输入：nums = [0]
+输出：0
+```
+
+
+示例 4：
+
+```
+输入：nums = [-1]
+输出：-1
+```
+
+
+示例 5：
+
+```
+输入：nums = [-100000]
+输出：-100000
+```
+
+
+提示：
+
+```
+1 <= nums.length <= 3 * 10^4
+-10^5 <= nums[i] <= 10^5
+```
+
+
+
+
+
+**暴力解法：**
+
+```java
+public int maxSubArray(int[] nums) {
+        int len = nums.length;
+        if (len == 1) {
+            return nums[0];
+        }
+        
+        int i=0,j=0;
+        
+        int result = Integer.MIN_VALUE;
+        
+        while (i<len) {
+            int curResult = 0;
+            while (j<len) {
+                curResult+=nums[j++];
+                result = Math.max(result,curResult);
+            }
+            i++;
+            j = i;
+        }
+        
+        return result;
+    }
+```
+
+![image-20210915230743684](../typora-user-images/image-20210915230743684.png)
+
+
+
+
+
+
+
+**贪心算法：**
+
+
+
+如果当前和位负数，那么直接跳到当前节点开始，
+
+反之，则相加。
+
+```java
+public int maxSubArray(int[] nums) {
+    if (nums == null || nums.length == 0) {
+        return 0;
+    }
+    int preSum = nums[0];
+    int maxSum = preSum;
+    for (int i = 1; i < nums.length; i++) {
+        preSum = preSum > 0 ? preSum + nums[i] : nums[i];
+        maxSum = Math.max(maxSum, preSum);
+    }
+    return maxSum;
+}
+```
+
+![image-20210915230908073](../typora-user-images/image-20210915230908073.png)
+
+
+
+
+
+
 
 ### （11）[分隔字符串使同种字符出现在一起](github/Leetcode 题解 贪心思想.md#11-分隔字符串使同种字符出现在一起)
 
