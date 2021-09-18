@@ -174,7 +174,7 @@ PSYNC命令具有**完整重同步**和**部分重同步**这两种模式：
 - 如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 down-after-milliseconds 选项所指定的值， 则这个实例会被 Sentinel（哨兵）进程标记为主观下线（SDOWN）
 - 如果一个Master主服务器被标记为主观下线（SDOWN），则正在监视这个Master主服务器的所有 Sentinel（哨兵）进程要以每秒一次的频率确认Master主服务器的确进入了主观下线状态
 - 当有足够数量的 Sentinel（哨兵）进程（大于等于配置文件指定的值）在指定的时间范围内确认Master主服务器进入了主观下线状态（SDOWN）， 则Master主服务器会被标记为客观下线（ODOWN）
-- 在一般情况下， 每个 Sentinel（哨兵）进程会以每 10 秒一次的频率向集群中的所有Master主服务器、Slave从服务器发送 INFO 命令。
+- 在一般情况下， 每个 Sentinel（哨兵）进程会以每 10 秒一次的频率向集群中的所有Master主服务器、Slave从服务器发送 INFO 命令，通过分析返回数据来获取服务器的信息。
 - 当Master主服务器被 Sentinel（哨兵）进程标记为客观下线（ODOWN）时，Sentinel（哨兵）进程向下线的 Master主服务器的所有 Slave从服务器发送 INFO 命令的频率会从 10 秒一次改为每秒一次。
 - 若没有足够数量的 Sentinel（哨兵）进程同意 Master主服务器下线， Master主服务器的客观下线状态就会被移除。若 Master主服务器重新向 Sentinel（哨兵）进程发送 PING 命令返回有效回复，Master主服务器的主观下线状态就会被移除。
 
@@ -193,9 +193,31 @@ PSYNC命令具有**完整重同步**和**部分重同步**这两种模式：
 
 
 
-选举sentinel领导者 使用的raft算法(https://raft.github.io)，大致思路：
+**选举sentinel领导者：** 
 
-1. 每个做主观下线的sentinel节点像其他sentinel节点发送命令，要求将自己设置为领导者
+使用的raft算法(https://raft.github.io)，大致思路：
+
+- 每次进行leader选举之后，不论是否成功，所有Sentinel的配置纪元的值都会自增一次，就是一个计数器
+- 在一个配置纪元（epoch）里，所有Sentinel都有一次将某个Sentinel设置为局部领头Sentinel的机会，并且一旦设置，无法更改
+- 每个发现主服客观下线的Sentinel都会要求其他Sentinel将自己设置为局部领头Sentinel
+- 当一个Sentinel（源）向另一个Sentinel（目标）发送命令时，并且命令中的runid参数不是*符号而是源sentinel的运行id时，表示源Sentinel要求目标Sentinel将其设置为局部领头Sentinel
+- Sentinel设置局部领头的顺序是先到先到，后来的拒绝
+- 目标Sentinel将回复一条信息，包含leader-runid和leader-epoch，都是局部领头Sentinel的信息
+- 源Sentinel受到回复后，判断上述两个信息是否跟自身一致，如果一致，则表明目标Sentinel将源sentinel设置为局部领头
+- 如果有一半以上的Sentinel认定某个Sentinel是领头时，那么这个Sentinel就是leader
+- 如果给定时间内没选出来，那么进行下一次配置纪元。
+
+
+
+
+
+
+
+
+
+
+
+1. 每个做主观下线的sentinel节点向其他sentinel节点发送命令，要求将自己设置为领导者
 2. 接收到的sentinel可以同意或者拒绝
 
 3. 如果该sentinel节点发现自己的票数已经超过半数并且超过了quorum
@@ -203,7 +225,9 @@ PSYNC命令具有**完整重同步**和**部分重同步**这两种模式：
 
 
 
-主节点选举：选举出可以代替主节点的slave从节点
+**主节点选举：**
+
+选举出可以代替主节点的slave从节点
 
 - 1、选择健康状态从节点（排除主观下线、断线），排除5秒钟没有心跳的、排除主节点失联超过10*down-after-millisecends
 - 2、选择slave-priority高的从节点优先级列表
@@ -212,7 +236,7 @@ PSYNC命令具有**完整重同步**和**部分重同步**这两种模式：
 
 
 
-进行故障转移
+**进行故障转移**
 
 - 1、sentinel的领导者从slave中选举出合适的从节点进行故障转移
 - 2、对选取的slave执行slave of no one
