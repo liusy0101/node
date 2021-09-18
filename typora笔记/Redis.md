@@ -294,6 +294,44 @@ Redis使用了哈希槽的概念，并没有使用一致性hash。
 
 
 
+
+
+**重新分片：**
+
+Redis集群的重新分片操作可将任意数量已经指派给某个节点（源节点）的槽改为指派给另一个节点（目标节点），并且相关槽所属的键对值也会从源节点被移动到目标节点。
+
+重新分片操作可在线运行，在重新分片过程中，集群不需要下线，并且源节点和目标节点都可继续处理命令请求。
+
+重新分片操作由Redis的集群管理软件redis-trib负责执行的，Redis提供了进行重新分片所需的所有命令，而redis-trib则通过向源节点和目标节点发送命令来进行重新分片操作。
+
+步骤：
+
+1）redis-trib对目标节点发送`CLUSTER SETSLOT＜slot＞IMPORTING＜source_id＞`命令，让目标节点准备好从源节点导入（import）属于槽slot的键值对。
+
+2）redis-trib对源节点发送`CLUSTER SETSLOT＜slot＞MIGRATING＜target_id＞`命令，让源节点准备好将属于槽slot的键值对迁移（migrate）至目标节点。
+
+3）redis-trib向源节点发送`CLUSTER GETKEYSINSLOT＜slot＞＜count＞`命令，获得最多count个属于槽slot的键值对的键名（key name）。
+
+4）对于步骤3获得的每个键名，redis-trib都向源节点发送一个`MIGRATE＜target_ip＞＜target_port＞＜key_name＞0＜timeout＞`命令，将被选中的键原子地从源节点迁移至目标节点。
+
+5）重复执行步骤3和步骤4，直到源节点保存的所有属于槽slot的键值对都被迁移至目标节点为止。每次迁移键的过程如图17-24所示。
+
+6）redis-trib向集群中的任意一个节点发送`CLUSTER SETSLOT＜slot＞NODE＜target_id＞`命令，将槽slot指派给目标节点，这一指派信息会通过消息发送至整个集群，最终集群中的所有节点都会知道槽slot已经指派给了目标节点。
+
+![1631956951128](typora-user-images/1631956951128.png)
+
+
+
+如果重新分片涉及多个槽，那么redis-trib将对每个给定的槽分别执行上面给出的步骤。
+
+![1631956979111](typora-user-images/1631956979111.png)
+
+
+
+
+
+
+
 # 2、Redis持久化方式
 
 Redis提供了两种持久化方式，分别是RDB和AOF。
