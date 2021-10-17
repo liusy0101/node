@@ -9679,7 +9679,80 @@ public int uniquePaths(int m, int n) {
 
 ### （3）数组区间
 
-  [1. 数组区间和](github/Leetcode 题解 动态规划.md#1-数组区间和)
+  [1. 数组区间和](https://leetcode-cn.com/problems/range-sum-query-immutable/)
+
+给定一个整数数组  nums，求出数组从索引 i 到 j（i ≤ j）范围内元素的总和，包含 i、j 两点。
+
+实现 NumArray 类：
+
+NumArray(int[] nums) 使用数组 nums 初始化对象
+int sumRange(int i, int j) 返回数组 nums 从索引 i 到 j（i ≤ j）范围内元素的总和，包含 i、j 两点（也就是 sum(nums[i], nums[i + 1], ... , nums[j])）
+
+
+示例：
+
+```
+输入：
+["NumArray", "sumRange", "sumRange", "sumRange"]
+[[[-2, 0, 3, -5, 2, -1]], [0, 2], [2, 5], [0, 5]]
+输出：
+[null, 1, -1, -3]
+
+解释：
+NumArray numArray = new NumArray([-2, 0, 3, -5, 2, -1]);
+numArray.sumRange(0, 2); // return 1 ((-2) + 0 + 3)
+numArray.sumRange(2, 5); // return -1 (3 + (-5) + 2 + (-1)) 
+numArray.sumRange(0, 5); // return -3 ((-2) + 0 + 3 + (-5) + 2 + (-1))
+```
+
+
+提示：
+
+```
+0 <= nums.length <= 10^4
+-10^5 <= nums[i] <= 10^5
+0 <= i <= j < nums.length
+最多调用 10^4 次 sumRange 方法
+```
+
+
+
+
+
+求区间 i \~ j 的和，可以转换为 sum[j + 1] - sum[i]，其中 sum[i] 为 0 \~ i - 1 的和。
+
+```java
+class NumArray {
+
+    private int[] sums;
+
+    public NumArray(int[] nums) {
+        sums = new int[nums.length + 1];
+        for (int i = 1; i <= nums.length; i++) {
+            sums[i] = sums[i - 1] + nums[i - 1];
+        }
+    }
+
+    public int sumRange(int i, int j) {
+        return sums[j + 1] - sums[i];
+    }
+}
+```
+
+![image-20211017224415611](../typora-user-images/image-20211017224415611.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
   [2. 数组中等差递增子区间的个数](github/Leetcode 题解 动态规划.md#2-数组中等差递增子区间的个数)
 
 ### （4）分割整数
