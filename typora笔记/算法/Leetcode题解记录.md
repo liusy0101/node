@@ -9753,7 +9753,139 @@ class NumArray {
 
 
 
-  [2. 数组中等差递增子区间的个数](github/Leetcode 题解 动态规划.md#2-数组中等差递增子区间的个数)
+  [2. 数组中等差递增子区间的个数](https://leetcode-cn.com/problems/arithmetic-slices/)
+
+如果一个数列 至少有三个元素 ，并且任意两个相邻元素之差相同，则称该数列为等差数列。
+
+例如，[1,3,5,7,9]、[7,7,7,7] 和 [3,-1,-5,-9] 都是等差数列。
+给你一个整数数组 nums ，返回数组 nums 中所有为等差数组的 子数组 个数。
+
+子数组 是数组中的一个连续序列。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [1,2,3,4]
+输出：3
+解释：nums 中有三个子等差数组：[1, 2, 3]、[2, 3, 4] 和 [1,2,3,4] 自身。
+```
+
+
+示例 2：
+
+```
+输入：nums = [1]
+输出：0
+```
+
+
+提示：
+
+```
+1 <= nums.length <= 5000
+-1000 <= nums[i] <= 1000
+```
+
+
+
+
+
+用一个数组记录前面有N+2个数字是等差数组
+
+如果当前数字和前面两个是等差数组，那么当前能拆分成等差数组的个数是 dp[i] = dp[i-1] +N+2 -1;
+
+如果不是，那么dp[i] = dp[i-1]
+
+```java
+public int numberOfArithmeticSlices(int[] nums) {
+        int len = nums.length;
+
+        if (len<3) {
+            return 0;
+        }
+
+        int dp[] = new int[len];
+        int tNum[] = new int[len];
+
+        for (int i = 2; i < len; i++) {
+            if (nums[i]-nums[i-1] == nums[i-1] - nums[i-2]) {
+                dp[i] = dp[i-1] + tNum[i-1] + 1;
+                tNum[i] = tNum[i-1] + 1;
+            } else {
+                dp[i] = dp[i-1];
+            }
+        }
+
+        return dp[len-1];
+    }
+```
+
+![image-20211018230939329](../typora-user-images/image-20211018230939329.png)
+
+
+
+
+
+
+
+```html
+A = [0, 1, 2, 3, 4]
+
+return: 6, for 3 arithmetic slices in A:
+
+[0, 1, 2],
+[1, 2, 3],
+[0, 1, 2, 3],
+[0, 1, 2, 3, 4],
+[ 1, 2, 3, 4],
+[2, 3, 4]
+```
+
+dp[i] 表示以 A[i] 为结尾的等差递增子区间的个数。
+
+当 A[i] - A[i-1] == A[i-1] - A[i-2]，那么 [A[i-2], A[i-1], A[i]] 构成一个等差递增子区间。而且在以 A[i-1] 为结尾的递增子区间的后面再加上一个 A[i]，一样可以构成新的递增子区间。
+
+```html
+dp[2] = 1
+    [0, 1, 2]
+dp[3] = dp[2] + 1 = 2
+    [0, 1, 2, 3], // [0, 1, 2] 之后加一个 3
+    [1, 2, 3]     // 新的递增子区间
+dp[4] = dp[3] + 1 = 3
+    [0, 1, 2, 3, 4], // [0, 1, 2, 3] 之后加一个 4
+    [1, 2, 3, 4],    // [1, 2, 3] 之后加一个 4
+    [2, 3, 4]        // 新的递增子区间
+```
+
+综上，在 A[i] - A[i-1] == A[i-1] - A[i-2] 时，dp[i] = dp[i-1] + 1。
+
+因为递增子区间不一定以最后一个元素为结尾，可以是任意一个元素结尾，因此需要返回 dp 数组累加的结果。
+
+```java
+public int numberOfArithmeticSlices(int[] A) {
+    if (A == null || A.length == 0) {
+        return 0;
+    }
+    int n = A.length;
+    int[] dp = new int[n];
+    for (int i = 2; i < n; i++) {
+        if (A[i] - A[i - 1] == A[i - 1] - A[i - 2]) {
+            dp[i] = dp[i - 1] + 1;
+        }
+    }
+    int total = 0;
+    for (int cnt : dp) {
+        total += cnt;
+    }
+    return total;
+}
+```
+
+![image-20211018231821593](../typora-user-images/image-20211018231821593.png)
+
+
 
 ### （4）分割整数
 
