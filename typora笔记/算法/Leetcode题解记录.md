@@ -9915,7 +9915,18 @@ public int numberOfArithmeticSlices(int[] A) {
 
 
 
-
+```java
+public int integerBreak(int n) {
+    int[] dp = new int[n + 1];
+    dp[1] = 1;
+    for (int i = 2; i <= n; i++) {
+        for (int j = 1; j <= i - 1; j++) {
+            dp[i] = Math.max(dp[i], Math.max(j * dp[i - j], j * (i - j)));
+        }
+    }
+    return dp[n];
+}
+```
 
 
 
@@ -9930,13 +9941,166 @@ public int numberOfArithmeticSlices(int[] A) {
 
 ### （5）最长递增子序列
 
-  [1. 最长递增子序列](github/Leetcode 题解 动态规划.md#1-最长递增子序列)
+  [1. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
+
+给你一个整数数组 nums ，找到其中最长严格递增子序列的长度。
+
+子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。例如，[3,6,2,7] 是数组 [0,3,1,6,2,2,7] 的子序列。
+
+
+示例 1：
+
+```
+输入：nums = [10,9,2,5,3,7,101,18]
+输出：4
+解释：最长递增子序列是 [2,3,7,101]，因此长度为 4 。
+```
+
+
+示例 2：
+
+```
+输入：nums = [0,1,0,3,2,3]
+输出：4
+```
+
+
+示例 3：
+
+```
+输入：nums = [7,7,7,7,7,7,7]
+输出：1
+```
+
+
+提示：
+
+```
+1 <= nums.length <= 2500
+-10^4 <= nums[i] <= 10^4
+```
+
+
+
+
+
+
+
+```java
+public int lengthOfLIS(int[] nums) {
+        if (nums.length<2) {
+            return nums.length;
+        }
+        int state[] = new int[nums.length];
+        state[0] = 1;
+
+        for (int i = 1;i<state.length;i++) {
+            int max = 0;
+            for (int j=0;j<i;j++) {
+                if (nums[i] > nums[j] ) {
+                    if (state[j] > max) {
+                        max = state[j];
+                    }
+                }
+            }
+            state[i] = max + 1;
+        }
+
+        int result = 0;
+        for (int i = 0; i < state.length; i++) {
+            if (state[i] > result) result = state[i];
+        }
+        return result;
+    }
+```
+
+![image-20211025224525018](../typora-user-images/image-20211025224525018.png)
+
+
+
   [2. 一组整数对能够构成的最长链](github/Leetcode 题解 动态规划.md#2-一组整数对能够构成的最长链)
   [3. 最长摆动子序列](github/Leetcode 题解 动态规划.md#3-最长摆动子序列)
 
 ### （6）最长公共子序列
 
-  [1. 最长公共子序列](github/Leetcode 题解 动态规划.md#1-最长公共子序列)
+  [1. 最长公共子序列](https://leetcode-cn.com/problems/longest-common-subsequence/)
+
+给定两个字符串 text1 和 text2，返回这两个字符串的最长 公共子序列 的长度。如果不存在 公共子序列 ，返回 0 。
+
+一个字符串的 子序列 是指这样一个新的字符串：它是由原字符串在不改变字符的相对顺序的情况下删除某些字符（也可以不删除任何字符）后组成的新字符串。
+
+例如，"ace" 是 "abcde" 的子序列，但 "aec" 不是 "abcde" 的子序列。
+两个字符串的 公共子序列 是这两个字符串所共同拥有的子序列。
+
+ 
+
+示例 1：
+
+```
+输入：text1 = "abcde", text2 = "ace" 
+输出：3  
+解释：最长公共子序列是 "ace" ，它的长度为 3 。
+```
+
+
+示例 2：
+
+```
+输入：text1 = "abc", text2 = "abc"
+输出：3
+解释：最长公共子序列是 "abc" ，它的长度为 3 。
+```
+
+
+示例 3：
+
+```
+输入：text1 = "abc", text2 = "def"
+输出：0
+解释：两个字符串没有公共子序列，返回 0 。
+```
+
+
+提示：
+
+```
+1 <= text1.length, text2.length <= 1000
+text1 和 text2 仅由小写英文字符组成。
+```
+
+
+
+定义一个二维数组 dp 用来存储最长公共子序列的长度，其中 dp[i][j] 表示 S1 的前 i 个字符与 S2 的前 j 个字符最长公共子序列的长度。考虑 S1<sub>i</sub> 与 S2<sub>j</sub> 值是否相等，分为两种情况：
+
+- 当 S1<sub>i</sub>==S2<sub>j</sub> 时，那么就能在 S1 的前 i-1 个字符与 S2 的前 j-1 个字符最长公共子序列的基础上再加上 S1<sub>i</sub> 这个值，最长公共子序列长度加 1，即 dp[i][j] = dp[i-1][j-1] + 1。
+- 当 S1<sub>i</sub> != S2<sub>j</sub> 时，此时最长公共子序列为 S1 的前 i-1 个字符和 S2 的前 j 个字符最长公共子序列，或者 S1 的前 i 个字符和 S2 的前 j-1 个字符最长公共子序列，取它们的最大者，即 dp[i][j] = max{ dp[i-1][j], dp[i][j-1] }。
+
+综上，最长公共子序列的状态转移方程为：
+
+![image-20211025232330994](../typora-user-images/image-20211025232330994.png)
+
+```java
+public int longestCommonSubsequence(String text1, String text2) {
+            int n1 = text1.length(), n2 = text2.length();
+            int[][] dp = new int[n1 + 1][n2 + 1];
+            for (int i = 1; i <= n1; i++) {
+                for (int j = 1; j <= n2; j++) {
+                    if (text1.charAt(i - 1) == text2.charAt(j - 1)) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1;
+                    } else {
+                        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                    }
+                }
+            }
+            return dp[n1][n2];
+        }  
+```
+
+![image-20211025232223608](../typora-user-images/image-20211025232223608.png)
+
+
+
+
 
 ### （7）0-1 背包
 
