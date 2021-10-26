@@ -9937,6 +9937,13 @@ public int integerBreak(int n) {
 
 
   [2. 按平方数来分割整数](github/Leetcode 题解 动态规划.md#2-按平方数来分割整数)
+
+
+
+
+
+
+
   [3. 分割整数构成字母字符串](github/Leetcode 题解 动态规划.md#3-分割整数构成字母字符串)
 
 ### （5）最长递增子序列
@@ -10104,7 +10111,75 @@ public int longestCommonSubsequence(String text1, String text2) {
 
 ### （7）0-1 背包
 
-  [1. 划分数组为和相等的两部分](github/Leetcode 题解 动态规划.md#1-划分数组为和相等的两部分)
+  [1. 划分数组为和相等的两部分](https://leetcode-cn.com/problems/partition-equal-subset-sum/)
+
+给你一个 只包含正整数 的 非空 数组 nums 。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [1,5,11,5]
+输出：true
+解释：数组可以分割成 [1, 5, 5] 和 [11] 。
+```
+
+
+示例 2：
+
+```
+输入：nums = [1,2,3,5]
+输出：false
+解释：数组不能分割成两个元素和相等的子集。
+```
+
+
+提示：
+
+```
+1 <= nums.length <= 200
+1 <= nums[i] <= 100
+```
+
+
+
+![image-20211026232732390](../typora-user-images/image-20211026232732390.png)
+
+![image-20211026232803095](../typora-user-images/image-20211026232803095.png)
+
+```java
+public boolean canPartition(int[] nums) {
+        int sum = computeArraySum(nums);
+        if (sum % 2 != 0) {
+            return false;
+        }
+        int W = sum / 2;
+        boolean[] dp = new boolean[W + 1];
+        dp[0] = true;
+        for (int num : nums) {                 // 0-1 背包一个物品只能用一次
+            for (int i = W; i >= num; i--) {   // 从后往前，先计算 dp[i] 再计算 dp[i-num]
+                dp[i] = dp[i] || dp[i - num];
+            }
+        }
+        return dp[W];
+    }
+
+    private int computeArraySum(int[] nums) {
+        int sum = 0;
+        for (int num : nums) {
+            sum += num;
+        }
+        return sum;
+    }
+```
+
+
+
+![image-20211026232017624](../typora-user-images/image-20211026232017624.png)
+
+
+
   [2. 改变一组数的正负号使得它们的和为一给定数](github/Leetcode 题解 动态规划.md#2-改变一组数的正负号使得它们的和为一给定数)
   [3. 01 字符构成最多的字符串](github/Leetcode 题解 动态规划.md#3-01-字符构成最多的字符串)
   [4. 找零钱的最少硬币数](github/Leetcode 题解 动态规划.md#4-找零钱的最少硬币数)
@@ -10206,4 +10281,6 @@ public int longestCommonSubsequence(String text1, String text2) {
   [2. 3 的 n 次方](github/Leetcode 题解 数学.md#2-3-的-n-次方)
   [3. 乘积数组](github/Leetcode 题解 数学.md#3-乘积数组)
   [4. 找出数组中的乘积最大的三个数](github/Leetcode 题解 数学.md#4-找出数组中的乘积最大的三个数)
+
+
 
