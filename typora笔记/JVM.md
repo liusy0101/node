@@ -1682,7 +1682,11 @@ Child c = new Child();会将新创建的Child对象引用赋给变量c，而Base
 
 
 
+## 11、Java对象头、锁
 
+
+
+参考文章： https://www.cnblogs.com/hongdada/p/14087177.html
 
 
 
