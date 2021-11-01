@@ -10297,7 +10297,60 @@ public int coinChange(int[] coins, int amount) {
 
 ### （8）股票交易
 
-  [1. 需要冷却期的股票交易](github/Leetcode 题解 动态规划.md#1-需要冷却期的股票交易)
+  [1. 需要冷却期的股票交易](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
+
+给定一个整数数组，其中第 i 个元素代表了第 i 天的股票价格 。
+
+设计一个算法计算出最大利润。在满足以下约束条件下，你可以尽可能地完成更多的交易（多次买卖一支股票）:
+
+你不能同时参与多笔交易（你必须在再次购买前出售掉之前的股票）。
+卖出股票后，你无法在第二天买入股票 (即冷冻期为 1 天)。
+
+示例:
+
+```
+输入: [1,2,3,0,2]
+输出: 3 
+解释: 对应的交易状态为: [买入, 卖出, 冷冻期, 买入, 卖出]
+```
+
+
+
+```java
+public int maxProfit(int[] prices) {
+        int n = prices.length;
+
+        if (n<=1) {
+            return 0;
+        }
+
+        int [][] dp=new int[n][3];
+        dp[0][0]=0; //不持股且当天没卖出
+        dp[0][1]=-1*prices[0]; //持股
+        dp[0][2]=0; //不持股且当天卖出了
+
+
+        for (int i = 1; i < n; i++) {
+            //要么就是前一天卖出，要么就是前一天也没持股
+            dp[i][0] = Math.max(dp[i-1][0],dp[i-1][2]);
+            //要么前一天持股，要么就是当天买入
+            dp[i][1] = Math.max(dp[i-1][1],dp[i-1][0]-prices[i]);
+            //前一天只能是持股状态
+            dp[i][2] = dp[i-1][1] + prices[i];
+        }
+
+        //最大收益有两种可能，要么就是不持有且没卖出，要么就是不持有且当天卖出。
+        return Math.max(dp[n-1][0],dp[n-1][2]);
+
+    }
+```
+
+![image-20211101224359877](../typora-user-images/image-20211101224359877.png)
+
+
+
+
+
   [2. 需要交易费用的股票交易](github/Leetcode 题解 动态规划.md#2-需要交易费用的股票交易)
   [3. 只能进行两次的股票交易](github/Leetcode 题解 动态规划.md#3-只能进行两次的股票交易)
   [4. 只能进行 k 次的股票交易](github/Leetcode 题解 动态规划.md#4-只能进行-k-次的股票交易)
