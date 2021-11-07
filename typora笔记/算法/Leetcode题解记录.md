@@ -10357,8 +10357,189 @@ public int maxProfit(int[] prices) {
 
 ### （9）字符串编辑
 
-  [1. 删除两个字符串的字符使它们相等](github/Leetcode 题解 动态规划.md#1-删除两个字符串的字符使它们相等)
-  [2. 编辑距离](github/Leetcode 题解 动态规划.md#2-编辑距离)
+  [1. 删除两个字符串的字符使它们相等](https://leetcode-cn.com/problems/delete-operation-for-two-strings/)
+
+给定两个单词 word1 和 word2，找到使得 word1 和 word2 相同所需的最小步数，每步可以删除任意一个字符串中的一个字符。
+
+ 
+
+示例：
+
+```
+输入: "sea", "eat"
+输出: 2
+解释: 第一步将"sea"变为"ea"，第二步将"eat"变为"ea"
+```
+
+
+提示：
+
+```
+给定单词的长度不超过500。
+给定单词中的字符只含有小写字母。
+```
+
+
+
+**最长公共子序列：**
+
+可以将题目转换成为最长公共子序列的问题，
+
+求两个字符串的最长公共子序列，然后用两个字符串长度减去两倍的最长公共子序列长度，就是需要转换的步骤数量。
+
+```java
+public int minDistance(String word1, String word2) {
+    int m = word1.length(), n = word2.length();
+    int[][] dp = new int[m + 1][n + 1];
+    for (int i = 1; i <= m; i++) {
+        for (int j = 1; j <= n; j++) {
+            if (word1.charAt(i - 1) == word2.charAt(j - 1)) {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = Math.max(dp[i][j - 1], dp[i - 1][j]);
+            }
+        }
+    }
+    return m + n - 2 * dp[m][n];
+}
+```
+
+![image-20211107223946559](../typora-user-images/image-20211107223946559.png)
+
+
+
+
+
+```java
+public int minDistance(String word1, String word2) {
+        int m = word1.length(), n = word2.length();
+        int[][] dp = new int[m + 1][n + 1];
+        for (int i = 1; i <= m; i++) {
+            dp[i][0] = i;
+        }
+        for (int j = 1; j <= n; j++) {
+            dp[0][j] = j;
+        }
+        for (int i = 1; i <= m; i++) {
+            char c1 = word1.charAt(i - 1);
+            for (int j = 1; j <= n; j++) {
+                char c2 = word2.charAt(j - 1);
+                if (c1 == c2) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.min(dp[i - 1][j], dp[i][j - 1]) + 1;
+                }
+            }
+        }
+        return dp[m][n];
+    }
+```
+
+![image-20211107225025986](../typora-user-images/image-20211107225025986.png)
+
+
+
+
+
+
+
+  [2. 编辑距离](https://leetcode-cn.com/problems/edit-distance/)
+
+给你两个单词 word1 和 word2，请你计算出将 word1 转换成 word2 所使用的最少操作数 。
+
+你可以对一个单词进行如下三种操作：
+
+插入一个字符
+删除一个字符
+替换一个字符
+
+
+示例 1：
+
+```
+输入：word1 = "horse", word2 = "ros"
+输出：3
+解释：
+horse -> rorse (将 'h' 替换为 'r')
+rorse -> rose (删除 'r')
+rose -> ros (删除 'e')
+```
+
+
+示例 2：
+
+```
+输入：word1 = "intention", word2 = "execution"
+输出：5
+解释：
+intention -> inention (删除 't')
+inention -> enention (将 'i' 替换为 'e')
+enention -> exention (将 'n' 替换为 'x')
+exention -> exection (将 'n' 替换为 'c')
+exection -> execution (插入 'u')
+```
+
+
+提示：
+
+```
+0 <= word1.length, word2.length <= 500
+word1 和 word2 由小写英文字母组成
+```
+
+
+
+
+
+如果一个字符串为空的时候，转换成另一个字符串就需要相应的步数
+
+当两个字符串都不为空的时候，就判断当前两个字符是否相等，如果相等，那么就是等于之前的，也就是dp[i-1\][j-1\],
+
+如果不相等，那么就是看左前一个、上前一个、左上的最小值加1
+
+也就是
+
+```
+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1])
+```
+
+
+
+```java
+public int minDistance(String word1, String word2) {
+        int m = word1.length(), n = word2.length();
+        int[][] dp = new int[m + 1][n + 1];
+        for (int i = 1; i <= m; i++) {
+            dp[i][0] = i;
+        }
+        for (int j = 1; j <= n; j++) {
+            dp[0][j] = j;
+        }
+        for (int i = 1; i <= m; i++) {
+            char c1 = word1.charAt(i - 1);
+            for (int j = 1; j <= n; j++) {
+                char c2 = word2.charAt(j - 1);
+                if (c1 == c2) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.min(Math.min(dp[i - 1][j], dp[i][j - 1]),dp[i-1][j-1]) + 1;
+                }
+            }
+        }
+        return dp[m][n];
+    }
+```
+
+
+
+![image-20211107225737300](../typora-user-images/image-20211107225737300.png)
+
+
+
+
+
+
+
   [3. 复制粘贴字符](github/Leetcode 题解 动态规划.md#3-复制粘贴字符)
 
 
