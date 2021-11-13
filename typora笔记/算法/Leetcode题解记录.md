@@ -2114,6 +2114,149 @@ public boolean isPalindrome(ListNode head) {
 
 
 
+### （15）[单链表部分反转](https://leetcode-cn.com/problems/reverse-linked-list-ii/)
+
+给你单链表的头指针 head 和两个整数 left 和 right ，其中 left <= right 。请你反转从位置 left 到位置 right 的链表节点，返回 反转后的链表 。
+
+
+示例 1：
+
+```
+输入：head = [1,2,3,4,5], left = 2, right = 4
+输出：[1,4,3,2,5]
+```
+
+
+示例 2：
+
+```
+输入：head = [5], left = 1, right = 1
+输出：[5]
+```
+
+
+提示：
+
+```
+链表中节点数目为 n
+1 <= n <= 500
+-500 <= Node.val <= 500
+1 <= left <= right <= n
+```
+
+
+
+
+
+**头插法：**
+
+解题思路：
+1、我们定义两个指针，分别称之为 g(guard 守卫) 和 p(point)。
+我们首先根据方法的参数 m 确定 g 和 p 的位置。将 g 移动到第一个要反转的节点的前面，将 p 移动到第一个要反转的节点的位置上。我们以 m=2，n=4为例。
+2、将 p 后面的元素删除，然后添加到 g 的后面。也即头插法。
+3、根据 m 和 n 重复步骤（2）
+4、返回 dummyHead.next
+
+![img1.png](../typora-user-images/1616250561-sZiIjN-img1.png)
+
+```java
+public ListNode reverseBetween(ListNode head, int m, int n) {
+        // 定义一个dummyHead, 方便处理
+        ListNode dummyHead = new ListNode(0);
+        dummyHead.next = head;
+
+        // 初始化指针
+        ListNode g = dummyHead;
+        ListNode p = dummyHead.next;
+
+        // 将指针移到相应的位置
+        for(int step = 0; step < m - 1; step++) {
+            g = g.next; p = p.next;
+        }
+
+        // 头插法插入节点
+        for (int i = 0; i < n - m; i++) {
+            ListNode removed = p.next;
+            p.next = p.next.next;
+
+            removed.next = g.next;
+            g.next = removed;
+        }
+
+        return dummyHead.next;
+    }
+```
+
+
+
+
+
+
+
+
+
+**普通解法：**
+
+1、先记录前驱节点和后驱节点
+
+2、将待反转的部分进行反转
+
+3、然后拼接起来
+
+
+
+```java
+class Solution {
+    public ListNode reverseBetween(ListNode head, int left, int right) {
+        // 因为头节点有可能发生变化，使用虚拟头节点可以避免复杂的分类讨论
+        ListNode dummyNode = new ListNode(-1);
+        dummyNode.next = head;
+
+        ListNode pre = dummyNode;
+        // 第 1 步：从虚拟头节点走 left - 1 步，来到 left 节点的前一个节点
+        // 建议写在 for 循环里，语义清晰
+        for (int i = 0; i < left - 1; i++) {
+            pre = pre.next;
+        }
+
+        // 第 2 步：从 pre 再走 right - left + 1 步，来到 right 节点
+        ListNode rightNode = pre;
+        for (int i = 0; i < right - left + 1; i++) {
+            rightNode = rightNode.next;
+        }
+
+        // 第 3 步：切断出一个子链表（截取链表）
+        ListNode leftNode = pre.next;
+        ListNode curr = rightNode.next;
+
+        // 注意：切断链接
+        pre.next = null;
+        rightNode.next = null;
+
+        // 第 4 步：同第 206 题，反转链表的子区间
+        reverseLinkedList(leftNode);
+
+        // 第 5 步：接回到原来的链表中
+        pre.next = rightNode;
+        leftNode.next = curr;
+        return dummyNode.next;
+    }
+
+    private void reverseLinkedList(ListNode head) {
+        // 也可以使用递归反转一个链表
+        ListNode pre = null;
+        ListNode cur = head;
+
+        while (cur != null) {
+            ListNode next = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = next;
+        }
+    }
+}
+```
+
 
 
 
@@ -4155,6 +4298,109 @@ private int findFirst(int[] nums, int target) {
     return l;
 }
 ```
+
+
+
+
+
+（9）[搜索旋转排序数组](https://leetcode-cn.com/problems/search-in-rotated-sorted-array/)
+
+整数数组 nums 按升序排列，数组中的值 互不相同 。
+
+在传递给函数之前，nums 在预先未知的某个下标 k（0 <= k < nums.length）上进行了 旋转，使数组变为 [nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]（下标 从 0 开始 计数）。例如， [0,1,2,4,5,6,7] 在下标 3 处经旋转后可能变为 [4,5,6,7,0,1,2] 。
+
+给你 旋转后 的数组 nums 和一个整数 target ，如果 nums 中存在这个目标值 target ，则返回它的下标，否则返回 -1 。
+
+ 
+
+示例 1：
+
+```
+输入：nums = [4,5,6,7,0,1,2], target = 0
+输出：4
+```
+
+
+示例 2：
+
+```
+输入：nums = [4,5,6,7,0,1,2], target = 3
+输出：-1
+```
+
+
+示例 3：
+
+```
+输入：nums = [1], target = 0
+输出：-1
+```
+
+
+提示：
+
+```
+1 <= nums.length <= 5000
+-10^4 <= nums[i] <= 10^4
+nums 中的每个值都 独一无二
+题目数据保证 nums 在预先未知的某个下标上进行了旋转
+-10^4 <= target <= 10^4
+```
+
+
+进阶：你可以设计一个时间复杂度为 O(log n) 的解决方案吗？
+
+
+
+
+
+```java
+public int search(int[] nums, int target) {
+        int start = 0;
+        int end = nums.length-1;
+
+
+        while (start<=end) {
+            int mid = start + (end - start) / 2;
+
+            if (target == nums[mid]) {
+                return mid;
+            }
+            // 右边有序
+            if(nums[mid] < nums[end]){
+                // 目标值在右边
+                if(target > nums[mid] && target <= nums[end]){
+                    start = mid + 1;
+                    // 目标值在左边
+                }else{
+                    end = mid - 1;
+                }
+                // 左边有序
+            }else{
+                // 目标值在左边
+                if(target >= nums[start] && target < nums[mid]){
+                    end = mid - 1;
+                    // 目标值在右边
+                }else{
+                    start = mid + 1;
+                }
+            }
+        }
+
+
+        return -1;
+    }
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
