@@ -141,6 +141,11 @@ broker存储topic的数据。如果某topic有N个partition，集群有N个broke
  kafka集群依赖zookeeper来保存集群的的元信息，来保证系统的可用性。 
 
 
+### （10）Rebalance
+
+重平衡：Rebalance。消费者组内某个消费者实例挂掉后，其他消费者实例自动重新分配订阅主题分区的过程。Rebalance 是 Kafka 消费者端实现高可用的重要手段。
+
+
 
 ## 4、工作流程分析
 
