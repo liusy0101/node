@@ -145,6 +145,14 @@ broker存储topic的数据。如果某topic有N个partition，集群有N个broke
 
 重平衡：Rebalance。消费者组内某个消费者实例挂掉后，其他消费者实例自动重新分配订阅主题分区的过程。Rebalance 是 Kafka 消费者端实现高可用的重要手段。
 
+这个过程会产生STW（stop the world）问题
+
+
+那么 Consumer Group 何时进行 Rebalance 呢？Rebalance 的触发条件有 3 个。
+
+1、组成员数发生变更。比如有新的 Consumer 实例加入组或者离开组，抑或是有 Consumer 实例崩溃被“踢出”组。
+2、订阅主题数发生变更。Consumer Group 可以使用正则表达式的方式订阅主题，比如 consumer.subscribe(Pattern.compile(“t.*c”)) 就表明该 Group 订阅所有以字母 t 开头、字母 c 结尾的主题。在 Consumer Group 的运行过程中，你新创建了一个满足这样条件的主题，那么该 Group 就会发生 Rebalance。
+3、订阅主题的分区数发生变更。Kafka 当前只能允许增加一个主题的分区数。当分区数增加时，就会触发订阅该主题的所有 Group 开启 Rebalance。
 
 
 ## 4、工作流程分析
@@ -176,9 +184,10 @@ broker存储topic的数据。如果某topic有N个partition，集群有N个broke
 
 kafka中有几个原则： 
 
-1. partition在写入的时候可以指定需要写入的partition，如果有指定，则写入对应的partition。
-2. 如果没有指定partition，但是设置了数据的key，则会根据key的值hash出一个partition。
-3. 如果既没指定partition，又没有设置key，则会轮询选出一个partition。
+1. 指定：partition在写入的时候可以指定需要写入的partition，如果有指定，则写入对应的partition。
+2. 哈希：如果没有指定partition，但是设置了数据的key，则会根据key的值hash出一个partition。
+3. 轮询：如果既没指定partition，又没有设置key，则会轮询选出一个partition。
+4. 随机：随机选择一个partition进行写入
 
 
 
@@ -882,7 +891,7 @@ Kafka引入了 In-Sync-Replicas，即是所谓的ISR副本集合，ISR中的副�
 
 （1）启用幂等producer：在producer程序中设置属性`enabled.idempotence=true`，但不要设置transactional_id。
 
-（2）启用事务支持：在producer程序中设置属性`transactional.id`为一个指定的字符串，同事设置`enabled.idempotence=true`
+（2）启用事务支持：在producer程序中设置属性`transactional.id`为一个指定的字符串，同时设置`enabled.idempotence=true`
 
 （3）启用流处理EOS：在Kafka Streams程序中设置`processing.guarantee=exactly_once`
 
@@ -1146,3 +1155,114 @@ Spring-Kafka封装了消费重试和死信队列，将正常情况下无法被�
 
 参考：https://blog.csdn.net/yangshangwei/article/details/113846000
 
+
+
+## 12、压缩
+
+在kafka中，压缩可能发生在两个地方：生产者端、Broker端
+
+**生产者端：**
+
+``` 
+ Properties props = new Properties();
+ props.put("bootstrap.servers", "localhost:9092");
+ props.put("acks", "all");
+ props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+ props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+ // 开启 GZIP 压缩
+ props.put("compression.type", "gzip");
+ 
+ Producer<String, String> producer = new KafkaProducer<>(props);
+```
+
+配置了`compression.type` 属性后，Producer启动后发送的每条消息集合都是经过GZIP压缩过的，能很好的节省网络传输带宽以及Broker端的磁盘占用。
+
+
+**Broker端进行压缩的情况有两种：**
+
+（1）Broker端的压缩算法跟producer端的不一样
+
+但默认broker端的 `compression.type = producer` 表示跟producer一样
+
+（2）Broker端发生了消息格式转换
+
+主要是为了兼容老版本的消费者程序。Kafka集群中同时保存多种版本的消息格式是很常见的，为了兼容，通常需要加解压进行格式转换。
+
+此时会让kafka丧失掉 零拷贝 的特性。
+
+
+
+Kafka会将启用了何种压缩算法封装到消息集合中，这样consumer读取到消息集合时候，就能获取压缩算法类型进行解压缩。
+
+**Producer 端压缩、Broker 端保持、Consumer 端解压缩**
+
+Broker 端也会进行解压缩。注意了，这和前面提到消息格式转换时发生的解压缩是不同的场景。
+每个压缩过的消息集合在 Broker 端写入时都要发生解压缩操作，目的就是为了对消息执行各种验证。
+这种会对Broker的CPU负载造成影响
+
+压缩算法对比：
+
+![1637221504750](typora-user-images/1637221504750.png)
+
+
+
+
+## 13、Kafka无消息丢失配置
+
+（1）不要使用producer.send(msg)，这是异步发送的方法，如果发生网络抖动等情况，失败了就无从得知，需要使用带回调的方法 producer.send(msg,callback)
+
+（2）设置ack = all，表示所有副本都提交成功，再返回给producer确认
+
+（3）设置retries，这个参数是producer的自动重试次数
+
+（4）设置unclean.leader.election.enable = false ， 在选举leader时只从ISR中选取
+
+（5）设置replication.factor >= 3 ，这是broker参数
+
+（6）设置 min.insync.replicas > 1， 这是broker参数，控制的是消息至少要被写入到多少个副本才算是“已提交”，设置成大于1可提升消息持久性
+
+（7）确保replication.factor > min.insync.replicas。如果两者相等，那么只要一个副本挂机，整个分区就无法正常工作，
+    推荐是 replication.factory = min.insync.replicas + 1
+    
+（8）确保消息消费完再提交，关闭kafka自动提交功能，Consumber参数 enable.auto.commit = false，采用手动提交位移的方式。
+
+
+
+
+## 14、Java Producer如何管理TCP连接
+
+（1）KafkaProducer 实例创建时启动 Sender 线程，从而创建与 bootstrap.servers 中所有 Broker 的 TCP 连接。
+
+（2）KafkaProducer 实例首次更新元数据信息之后，还会再次创建与集群中所有 Broker 的 TCP 连接。
+
+（3）如果 Producer 端发送消息到某台 Broker 时发现没有与该 Broker 的 TCP 连接，那么也会立即创建连接。
+
+（4）如果设置 Producer 端 connections.max.idle.ms 参数大于 0，则步骤 1 中创建的 TCP 连接会被自动关闭；如果设置该参数 =-1，那么步骤 1 中创建的 TCP 连接将无法被关闭，从而成为“僵尸”连接。
+
+
+
+
+## 15、Kafka中的位移主题（__consumber_offsets）
+
+老版本的kafka的consumer_offset信息是保存在zk中，但zk不适合高频读写的一个操作
+
+新版本的位移管理机制是将Consumber的位移数据作为一条条普通的Kafka消息，提交到__consumber_offsets中，这个topic的主要作用是保存kafka消费者的位移消息。
+
+位移主题的 Key 中应该保存 3 部分内容：<Group ID，主题名，分区号 >
+
+
+当 Kafka 集群中的第一个 Consumer 程序启动时，Kafka 会自动创建位移主题，分区数默认是50，副本数是3
+
+目前 Kafka Consumer 提交位移的方式有两种：自动提交位移和手动提交位移。
+
+Consumer 端有个参数叫 enable.auto.commit，如果值是 true，则 Consumer 在后台默默地为你定期提交位移，提交间隔由一个专属的参数 auto.commit.interval.ms 来控制。
+
+如果选择的是自动提交位移，那么就可能存在一个问题：只要 Consumer 一直启动着，它就会无限期地向位移主题写入消息。
+
+假设 Consumer 当前消费到了某个主题的最新一条消息，位移是 100，之后该主题没有任何新消息产生，故 Consumer 无消息可消费了，所以位移永远保持在 100。由于是自动提交位移，位移主题中会不停地写入位移 =100 的消息。显然 Kafka 只需要保留这类消息中的最新一条就可以了，之前的消息都是可以删除的。这就要求 Kafka 必须要有针对位移主题消息特点的消息删除策略，否则这种消息会越来越多，最终撑爆整个磁盘。
+
+Kafka 使用Compact 策略来删除位移主题中的过期消息，避免该主题无限期膨胀。那么应该如何定义 Compact 策略中的过期呢？对于同一个 Key 的两条消息 M1 和 M2，如果 M1 的发送时间早于 M2，那么 M1 就是过期消息。Compact 的过程就是扫描日志的所有消息，剔除那些过期的消息，然后把剩下的消息整理在一起。我在这里贴一张来自官网的图片，来说明 Compact 过程。
+
+![1637227319899](typora-user-images/1637227319899.png)
+
+Kafka 提供了专门的后台线程定期地巡检待 Compact 的主题，看看是否存在满足条件的可删除数据。
