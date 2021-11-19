@@ -154,6 +154,23 @@ broker存储topic的数据。如果某topic有N个partition，集群有N个broke
 2、订阅主题数发生变更。Consumer Group 可以使用正则表达式的方式订阅主题，比如 consumer.subscribe(Pattern.compile(“t.*c”)) 就表明该 Group 订阅所有以字母 t 开头、字母 c 结尾的主题。在 Consumer Group 的运行过程中，你新创建了一个满足这样条件的主题，那么该 Group 就会发生 Rebalance。
 3、订阅主题的分区数发生变更。Kafka 当前只能允许增加一个主题的分区数。当分区数增加时，就会触发订阅该主题的所有 Group 开启 Rebalance。
 
+重平衡过程是如何通知到其他消费者实例的？答案就是，靠消费者端的心跳线程（Heartbeat Thread）。
+
+Kafka 为消费者组定义了 5 种状态，它们分别是：Empty、Dead、PreparingRebalance、CompletingRebalance 和 Stable。
+
+ ![img](typora-user-images/img.png) 
+
+一个消费者组最开始是 Empty 状态，当重平衡过程开启后，它会被置于 PreparingRebalance 状态等待成员加入，之后变更到 CompletingRebalance 状态等待分配方案，最后流转到 Stable 状态完成重平衡。
+
+当有新成员加入或已有成员退出时，消费者组的状态从 Stable 直接跳到 PreparingRebalance 状态，此时，所有现存成员就必须重新申请加入组。当所有成员都退出组后，消费者组状态变更为 Empty。Kafka 定期自动删除过期位移的条件就是，组要处于 Empty 状态。因此，如果你的消费者组停掉了很长时间（超过 7 天），那么 Kafka 很可能就把该组的位移数据删除了
+
+
+消费者端的重平衡的2个步骤：加入组和等待领导者消费者分配方案，分别对应JoinGroup请求和SyncGroup请求
+
+协调者端处理重平衡的4个场景：新成员入组，成员主动离组，成员崩溃离组，重平衡时协调者对组内成员提交位移的处理。
+
+
+
 
 ## 4、工作流程分析
 
@@ -1276,3 +1293,150 @@ Kafka 提供了专门的后台线程定期地巡检待 Compact 的主题，看�
 ![1637236948011](typora-user-images/1637236948011.png)
 
 ![1637237299635](typora-user-images/1637237299635.png)
+
+
+
+## 16、Kafka的网络IO模型
+
+Kafka自定义了一组请求协议，所有的请求都是通过TCP网络以socket的方式进行通讯的。
+
+
+Kafka使用的是Reactor模式。
+
+Reactor模式是事件驱动架构的一种实现方式，特别适合应用于处理多个客户端并发向服务器端发送请求的场景。
+
+![1637287650238](typora-user-images/1637287650238.png)
+
+
+kafka的Broker端有个SocketServer组件，类似于Reactor模式中的Dispatcher，也有对应的Acceptor线程和一个工作线程池，
+只不过在kafka中，这个工作线程池有个专属的名字，叫网络线程池。
+
+Kafka 提供了 Broker 端参数 num.network.threads，用于调整该网络线程池的线程数。其默认值是 3，表示每台 Broker 启动时会创建 3 个网络线程，专门处理客户端发送的请求。
+
+Acceptor线程采用轮询方式将入站请求公平的发到所有网络线程中。
+
+Kafka在其中又做了一层异步线程池的处理。
+
+![1637287845908](typora-user-images/1637287845908.png)
+
+当网络线程拿到请求后，会将请求放入到一个共享请求队列中，Broker端还有个IO线程池，负责从该队列中取出请求，执行真正的处理。
+如果是producer请求，则将消息写入到磁盘，如果是fetch请求，则从磁盘或也缓存中读取消息。
+
+IO 线程池处中的线程才是执行请求逻辑的线程。Broker 端参数num.io.threads控制了这个线程池中的线程数。目前该参数默认值是 8，表示每台 Broker 启动后自动创建 8 个 IO 线程处理请求。
+
+当 IO 线程处理完请求后，会将生成的响应发送到网络线程池的响应队列中，然后由对应的网络线程负责将 Response 返还给客户端。
+
+
+请求队列是所有网络线程共享的，而响应队列则是每个网络线程专属的。这么设计的原因就在于，Dispatcher 只是用于请求分发而不负责响应回传，因此只能让每个网络线程自己发送 Response 给客户端，所以这些 Response 也就没必要放在一个公共的地方。
+
+有一个叫 Purgatory 的组件，这是 Kafka 中著名的“炼狱”组件。它是用来缓存延时请求（Delayed Request）的。所谓延时请求，就是那些一时未满足条件不能立刻处理的请求。比如设置了 acks=all 的 PRODUCE 请求，一旦设置了 acks=all，那么该请求就必须等待 ISR 中所有副本都接收了消息后才能返回，此时处理该请求的 IO 线程就必须等待其他 Broker 的写入结果。当请求不能立刻处理时，它就会暂存在 Purgatory 中。稍后一旦满足了完成条件，IO 线程会继续处理该请求，并将 Response 放入对应网络线程的响应队列中。
+
+
+
+
+## 17、高水位和Leader Epoch机制
+
+**高水位的作用**
+
+在 Kafka 中，高水位的作用主要有 2 个。
+
+- 定义消息可见性，即用来标识分区下的哪些消息是可以被消费者消费的。
+- 帮助 Kafka 完成副本同步。
+
+![1637292253261](typora-user-images/1637292253261.png)
+
+上图中8是HW，在高水位以下的消息是已提交消息，反之就是未提交消息。
+
+消费者只能消费已提交消息，也就是位移小于8的所有消息。
+
+注意：位移值等于高水位的消息也属于未提交消息，也就是说，高水位上的消息是不能被消费者消费的。
+
+
+日志末端位移，Log End Offset，简写是LEO，表示副本写入下一条消息的位移值
+
+同一个副本对象，其高水位值不会大于LEO值
+
+高水位和LEO是副本对象的两个重要属性，Kafka所有副本都有对应的HW和LEO，而不仅仅是Leader副本。分区的高水位就是其leader副本的高水位。
+
+
+### （1）高水位更新机制
+
+每个副本都保存有自身的HW和LEO，但Leader副本比较特殊的是它还保存这其他Follow副本（远程副本）的HW和LEO
+
+![1637301786463](typora-user-images/1637301786463.png)
+
+Kafka会更新Follow副本的HW和LEO，同时也会更新Leader副本上的HW、LEO以及远程副本的LEO，但不会更新远程副本的HW
+
+
+**为什么Leader副本所在的Broker上保存远程副本的LEO和HW？**
+
+主要作用是帮助Leader副本确定其高水位，也就是分区高水位
+
+| 更新对象 | 更新时机 |
+| --- | --- |
+| follow leo | 从Leader副本拉取消息写入磁盘后，更新 |
+| leader leo | leader副本接收到生产者消息并写入磁盘后，更新|
+| 远程副本 leo | follow从leader拉取消息，会带过来从哪个位移开始拉取，leader用这个位移值来更新远程副本的leo |
+| follow hw | follow更新完leo后，比较leo和leader发过来的hw，两者较小值就是新的follow hw |
+| leader hw | leader更新leo后或者更新完远程leo后，从这俩值中取较小值|
+
+
+与 Leader 副本保持同步。判断的条件有两个。
+
+1.该远程 Follower 副本在 ISR 中。
+
+2.该远程 Follower 副本 LEO 值落后于 Leader 副本 LEO 值的时间，不超过 Broker 端参数 replica.lag.time.max.ms 的值。如果使用默认值的话，就是不超过 10 秒。
+
+
+
+**Leader 副本**
+
+处理生产者请求的逻辑如下：
+
+写入消息到本地磁盘。
+更新分区高水位值。
+i. 获取 Leader 副本所在 Broker 端保存的所有远程副本 LEO 值{LEO-1，LEO-2，……，LEO-n}。
+ii. 获取 Leader 副本高水位值：currentHW。
+iii. 更新 currentHW = min(currentHW, LEO-1，LEO-2，……，LEO-n)。
+处理 Follower 副本拉取消息的逻辑如下：
+
+读取磁盘（或页缓存）中的消息数据。
+使用 Follower 副本发送请求中的位移值更新远程副本 LEO 值。
+更新分区高水位值（具体步骤与处理生产者请求的步骤相同）。
+
+**Follower 副本**
+
+从 Leader 拉取消息的处理逻辑如下：
+
+写入消息到本地磁盘。
+更新 LEO 值。
+更新高水位值。
+i. 获取 Leader 发送的高水位值：currentHW。
+ii. 获取步骤 2 中更新过的 LEO 值：currentLEO。
+iii. 更新高水位为 min(currentHW, currentLEO)。
+
+
+
+
+### （2）Leader Epoch
+
+follow副本的高水位更新需要一轮额外的拉取请求才能实现，如果有多个follow副本，也许需要多轮拉取请求，
+也就是说，Leader 副本高水位更新和 Follower 副本高水位更新在时间上是存在错配的。这种错配是很多“数据丢失”或“数据不一致”问题的根源。
+基于此，社区在 0.11 版本正式引入了 Leader Epoch 概念，来规避因高水位更新错配导致的各种不一致问题。
+
+
+所谓 Leader Epoch，我们大致可以认为是 Leader 版本。它由两部分数据组成。
+
+1、Epoch。一个单调增加的版本号。每当副本领导权发生变更时，都会增加该版本号。小版本号的 Leader 被认为是过期 Leader，不能再行使 Leader 权力。
+2、起始位移（Start Offset）。Leader 副本在该 Epoch 值上写入的首条消息的位移。
+
+假设现在有两个 Leader Epoch<0, 0> 和 <1, 120>，那么，第一个 Leader Epoch 表示版本号是 0，这个版本的 Leader 从位移 0 开始保存消息，一共保存了 120 条消息。之后，Leader 发生了变更，版本号增加到 1，新版本的起始位移是 120。
+
+Kafka Broker 会在内存中为每个分区都缓存 Leader Epoch 数据，同时它还会定期地将这些信息持久化到一个 checkpoint 文件中。
+当 Leader 副本写入消息到磁盘时，Broker 会尝试更新这部分缓存。
+如果该 Leader 是首次写入消息，那么 Broker 会向缓存中增加一个 Leader Epoch 条目，否则就不做更新。
+这样，每次有 Leader 变更时，新的 Leader 副本会查询这部分缓存，取出对应的 Leader Epoch 的起始位移，以避免数据丢失和不一致的情况。
+
+
+
+
