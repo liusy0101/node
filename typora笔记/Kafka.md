@@ -939,7 +939,7 @@ Kafka实现幂等producer的设计思路：
 
 　　2. 引入seq number以及broker端seq number缓存更新机制来去重。
 
-和consumer端的offset类似，seq number从0开始计数并严格单调增加，同时在broker端回味每个PID保存该producer发送过来的消息batch的某些元信息：比如PID信息、消息batch的起始seq number及结束seq number等。
+和consumer端的offset类似，seq number从0开始计数并严格单调增加，同时在broker端会为每个PID保存该producer发送过来的消息batch的某些元信息：比如PID信息、消息batch的起始seq number及结束seq number等。
 
 每当PID发送新的消息batch时，kafka broker就会对比这些消息，如果发生冲突（比如起始seq number和结束seq number与当前缓存的相同），那么broker就会拒绝这次写入请求，如果没有冲突，那么broker端就会更新这部分缓存然后在开始写入消息。
 
