@@ -1562,3 +1562,61 @@ swap空间设置
 
 
 
+
+
+
+
+## 21、Kafka源码
+
+![1637561905198](typora-user-images/1637561905198.png)
+
+
+从功能上看，Kafka源码分为四大模块：
+
+- 服务器端源码：实现Kafka架构和各类优秀特性的基础
+- Java客户端源码：定义了与Broker端的交互机制，以及通用的Broker端组件支撑代码
+- Connect源码： 用于实现Kafka与外部系统的高性能数据传输
+- Streams源码： 用于实现实时的流处理功能。
+
+
+
+
+
+
+![1637561928679](typora-user-images/1637561928679.png)
+
+
+### （1）环境准备
+
+kafka 代码：https://github.com/apache/kafka.git
+jdk1.8
+scala-2.13以上
+gradle5.4以上
+
+
+代码下载之后，更换maven地址，不然构建很慢：
+``` 
+buildscript {
+    repositories {
+        maven {
+            url 'http://maven.aliyun.com/nexus/content/groups/public/'
+        }
+        maven {
+            url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'
+        }
+    }
+}
+ 
+allprojects {
+    repositories {
+        maven {
+            url 'http://maven.aliyun.com/nexus/content/groups/public/'
+        }
+        maven {
+            url 'http://maven.aliyun.com/nexus/content/repositories/jcenter'
+        }
+    }
+}
+```
+
+
