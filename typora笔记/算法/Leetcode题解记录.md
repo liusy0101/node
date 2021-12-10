@@ -2265,6 +2265,64 @@ class Solution {
 
 
 
+
+
+### （16）[删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list-ii/)
+
+存在一个按升序排列的链表，给你这个链表的头节点 head ，请你删除链表中所有存在数字重复情况的节点，只保留原始链表中 没有重复出现 的数字。
+
+返回同样按升序排列的结果链表。
+
+ 
+
+**示例 1：**
+
+![img](../typora-user-images/linkedlist1.jpg)
+
+```
+输入：head = [1,2,3,3,4,4,5]
+输出：[1,2,5]
+```
+
+
+
+
+
+![image-20211210213908274](../typora-user-images/image-20211210213908274.png)
+
+
+
+```java
+public static Node removeRepeatNode (Node head) {
+
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        Node result = new Node(Integer.MIN_VALUE);
+
+        result.next = head;
+
+        Node cur = result;
+
+        while (cur.next != null && cur.next.next != null) {
+            if (cur.next.value == cur.next.next.value) {
+                int x = cur.next.value;
+                while (cur.next != null && cur.next.value == x) {
+                    cur.next = cur.next.next;
+                }
+            } else {
+                cur = cur.next;
+            }
+        }
+        return result.next;
+    }
+```
+
+
+
+
+
 ## 三、栈
 
 ### （1）[有效的括号](https://leetcode-cn.com/problems/valid-parentheses/)
