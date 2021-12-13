@@ -2323,6 +2323,118 @@ public static Node removeRepeatNode (Node head) {
 
 
 
+
+
+### （17）奇偶链表排序
+
+奇偶链表排序
+
+题目描述
+给定一个**单链表**，链表中所有奇数位置的结点值是单调递减的，所有偶数位置的结点值是单调递增的。请就地（也就是说空间复杂度要求为O(1)）将此链表改为顺序排序。
+比如单链表：9->4->6->7->5->8->3，奇数位置结点值依次为 9、6、5、3逆序排列，偶数位置 4、7、8为顺序排列。
+
+node* sort(node *head)
+
+
+
+```java
+import java.util.Scanner;
+public class Main {
+    public static void main(String[] args) {
+        Node h1 = new Node();
+    }
+
+
+    public static Node resort (Node head) {
+        if (head == null || head.next == null) {
+            return head;
+        } 
+
+        Node jNode = head;
+        Node oNode = head.next;
+
+        Node jpre = jNode;
+        Node opre = oNode;
+
+        Node curr = head.next.next;
+
+        int i = 1;
+
+        while (curr != null) {
+            if (i % 2 == 1) {
+                jNode.next = curr;
+                jNode = jNode.next;
+            } else {
+                oNode.next = curr;
+                oNode = oNode.next;
+            }
+            i++;
+            curr = curr.next;
+        }
+
+        jNode = revertNode(jpre);
+
+        Node tem = new Node();
+        Node result = tem;
+        while (jNode != null && oNode != null) {
+            if (jNode.value<=oNode.value) {
+                tem.next = jNode;
+                jNode = jNode.next;
+            } else {
+                tem.next = oNode;
+                oNode = oNode.next;
+            }
+            tem = tem.next;
+        }
+
+        if (jNode != null) {
+            tem.next = jNode;
+        }
+        if (oNode != null) {
+            tem.next = oNode;
+        }
+
+        return result.next;
+    }
+
+
+    public static Node revertNode (Node head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+        Node curr = revertNode(head.next);
+        head.next.next = head;
+        head.next = null;
+        return curr;
+    }
+
+
+
+    static class Node {
+
+        int value;
+        Node next;
+
+        Node (int value) {
+            this.value = value;
+        }
+
+        Node () {}
+
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
 ## 三、栈
 
 ### （1）[有效的括号](https://leetcode-cn.com/problems/valid-parentheses/)
