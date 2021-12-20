@@ -5608,6 +5608,72 @@ public int countBinarySubstrings(String s) {
 
 
 
+
+
+
+
+### （15）从字符串中找出最长不重复子字符串长度
+
+比如  abcdabcddd，那么最长不重复子串就是 abcd，也就是4
+
+
+
+
+
+使用双端队列+set存储
+
+
+
+```java
+public class StrTest {
+    
+       public int  getMax(int a , int b){
+            return a>b?a:b;
+        }
+        
+        public  int lengthOfLongestSubstring(String str){
+            int max = 0; 
+            int i = 0;
+            int j = 0;
+            int len = str.length();
+            String sub="";
+            while(i<len && j <len){
+                int temp = sub.indexOf(str.charAt(j));
+                if(temp == -1){
+                     //不存在就追加到子串的末尾
+                    //窗口往右移动一格
+                    sub +=str.charAt(j);
+                    j++;
+                    max = getMax(max, j-i);
+                }else{
+                    //存在就把子串的第一个字符截取掉，保留剩下的，
+                    //i++  窗口往右移动一格
+                    sub = sub.substring(1, sub.length());
+                    i++;
+                }
+            }
+            return max;
+        }
+
+        public static void main(String[] args) {
+            int length = new StrTest().lengthOfLongestSubstring("aabbcdevbbdd");
+            System.out.println(length);
+            
+        }
+    
+}
+```
+
+
+
+
+
+
+
+
+
+
+
 ## 十一、位运算
 
 ### （1）[统计两个数的二进制表示有多少位不同](https://leetcode-cn.com/problems/hamming-distance/)
