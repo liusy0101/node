@@ -321,3 +321,50 @@ func GoID() int {
 队列可通过Slice来实现
 
 ![image-20220118205328190](typora-user-images/image-20220118205328190.png)
+
+
+
+
+
+
+
+
+
+## 三、RWMutex
+
+标准库中的RWMutex是一个reader/writer互斥锁。
+
+在某一时刻只能由任意数量的reader持有，或者是只被单个的writer持有
+
+方法：
+
+- Lock/Unlock：写操作时调用的方法，如果锁已经被reader或者writer持有，那么Lock方法会一直阻塞，知道能获取到锁；Unlock则是配对的释放锁的方法
+- RLock/RUnlock：读操作时调用的方法。如果锁已经被writer持有的话，RLock方法会一直阻塞，知道能获取到锁，否则就直接返回，而RUnlock是reader释放锁的方法
+- RLocker：这个方法的作用是为读操作返回一个Locker接口的对象，它的Lock方法发会调用RWMutex的RLock方法 ，它的Unlock方法会调用RWMutex的RUnlock方法。
+
+
+
+RWMutex的零值是未加锁的状态，所以，当使用的时候，无论是声明变量还是嵌入到其它struct中，都不必显式地初始化。
+
+
+
+如果遇到可明确区分reader和writer goroutine地场景，且有大量地并发读、少量地并发写，并有强烈的性能需求，就可考虑使用RWMutex替换Mutex
+
+
+
+RWMutex是基于Mutex实现的
+
+
+
+**读写锁的设计实现分成三类：**
+
+- Read-preferring：读优先可提供很高的并发量，但在竞争激烈的情况下可能会导致写饥饿，原因是如果有大量读，这种设计会导致只有所有的读都释放了锁之后，写才有可能获取到锁
+- Write-preferring：写优先，如果已有一个writer在等待请求锁的话，会阻止新的reader获取到锁，优先保障writer。如果有一些reader已经请求了锁的话，新的writer也会等待已有的reader都释放锁之后才能获取。
+- 不指定优先级
+
+
+
+Go标准库中的RWMutex设计是Write-preferring方案，一个正在阻塞的Lock调用会排除新的reader请求到锁。
+
+
+
