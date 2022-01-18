@@ -22,7 +22,92 @@ go语言的并发标准库是  sync
 
 
 
-## 一、Mutex
+### 一、常用关键字
+
+## （1）for、range
+
+
+
+
+
+## （2）select
+
+
+
+
+
+## （3）defer
+
+defer会在当前函数返回前执行传入的函数，相当于java中的final代码块
+
+被用于关闭文件描述符、关闭数据库链接以及解锁资源
+
+
+
+### 1、作用域
+
+![image-20220118222331655](typora-user-images/image-20220118222331655.png)
+
+![image-20220118222358421](typora-user-images/image-20220118222358421.png)
+
+defer传入的函数不是在退出代码块的作用域时执行的，只会在当前函数和方法返回之前被调用。
+
+
+
+
+
+
+
+
+
+
+
+## （4）panic、recover
+
+### 1、panic
+
+panic能改变程序的控制流，调用panic后会立刻停止执行当前函数的剩余代码，并在当前Goroutine中递归执行调用方的defer
+
+
+
+
+
+### 2、recover
+
+recover可以中止panic造成的程序崩溃，是一个只能在defer中发挥作用的函数，在其它作用域中调用不会发挥作用
+
+
+
+
+
+
+
+- `panic` 只会触发当前 Goroutine 的 `defer`；
+- `recover` 只有在 `defer` 中调用才会生效；
+- `panic` 允许在 `defer` 中嵌套多次调用；
+
+![image-20220118223329042](typora-user-images/image-20220118223329042.png)
+
+
+
+
+
+## （5）make、new
+
+
+
+- make是初始化内置的数据结构，例如切片、哈希表和channel
+- new是根据传入的类型分配一片内存空间并返回指向这片内存空间的指针
+
+
+
+
+
+
+
+
+
+## 二、Mutex
 
 **不是可重入锁**
 
