@@ -555,3 +555,163 @@ sync.Once 只暴露了一个方法 Do，你可以多次调用 Do 方法，但是
 func (o *Once) Do(f func())
 ```
 
+
+
+
+
+## 七、Map
+
+Go的内置对象Map是线程不安全的
+
+
+
+
+
+**如何实现线程安全的map类型？**
+
+避免map并发读写panic的方式之一就是加锁，考虑到读写性能，可以使用读写锁
+
+
+
+```GO
+type RWMap struct {
+	sync.RWMutex
+	m map[int]int
+}
+
+func NewRWMap(n int) *RWMap  {
+	return &RWMap{
+		m: make(map[int]int,n),
+	}
+}
+
+func (m *RWMap) Get(k int) (int, bool) {
+	m.RLock()
+	defer m.RUnlock()
+	v, existed := m.m[k]
+	return v, existed
+}
+
+func (m *RWMap) Set(k, v int) {
+	m.Lock()
+	defer m.Unlock()
+	m.m[k] = v
+}
+
+func (m *RWMap) Delete(k int)  {
+	m.Lock()
+	defer m.Unlock()
+	delete(m.m,k)
+}
+
+func (m *RWMap) Each(f func(k, v int) bool) {
+	m.RLock()
+	defer m.RUnlock()
+	for k, v := range m.m {
+		if !f(k,v) {
+			return
+		}
+	}
+}
+```
+
+
+
+
+
+**分片加锁：更高效的并发map**
+
+将一把锁分成几把锁，每个锁控制一个分片
+
+
+
+![image-20220119223556048](typora-user-images/image-20220119223556048.png)
+
+![image-20220119223629429](typora-user-images/image-20220119223629429.png)
+
+
+
+
+
+
+
+**特殊场景的sync.Map**
+
+使用场景：
+
+- 只会增长的缓存系统中，一个key值写入一次而被读很多次
+- 多个goroutine为不相交的键集读、写和重写键值对
+
+
+
+![image-20220119223826406](typora-user-images/image-20220119223826406.png)
+
+
+
+
+
+## 七、Pool
+
+go标准库中提供了一个通用的Pool数据结果，就是sync.Pool，使用它可以创建池化的对象
+
+
+
+## sync.Pool
+
+sync.Pool数据类型用来保存一组可独立访问的临时对象，它池化的对象会在未来的某个时候被垃圾回收掉
+
+
+
+- sync.Pool本身就是线程安全的，多个goroutine可并发调用它的方法存取对象
+- sync.Pool不可再使用之后再复制使用
+
+
+
+方法：
+
+
+
+#### （1）New
+
+Pool struct 包含一个 New 字段，这个字段的类型是函数 func() interface{}。当调用 Pool 的 Get 方法从池中获取元素，没有更多的空闲元素可返回时，就会调用这个 New 方法来创建新的元素。如果你没有设置 New 字段，没有更多的空闲元素可返回时，Get 方法将返回 nil，表明当前没有可用的元素。
+
+New是可变的字段，可在程序运行的时候改变创建元素的方法
+
+
+
+#### （2）Get
+
+如果调用这个方法，就会从Pool取走一个元素，这也就意味着，这个元素会从 Pool 中移除，返回给调用者。不过，除了返回值是正常实例化的元素，Get 方法的返回值还可能会是一个 nil（Pool.New 字段没有设置，又没有空闲元素可以返回），所以你在使用的时候，可能需要判断。
+
+
+
+
+
+#### （3）Put
+
+这个方法用于将一个元素返还给 Pool，Pool 会把这个元素保存到池中，并且可以复用。但如果 Put 一个 nil 值，Pool 就会忽略这个值。
+
+
+
+
+
+
+
+```go
+var buffers = sync.Pool{
+	New: func() interface{} {
+		return new(bytes.Buffer)
+	},
+}
+
+func GetBuffer() *bytes.Buffer {
+	return buffers.Get().(*bytes.Buffer)
+}
+
+func PutBuffer(buf *bytes.Buffer) {
+	buf.Reset()
+	buffers.Put(buf)
+}
+```
+
+![image-20220119225403518](typora-user-images/image-20220119225403518.png)
