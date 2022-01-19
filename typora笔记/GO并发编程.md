@@ -715,3 +715,100 @@ func PutBuffer(buf *bytes.Buffer) {
 ```
 
 ![image-20220119225403518](typora-user-images/image-20220119225403518.png)
+
+
+
+
+
+
+
+#### 第三方库
+
+
+
+##### （1）bytebufferpool
+
+基本功能和sync.Pool相同，底层使用sync.Pool实现
+
+
+
+##### （2）oxtoacart/bpool
+
+这也是比较常用的 buffer 池，它提供了以下几种类型的 buffer。
+
+bpool.BufferPool： 提供一个固定元素数量的 buffer 池，元素类型是 bytes.Buffer，如果超过这个数量，Put 的时候就丢弃，如果池中的元素都被取光了，会新建一个返回。Put 回去的时候，不会检测 buffer 的大小。
+
+bpool.BytesPool：提供一个固定元素数量的 byte slice 池，元素类型是 byte slice。Put 回去的时候不检测 slice 的大小。
+
+bpool.SizedBufferPool： 提供一个固定元素数量的 buffer 池，如果超过这个数量，Put 的时候就丢弃，如果池中的元素都被取光了，会新建一个返回。Put 回去的时候，会检测 buffer 的大小，超过指定的大小的话，就会创建一个新的满足条件的 buffer 放回去。
+
+
+
+bpool 最大的特色就是能够保持池子中元素的数量，一旦 Put 的数量多于它的阈值，就会自动丢弃，而 sync.Pool 是一个没有限制的池子，只要 Put 就会收进去。
+
+bpool 是基于 Channel 实现的，不像 sync.Pool 为了提高性能而做了很多优化，所以，在性能上比不过 sync.Pool。不过，它提供了限制 Pool 容量的功能，所以，如果你想控制 Pool 的容量的话，可以考虑这个库。
+
+
+
+
+
+
+
+#### **连接池**
+
+
+
+##### （1）标准库中的http client池
+
+http.Client 实现连接池的代码是在 Transport 类型中，它使用 idleConn 保存持久化的可重用的长连接：
+
+
+
+
+
+##### （2）TCP连接池
+
+fatih/pool
+
+![image-20220119231819716](typora-user-images/image-20220119231819716.png)
+
+
+
+
+
+##### （3）数据库连接池
+
+标准库 sql.DB 还提供了一个通用的数据库的连接池，通过 MaxOpenConns 和 MaxIdleConns 控制最大的连接数和最大的 idle 的连接数。默认的 MaxIdleConns 是 2，这个数对于数据库相关的应用来说太小了，我们一般都会调整它。
+
+![image-20220119231940391](typora-user-images/image-20220119231940391.png)
+
+![image-20220119231949577](typora-user-images/image-20220119231949577.png)
+
+
+
+
+
+##### （4）Memcached Client连接池
+
+gomemcache Client 有一个 freeconn 的字段，用来保存空闲的连接。当一个请求使用完之后，它会调用 putFreeConn 放回到池子中，请求的时候，调用 getFreeConn 优先查询 freeConn 中是否有可用的连接。它采用 Mutex+Slice 实现 Pool：
+
+![image-20220119232038507](typora-user-images/image-20220119232038507.png)
+
+
+
+
+
+##### （5）Worker Pool
+
+一个 goroutine 初始的栈大小是 2048 个字节，并且在需要的时候可以扩展到 1GB
+
+
+
+大部分的 Worker Pool 都是通过 Channel 来缓存任务的，因为 Channel 能够比较方便地实现并发的保护，有的是多个 Worker 共享同一个任务 Channel，有些是每个 Worker 都有一个独立的 Channel。
+
+
+
+- gammazero/workerpool 可以无限制地提交任务，提供了更便利的 Submit 和 SubmitWait 方法提交任务，还可以提供当前的 worker 数和任务数以及关闭 Pool 的功能。
+- grpool 创建 Pool 的时候需要提供 Worker 的数量和等待执行的任务的最大数量，任务的提交是直接往 Channel 放入任务。
+- dpaks/goworkers 提供了更便利的 Submi 方法提交任务以及 Worker 数、任务数等查询方法、关闭 Pool 的方法。它的任务的执行结果需要在 ResultChan 和 ErrChan 中去获取，没有提供阻塞的方法，但是它可以在初始化的时候设置 Worker 的数量和任务数。
+
