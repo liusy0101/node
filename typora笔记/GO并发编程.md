@@ -650,13 +650,13 @@ func (m *RWMap) Each(f func(k, v int) bool) {
 
 
 
-## 七、Pool
+## 八、Pool
 
 go标准库中提供了一个通用的Pool数据结果，就是sync.Pool，使用它可以创建池化的对象
 
 
 
-## sync.Pool
+### sync.Pool
 
 sync.Pool数据类型用来保存一组可独立访问的临时对象，它池化的对象会在未来的某个时候被垃圾回收掉
 
@@ -812,3 +812,146 @@ gomemcache Client 有一个 freeconn 的字段，用来保存空闲的连接。�
 - grpool 创建 Pool 的时候需要提供 Worker 的数量和等待执行的任务的最大数量，任务的提交是直接往 Channel 放入任务。
 - dpaks/goworkers 提供了更便利的 Submi 方法提交任务以及 Worker 数、任务数等查询方法、关闭 Pool 的方法。它的任务的执行结果需要在 ResultChan 和 ErrChan 中去获取，没有提供阻塞的方法，但是它可以在初始化的时候设置 Worker 的数量和任务数。
 
+
+
+
+
+
+
+
+
+
+
+
+
+## 九、Context
+
+
+
+使用场景：
+
+- 上下文信息传递，比如处理http请求、在请求处理链路上传递信息
+- 控制子goroutine的运行
+- 超时控制的方法调用
+- 可以取消的方法调用
+
+
+
+方法：
+
+**（1）DeadLine**
+
+返回这个Context被取消的截至日期，如果没有设置截止日期，ok的值是false，后续每次调用这个对象的Deadline方法时，都会返回和第一次调用相同的结果
+
+
+
+**（2）Done**
+
+ 返回一个 Channel 对象。在 Context 被取消时，此 Channel 会被 close，如果没被取消，可能会返回 nil。后续的 Done 调用总是返回相同的结果。当 Done 被 close 的时候，你可以通过 ctx.Err 获取错误信息。Done 这个方法名其实起得并不好，因为名字太过笼统，不能明确反映 Done 被 close 的原因，因为 cancel、timeout、deadline 都可能导致 Done 被 close，不过，目前还没有一个更合适的方法名称。
+
+关于 Done 方法，你必须要记住的知识点就是：如果 Done 没有被 close，Err 方法返回 nil；如果 Done 被 close，Err 方法会返回 Done 被 close 的原因。
+
+
+
+**（3）Value**
+
+Context中实现了2个常用的生成顶层Context的方法：
+
+- context.Background()：返回一个非 nil 的、空的 Context，没有任何值，不会被 cancel，不会超时，没有截止日期。一般用在主函数、初始化、测试以及创建根 Context 的时候。
+- context.TODO()：返回一个非 nil 的、空的 Context，没有任何值，不会被 cancel，不会超时，没有截止日期。当你不清楚是否该用 Context，或者目前还不知道要传递一些什么上下文信息的时候，就可以使用这个方法。
+
+
+
+
+
+在使用Context的时候，有一些约定俗成的规则：
+
+- 一般函数使用 Context 的时候，会把这个参数放在第一个参数的位置。
+- 从来不把 nil 当做 Context 类型的参数值，可以使用 context.Background() 创建一个空的上下文对象，也不要使用 nil。
+- Context 只用来临时做函数之间的上下文透传，不能持久化 Context 或者把 Context 长久保存。把 Context 持久化到数据库、本地文件或者全局变量、缓存中都是错误的用法。
+- key 的类型不应该是字符串类型或者其它内建类型，否则容易在包之间使用 Context 时候产生冲突。使用 WithValue 时，key 的类型应该是自己定义的类型。
+- 常常使用 struct{}作为底层类型定义 key 的类型。对于 exported key 的静态类型，常常是接口或者指针。这样可以尽量减少内存分配。
+
+
+
+
+
+
+
+
+
+**创建特殊用法Context的方法：**
+
+WithValue、WithCancel、WithTimeout、WithDeadline
+
+
+
+（1）WithValue
+
+WithValue 基于 parent Context 生成一个新的 Context，保存了一个 key-value 键值对。它常常用来传递上下文。
+
+WithValue 方法其实是创建了一个类型为 valueCtx 的 Context，它的类型定义如下：
+
+![image-20220120172225988](typora-user-images/image-20220120172225988.png)
+
+它持有一个 key-value 键值对，还持有 parent 的 Context。它覆盖了 Value 方法，优先从自己的存储中检查这个 key，不存在的话会从 parent 中继续检查。
+
+
+
+![image-20220120172307876](typora-user-images/image-20220120172307876.png)
+
+
+
+
+
+（2）WithCancel
+
+WithCancel方法返回parent的副本，只是副本中的Done Channel是新建的对象，它的类型是cancelCtx
+
+在一些需要主动取消长时间的任务时，创建这种类型的 Context，然后把这个 Context 传给长时间执行任务的 goroutine。当需要中止任务时，我们就可以 cancel 这个 Context，这样长时间执行任务的 goroutine，就可以通过检查这个 Context，知道 Context 已经被取消了。
+
+WithCancel 返回值中的第二个值是一个 cancel 函数。其实，这个返回值的名称（cancel）和类型（Cancel）也非常迷惑人。
+
+只要任务正常完成了，就需要调用cancel，这样Context才能释放它的资源
+
+![image-20220120172905819](typora-user-images/image-20220120172905819.png)
+
+
+
+
+
+（3）WithTimeout
+
+WithTimeout 其实是和 WithDeadline 一样，只不过一个参数是超时时间，一个参数是截止时间。超时时间加上当前时间，其实就是截止时间，因此，WithTimeout 的实现是：
+
+
+
+
+
+（4）WithDeadline
+
+WithDeadline会返回一个parent的副本，并且设置了一个不晚于参数d的截止时间，类型为timerCtx
+
+如果它的截止时间晚于 parent 的截止时间，那么就以 parent 的截止时间为准，并返回一个类型为 cancelCtx 的 Context，因为 parent 的截止时间到了，就会取消这个 cancelCtx。
+
+如果当前时间已经超过了截止时间，就直接返回一个已经被 cancel 的 timerCtx。否则就会启动一个定时器，到截止时间取消这个 timerCtx。
+
+
+
+综合起来，timerCtx 的 Done 被 Close 掉，主要是由下面的某个事件触发的：
+
+- 截止时间到了
+- cancel函数被调用
+- parent的Done被close
+
+
+
+和cancelCtx一样，WithDeadline（WithTimeout）返回的cancel一定要调用，并且要尽可能早地被调用，不要单纯地依赖截止时间被动取消，
+
+
+
+![image-20220120173730947](typora-user-images/image-20220120173730947.png)
+
+![image-20220120173837233](typora-user-images/image-20220120173837233.png)
+
+![image-20220120173850678](typora-user-images/image-20220120173850678.png)
