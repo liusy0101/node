@@ -32,6 +32,90 @@ go语言的并发标准库是  sync
 
 ### （2）select
 
+**Go 语言的 `select` 与操作系统中的 `select` 比较相似**
+
+Go 语言中的 `select` 也能够让 Goroutine 同时等待多个 Channel 可读或者可写，在多个文件或者 Channel状态改变之前，`select` 会一直阻塞当前线程或者 Goroutine。
+
+
+
+当我们在 Go 语言中使用 `select` 控制结构时，会遇到两个有趣的现象：
+
+1. `select` 能在 Channel 上进行非阻塞的收发操作；
+2. `select` 在遇到多个 Channel 同时响应时，会随机执行一种情况；
+
+这两个现象是学习 `select` 时经常会遇到的，我们来深入了解具体场景并分析这两个现象背后的设计原理。
+
+
+
+### 非阻塞的收发 [#](https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-select/#非阻塞的收发)
+
+在通常情况下，`select` 语句会阻塞当前 Goroutine 并等待多个 Channel 中的一个达到可以收发的状态。但是如果 `select` 控制结构中包含 `default` 语句，那么这个 `select` 语句在执行时会遇到以下两种情况：
+
+1. 当存在可以收发的 Channel 时，直接处理该 Channel 对应的 `case`；
+2. 当不存在可以收发的 Channel 时，执行 `default` 中的语句；
+
+当我们运行下面的代码时就不会阻塞当前的 Goroutine，它会直接执行 `default` 中的代码。
+
+```go
+func main() {
+	ch := make(chan int)
+	select {
+	case i := <-ch:
+		println(i)
+
+	default:
+		println("default")
+	}
+}
+
+$ go run main.go
+default
+```
+
+
+
+
+
+### 随机执行 [#](https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-select/#随机执行)
+
+另一个使用 `select` 遇到的情况是同时有多个 `case` 就绪时，`select` 会选择哪个 `case` 执行的问题，我们通过下面的代码可以简单了解一下：
+
+```go
+func main() {
+	ch := make(chan int)
+	go func() {
+		for range time.Tick(1 * time.Second) {
+			ch <- 0
+		}
+	}()
+
+	for {
+		select {
+		case <-ch:
+			println("case1")
+		case <-ch:
+			println("case2")
+		}
+	}
+}
+
+$ go run main.go
+case1
+case2
+case1
+...
+```
+
+从上述代码输出的结果中我们可以看到，`select` 在遇到多个 `<-ch` 同时满足可读或者可写条件时会随机选择一个 `case` 执行其中的代码。
+
+这个设计是在十多年前被 [select](https://github.com/golang/go/commit/cb9b1038db77198c2b0961634cf161258af2374d) 提交[5](https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-select/#fn:5)引入并一直保留到现在的，虽然中间经历过一些修改[6](https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-select/#fn:6)，但是语义一直都没有改变。在上面的代码中，两个 `case` 都是同时满足执行条件的，如果我们按照顺序依次判断，那么后面的条件永远都会得不到执行，而随机的引入就是为了避免饥饿问题的发生。
+
+
+
+
+
+
+
 
 
 
@@ -955,3 +1039,218 @@ WithDeadline会返回一个parent的副本，并且设置了一个不晚于参�
 ![image-20220120173837233](typora-user-images/image-20220120173837233.png)
 
 ![image-20220120173850678](typora-user-images/image-20220120173850678.png)
+
+
+
+
+
+
+
+
+
+
+
+## 十、Channel
+
+
+
+### 1、应用场景
+
+（1）数据交流：当作并发的buffer或者queue，解决生产者-消费者问题，多个goroutine可以并发当作生产者和消费者
+
+（2）数据传递：一个goroutine将数据交给另一个goroutine，相当于把数据的拥有权托付出去
+
+（3）信号通知：一个goroutine可以将信号传递给另一个或组goroutine
+
+（4）任务编排：可以让一组goroutine按照一定的顺序并发或串行执行
+
+（5）锁：利用Channel可以实现互斥锁的机制
+
+
+
+
+
+### 2、基本用法
+
+只能接收、只能发送、既可以接收又可以发送
+
+例如：
+
+```go
+chan string //可以发送接收string
+chan <- struct{}  //只能发送struct{}
+<-chan int //只能从chan接收int
+```
+
+
+
+![image-20220123222737530](typora-user-images/image-20220123222737530.png)
+
+
+
+
+
+通过make，可以初始化chan，未初始化的chan的零值是nil，可以设置它的容量，设置了容量的chan叫做buffered chan；如果没有设置，容量为0，叫做unbuffered chan
+
+```go
+make(chan int, 100)
+```
+
+
+
+如果chan中还有数据，接收数据就不会阻塞，如果chan中数据已满，那么发送数据就会阻塞
+
+unbuffered chan只有读写都准备好之后才不会阻塞
+
+
+
+nil是chan的零值，是一种特殊的chan，对值是nil的chan的发送接收调用者总是会阻塞
+
+
+
+（1）发送数据
+
+例如：
+
+```go
+ch <- 2000
+```
+
+
+
+
+
+（2）接收数据
+
+例如：
+
+```go
+v := <-ch
+```
+
+![image-20220123223138780](typora-user-images/image-20220123223138780.png)
+
+
+
+接收数据时，还可以返回两个值。第一个值是返回的 chan 中的元素，很多人不太熟悉的是第二个值。第二个值是 bool 类型，代表是否成功地从 chan 中读取到一个值，如果第二个参数是 false，chan 已经被 close 而且 chan 中没有缓存的数据，这个时候，第一个值是零值。所以，如果从 chan 读取到一个零值，可能是 sender 真正发送的零值，也可能是 closed 的并且没有缓存元素产生的零值。
+
+
+
+
+
+（2）其它操作
+
+Go 内建的函数 close、cap、len 都可以操作 chan 类型：close 会把 chan 关闭掉，cap 返回 chan 的容量，len 返回 chan 中缓存的还未被取走的元素数量。
+
+
+
+
+
+send和recv都可以作为select语句的case clause，例如：
+
+```go
+func main() {
+
+	ch := make(chan int, 10)
+
+	for i := 0; i < 10; i++ {
+		select {
+		case ch <- i:
+		case v:= <-ch:
+			fmt.Println(v)
+		}
+	}
+
+
+}
+```
+
+![image-20220123223302394](typora-user-images/image-20220123223302394.png)
+
+
+
+
+
+
+
+### 3、产生panic的情况
+
+（1）close为nil的chan
+
+（2）send已经close的chan
+
+（3）close已经close的chan
+
+
+
+
+
+
+
+### 4、经验
+
+（1）共享资源的并发访问使用传统并发原语
+
+（2）复杂的任务编排和消息传递使用channel
+
+（3）消息通知机制使用channel，除非只想signal一个goroutine，才使用cond
+
+（4）简单等待所有任务的完成用WaitGroup，也可以使用Channel
+
+（5）需要和Select语句结合，使用Channel
+
+（6）需要和超时配合时，使用Channel和Context
+
+
+
+
+
+
+
+
+
+有一道经典的使用 Channel 进行任务编排的题，你可以尝试做一下：有四个 goroutine，编号为 1、2、3、4。每秒钟会有一个 goroutine 打印出它自己的编号，要求你编写一个程序，让输出的编号总是按照 1、2、3、4、1、2、3、4、……的顺序打印出来。
+
+
+
+```go
+func main() {
+	ch1 := make(chan int)
+	ch2 := make(chan int)
+	ch3 := make(chan int)
+	ch4 := make(chan int)
+	go func() {
+		for {
+			fmt.Println("I'm goroutine 1")
+			time.Sleep(1 * time.Second)
+			ch2 <- 1 //I'm done, you turn
+			<-ch1
+		}
+	}()
+	go func() {
+		for {
+			<-ch2
+			fmt.Println("I'm goroutine 2")
+			time.Sleep(1 * time.Second)
+			ch3 <-1
+		}
+	}()
+	go func() {
+		for {
+			<-ch3
+			fmt.Println("I'm goroutine 3")
+			time.Sleep(1 * time.Second)
+			ch4 <-1
+		}
+	}()
+	go func() {
+		for {
+			<-ch4
+			fmt.Println("I'm goroutine 4")
+			time.Sleep(1 * time.Second)
+			ch1 <-1}
+	}()
+	select {}
+}
+```
+
