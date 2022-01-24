@@ -1254,3 +1254,84 @@ func main() {
 }
 ```
 
+
+
+
+
+### 5、应用模式
+
+#### （1）使用反射操作Channel
+
+select语句可以处理chan的send和recv，都可以作为case clause，如果同时处理两个chan
+
+![image-20220124234210883](typora-user-images/image-20220124234210883.png)
+
+如果需要处理三个，只需在添加一个case clause
+
+如果需要处理n个呢
+
+这个就需要用到反射大法了
+
+通过reflect.Select函数，可以将一组运行时的case clause传入，当做参数执行。Go的select是伪随机的，可以在执行的case中随机选择一个case，并把选择的这个case的索引返回，如果没有可用的case返回，会返回一个bool类型的返回值，这个返回值用来标识是否有case成功被选择，如果是recv case，还会返回接收的元素，
+
+![image-20220124234624768](typora-user-images/image-20220124234624768.png)
+
+
+
+动态处理多个chan的情况
+
+
+
+首先，createCases 函数分别为每个 chan 生成了 recv case 和 send case，并返回一个 reflect.SelectCase 数组。
+
+然后，通过一个循环 10 次的 for 循环执行 reflect.Select，这个方法会从 cases 中选择一个 case 执行。第一次肯定是 send case，因为此时 chan 还没有元素，recv 还不可用。等 chan 中有了数据以后，recv case 就可以被选择了。这样，你就可以处理不定数量的 chan 了。
+
+
+
+```go
+func main() {
+	var ch1 = make(chan int, 10)
+	var ch2 = make(chan int, 10)
+
+	var cases = createCases(ch1,ch2)
+
+	for i := 0; i < 10; i++ {
+		chosen, recv, ok := reflect.Select(cases)
+
+		if recv.IsValid() {
+			fmt.Println("recv:", cases[chosen].Dir, recv, ok)
+		} else {
+			fmt.Println("send:", cases[chosen].Dir, ok)
+		}
+	}
+}
+
+func createCases(chs ...chan int) []reflect.SelectCase {
+	var cases []reflect.SelectCase
+
+	// 创建recv case
+	for _,ch := range chs {
+		cases = append(cases,reflect.SelectCase{
+			Dir: reflect.SelectRecv,
+			Chan: reflect.ValueOf(ch),
+		})
+	}
+
+	//创建send case
+	for i, ch := range chs {
+		v := reflect.ValueOf(i)
+		cases = append(cases,reflect.SelectCase{
+			Dir: reflect.SelectSend,
+			Chan: reflect.ValueOf(ch),
+			Send: v,
+		})
+	}
+	
+	return cases
+}
+```
+
+
+
+
+
