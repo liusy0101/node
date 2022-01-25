@@ -1335,3 +1335,475 @@ func createCases(chs ...chan int) []reflect.SelectCase {
 
 
 
+
+
+#### （2）消息交流
+
+从chan的内部实现看，它是以一个循环队列的方式存放数据，所以，有时候也会被当成线程安全的队列和buffer使用，一个goroutine可以安全的往channel中塞数据，另外一个goroutine可以安全的从channel中读取数据，goroutine就可以安全的实现信息交流。
+
+
+
+
+
+
+
+#### （3）数据传递
+
+有 4 个 goroutine，编号为 1、2、3、4。每秒钟会有一个 goroutine 打印出它自己的编号，要求你编写程序，让输出的编号总是按照 1、2、3、4、1、2、3、4……这个顺序打印出来。
+
+
+
+为了实现顺序的数据传递，可以定义一个令牌的变量，谁得到令牌就可以打印一次编号，同时将令牌传递给下一个goroutine，
+
+```go
+type Token struct{}
+
+
+func newWorker(id int, ch chan Token, nextCh chan Token) {
+    for {
+        token := <-ch
+        fmt.println((id+1))
+        time.Sleep(time.Second)
+        nextCh <- token
+    }
+    
+}
+
+
+func main() {
+    chs := []chan Token{make(chan Token),make(chan Token),make(chan Token),make(chan Token)}
+    
+    for i:=0;i<4;i++ {
+        go newWorker(i, chs[i], chs[(i+1)%4])
+    }
+    
+    chs[0] <- struct{}{}
+    
+    select{}
+}
+
+```
+
+
+
+
+
+
+
+
+
+#### （4）信号通知
+
+chan 类型有这样一个特点：chan 如果为空，那么，receiver 接收数据的时候就会阻塞等待，直到 chan 被关闭或者有新的数据到来。利用这个机制，我们可以实现 wait/notify 的设计模式。
+
+
+
+传统的并发原语 Cond 也能实现这个功能，但是，Cond 使用起来比较复杂，容易出错，而使用 chan 实现 wait/notify 模式就方便很多了。
+
+除了正常的业务处理时的 wait/notify，我们经常碰到的一个场景，就是程序关闭的时候，我们需要在退出之前做一些清理（doCleanup 方法）的动作。这个时候，我们经常要使用 chan。
+
+
+
+比如使用chan实现程序的graceful shutdown，在退出之气那执行一些连接关闭、文件close、缓存落盘等
+
+有时候，doCleanup 可能是一个很耗时的操作，比如十几分钟才能完成，如果程序退出需要等待这么长时间，用户是不能接受的，所以，在实践中，我们需要设置一个最长的等待时间。只要超过了这个时间，程序就不再等待，可以直接退出。所以，退出的时候分为两个阶段：
+
+1、closing，代表程序退出，但是清理工作还没做
+
+2、closed，代表清理工作已经做完
+
+
+
+```go
+func main() {
+    var closing = make (chan struct{})
+    var closed = make (chan struct{})
+    
+    go func() {
+        for {
+            select {
+                case <- closing:
+                	return 
+            default:
+                //执行业务计算
+            }
+        }
+    } ()
+    
+    //处理ctrl+c等中断信号
+     
+    termChan := make(chan os.Signal)
+    signal.Notify(termChan,syscall.Sigint, syscall.SigTerm)
+    
+    <- termChan
+    
+    close(closing)
+    //执行退出之前的清理动作
+    go doCheanup(closed)
+    
+    select {
+    case <- closed:
+        case <-time.After(time.Second):
+        fmt.Println("清理超时")
+    }
+    
+    fmt.Println("优雅退出")
+}
+
+
+func doCleanup(closed chan struct{}) {
+    time.Sleep((time.Minute))
+    close(closed)
+}
+```
+
+
+
+
+
+
+
+#### （5）锁
+
+
+
+使用chan也可以实现互斥锁
+
+
+
+有两种方式，一种是先初始化一个capacity为1的Channel，然后再放入一个元素，这个元素就代表锁，谁取得这个元素，就相当于获取了这个锁。
+
+另一个方式是先初始化一个capacity为1的channel，它的空槽代表所，谁能成功的把元素发送到这个channel，谁就获取了这个锁
+
+
+
+```go
+type Mutex struct {
+    ch chan struct{}
+}
+
+//初始化
+func NewMutex () *Mutex{
+    mu := &Mutex{make(chan struct{},1)}
+    mu.ch <- struct{}
+    return mu
+}
+
+//请求锁
+func (m *Mutex) Lock() {
+    <- m.ch
+}
+
+
+func (m *Mutex) UnLock() {
+    select {
+        case m.ch <- struct{}{}:
+        default:
+        panic("unlock of unlocked mutex")
+    }
+}
+
+func (m *Mutex) TryLock() {
+    select {
+        case <- m.ch:
+        	return true
+        default:
+    }
+    return false
+}
+
+func (m *Mutex) LockTimeout(timeout time.Duration) bool {
+    timer := time.NewTimer(timeout)
+    select {
+        case <- m.ch:
+        	timer.Stop()
+        	return true
+        case <-timer.C:
+    }
+    
+    return false
+}
+
+func (m *Mutex) IsLocked() bool {
+    return len(m.ch) == 0
+}
+
+
+func main() {
+    m := NewMutex()
+    ok := m.TryLock()
+    fmt.Printf("locked v %v", ok)
+    ok =- m.TryLock()
+    fmt.Printf("locked v %v", ok)
+}
+
+```
+
+你可以用 buffer 等于 1 的 chan 实现互斥锁，在初始化这个锁的时候往 Channel 中先塞入一个元素，谁把这个元素取走，谁就获取了这把锁，把元素放回去，就是释放了锁。元素在放回到 chan 之前，不会有 goroutine 能从 chan 中取出元素的，这就保证了互斥性。
+
+
+
+
+
+
+
+
+
+#### （6）任务编排
+
+一是安排goroutine按照指定的顺序执行
+
+二是多个chan按照指定的方式组合处理
+
+
+
+多个chan的编排方式，总共五种，分别是Or-Done模式、扇入模式、扇出模式、Stream和Map-Reduce
+
+
+
+##### 1、Or-Done模式
+
+我们会使用“信号通知”实现某个任务执行完成后的通知机制，在实现时，我们为这个任务定义一个类型为 chan struct{}类型的 done 变量，等任务结束后，我们就可以 close 这个变量，然后，其它 receiver 就会收到这个通知。
+
+这是有一个任务的情况，如果有多个任务，只要有任意一个任务执行完，就像获得这个信号，这就是Or-Done模式
+
+
+
+比如：发送同一个请求到多个微服务节点，只要任意一个微服务节点返回结果，就算成功
+
+```go
+func or(channels ...<-chan interface{}) <- chan interface{} {
+    //特殊情况，只有零个或1个chan
+    switch len(channels) {
+    case 0:
+        return nil
+    case 1:
+        return channels[0]
+    }
+    
+    orDone := make(chan interface{})
+    go func() {
+        defer close(orDone)
+        
+        switch len(channels) {
+            case 2:
+            select {
+                case <- channels[0]:
+                case <- channels[1]:
+            }
+        default: //超过两个，二分法递归处理
+            m := len(channels)/2
+            select {
+                case <- or(channels[:m]...):
+                case <- or(channels[m:]...):
+            }
+        }
+    }()
+    
+    return orDone
+}
+```
+
+
+
+
+
+测试程序：
+
+```go
+func sig(after time.Duration) <- chan interface{} {
+    c := make(chan interface{})
+    go func () {
+        defer close(c)
+        time.Sleep(after)
+    }()
+    return c
+}
+
+func main() {
+    start := time.Now()
+    <- or(
+        sig(10*time.Second),
+        sig(20*time.Second),
+        sig(30*time.Second),
+        sig(40*time.Second),
+        sig(50*time.Second),
+        sig(60*time.Second)
+    )
+    
+    fmt.Printf("done after %v", time.Since(start))
+}
+```
+
+
+
+在chan数量比较多的请开给你下，递归并不是一个很好的解决方法，可以使用反射
+
+```go
+func or(channels...chan interface{}) <-chan interface{} {
+    //特殊情况，只有零个或1个chan
+    switch len(channels) {
+    case 0:
+        return nil
+    case 1:
+        return channels[0]
+    }
+    
+    orDone := make(chan interface{})
+    go func() {
+        defer close(orDone)
+        //利用反射构建SelectCase
+        var cases []reflect.SelectCase
+        for _,c := range channels {
+            cases = append(cases,reflect.SelectCase{
+                Dir: reflect.SelectRecv,
+                Chan: reflect.ValueOf(c),
+            })
+        }
+       
+        //随机选择一个可用的case
+        reflect.Select(cases)
+    }()
+    
+    return orDone
+}
+```
+
+
+
+
+
+
+
+##### 2、扇入模式
+
+多个源Channel输入、一个目的Channel输出的情况
+
+每个源 Channel 的元素都会发送给目标 Channel，相当于目标 Channel 的 receiver 只需要监听目标 Channel，就可以接收所有发送给源 Channel 的数据。
+
+
+
+反射：
+
+```go
+func fanInReflect (chans ...<-chan interface{}) <-chan interface{} {
+    out := make(chan interface{})
+    go func () {
+        defer close(out)
+        
+        var cases []reflect.SelectCase
+        for _,c := range chans {
+            cases = append(cases,reflect.SelectCase{
+                Dir: reflect.SelectRecv,
+                Chan: reflect.ValueOf(c),
+            })
+        }
+        
+        for len(cases) >0 {
+            i,v,ok := reflect.Select(cases)
+            if !ok {
+                cases = append(cases[:i],cases[i+1:]...)
+                continue
+            }
+            out <- v.Interface()
+        }
+    }()
+    
+    return out
+}
+```
+
+
+
+
+
+递归模式：
+
+```go
+func fanInRec(chans ...<-chan interface{}) <-chan interface{} {
+    switch len(chans) {
+    case 0:
+        c := make(chan interface{})
+        close(c)
+        return c
+    case 1:
+        return chans[0]
+    case 2:
+        return mergeTwo(chans[0],chans[1])
+    default:
+        m:=len(chans)/2
+        return mergeTwo(fanInRec(chans[:m]...),fanInRec(chans[m+1:]...))
+    }
+}
+
+func mergeTwo(a,b <-chan interface[]) <-chan interface{} {
+    c := make(chan interface[])
+    
+    go func () {
+        defer close(c)
+        
+        for a != nil || b!=nil {
+            select {
+                case v,ok:=<-a:
+                if !ok {
+                    a = nil
+                    continue
+                }
+                c <- v
+                case v,ok:=<-b:
+                if !ok {
+                    b = nil
+                    continue
+                }
+                c<-v
+            }
+        }
+    }()
+    
+    return c
+}
+```
+
+
+
+
+
+
+
+##### 3、扇出模式
+
+一个输入源channel，多个输出目的Channel
+
+![image-20220126002919629](typora-user-images/image-20220126002919629.png)
+
+
+
+
+
+
+
+
+
+##### 4、Stream
+
+把channel看作流，提供跳过几个元素，或者是只取几个元素等方法
+
+![image-20220126003117748](typora-user-images/image-20220126003117748.png)
+
+![image-20220126003207516](typora-user-images/image-20220126003207516.png)
+
+
+
+
+
+
+
+##### 5、Map-Reduce
+
+![image-20220126003337787](typora-user-images/image-20220126003337787.png)
+
+![image-20220126003447973](typora-user-images/image-20220126003447973.png)
+
+![image-20220126003511687](typora-user-images/image-20220126003511687.png)
+
+![image-20220126003521030](typora-user-images/image-20220126003521030.png)
