@@ -1807,3 +1807,256 @@ func mergeTwo(a,b <-chan interface[]) <-chan interface{} {
 ![image-20220126003511687](typora-user-images/image-20220126003511687.png)
 
 ![image-20220126003521030](typora-user-images/image-20220126003521030.png)
+
+
+
+
+
+
+
+
+
+## 十一、内存模型：Go如何保证并发读写的顺序
+
+
+
+### 1、重排和可见性问题
+
+由于指令重排，代码并不一定会按照写的顺序执行
+
+
+
+
+
+### 2、happens-before
+
+
+
+在一个goroutine内部，程序的执行顺序和他们的代码指定的顺序是一样的，即使编译器或者CPU重排了读写顺序，从行为上来看，也和代码指定的顺序一样
+
+Go只保证了goroutine内部重排对读写的顺序没有影响
+
+
+
+Go 内存模型通过 happens-before 定义两个事件（读、写 action）的顺序：如果事件 e1  happens before 事件 e2，那么，我们就可以说事件 e2 在事件 e1 之后发生（happens after）。如果 e1 不是 happens before e2， 同时也不 happens after e2，那么，我们就可以说事件 e1 和 e2 是同时发生的。
+
+
+
+在单个goroutine内部，happens-before的关系和代码编写的顺序是一致的
+
+
+
+
+
+### 3、Go语言中保证的happens-before关系
+
+
+
+#### （1）init函数
+
+应用程序的初始化是在单一的 goroutine 执行的。如果包 p 导入了包 q，那么，q 的 init 函数的执行一定 happens before  p 的任何初始化代码。
+
+**main函数一定在导入的包的init函数之后执行**
+
+
+
+
+
+#### （2）goroutine
+
+**启动goroutine的go语言的执行，一定happens before此gorouitine内的代码执行**
+
+
+
+如果go语句传入的参数是一个函数执行的结果，那么，这个函数一定先于goroutine内部的代码被执行
+
+
+
+
+
+#### （3）channel
+
+Channel 是 goroutine 同步交流的主要方法。往一个 Channel 中发送一条数据，通常对应着另一个 goroutine 从这个 Channel 中接收一条数据。
+
+通用的Channel happens-before关系保证有4条规则，分别是：
+
+1、往 Channel 中的发送操作，happens before 从该 Channel 接收相应数据的动作完成之前，即第 n 个 send 一定 happens before 第 n 个 receive 的完成。
+
+2、close 一个 Channel 的调用，肯定 happens before 从关闭的 Channel 中读取出一个零值。
+
+3、对于 unbuffered 的 Channel，也就是容量是 0 的 Channel，从此 Channel 中读取数据的调用一定 happens before 往此 Channel 发送数据的调用完成。
+
+4、如果 Channel 的容量是 m（m>0），那么，第 n 个 receive 一定 happens before 第 n+m 个 send 的完成。
+
+
+
+
+
+
+
+#### （4）Mutex/RWMutex
+
+对于互斥锁Mutex m或者读写锁 RWMutex m，有三条happens-before关系的保证
+
+1、第 n 次的 m.Unlock 一定 happens before 第 n+1 m.Lock 方法的返回；
+
+2、对于读写锁 RWMutex m，如果它的第 n 个 m.Lock 方法的调用已返回，那么它的第 n 个 m.Unlock 的方法调用一定 happens before 任何一个 m.RLock 方法调用的返回，只要这些 m.RLock 方法调用 happens after 第 n 次 m.Lock 的调用的返回。这就可以保证，只有释放了持有的写锁，那些等待的读请求才能请求到读锁。
+
+3、对于读写锁 RWMutex m，如果它的第 n 个 m.RLock 方法的调用已返回，那么它的第 k （k<=n）个成功的 m.RUnlock 方法的返回一定 happens before 任意的 m.RUnlockLock 方法调用，只要这些 m.Lock 方法调用 happens after 第 n 次 m.RLock。
+
+
+
+
+
+
+
+#### （5）WaitGroup
+
+Wait方法等到计数值归零之后才返回
+
+
+
+
+
+#### （6）Once
+
+对于 once.Do(f) 调用，f 函数的那个单次调用一定 happens before 任何 once.Do(f) 调用的返回
+
+就是函数f一定会在Do方法返回之前执行
+
+
+
+
+
+#### （7）atomic
+
+
+
+
+
+
+
+
+
+
+
+![image-20220127233012075](typora-user-images/image-20220127233012075.png)
+
+
+
+
+
+
+
+
+
+
+
+## 十二、Semaphore
+
+信号量
+
+最简单的信号量就是一个变量加一些并发控制的能力，这个变量是 0 到 n 之间的一个数值。当 goroutine 完成对此信号量的等待（wait）时，该计数值就减 1，当 goroutine 完成对此信号量的释放（release）时，该计数值就加 1。当计数值为 0 的时候，goroutine 调用 wait 等待该信号量是不会成功的，除非计数器又大于 0，等待的 goroutine 才有可能成功返回。
+
+
+
+
+
+就是同一时间只能允许n个协程操作
+
+
+
+
+
+### 1、Go官方扩展库的实现
+
+**Weighted**
+
+![image-20220127234724840](typora-user-images/image-20220127234724840.png)
+
+
+
+
+
+例如创建和CPU核数一样多的worker，让它们去处理一个4倍数量的整数slice，每个Worker一次只能处理一个整数，处理完之后，才能处理下一个。
+
+```go
+var (
+    maxWorkers = runtime.GOMAXPROCS(0)
+    sema = semaphore.NewWeighted(int64(maxWorkers))
+    task = make([]int, maxWorkers*4)
+)
+
+
+func main() {
+    ctx := context.Background()
+    
+    for i:= range task {
+        if err := sema.Acquire(ctx,1); err !=nil {
+            break
+        }
+        
+        go func(i int) {
+            defer sema.Release(1)
+            time.Sleep(100 * time.Millisecond)
+            task[i] = i+1
+        }(1)
+    }
+    
+    if err := sema.Acquire(ctx,int64(maxWorkers)); err != nil {
+        log.Printf("获取所有的workder失败：%v", err)
+    }
+    
+    fmt.Println(task)
+    
+}
+
+```
+
+
+
+
+
+
+
+### 2、其它实现
+
+典型的就是使用Channel来实现
+
+
+
+使用一个buffer为n的Channel进行实现，例如chan struct{}类型
+
+
+
+```go
+type semaphore struct {
+    sync.Locker
+    ch chan struct{}
+}
+
+
+func NewSemaphore(capacity int) sync.Locker {
+    if capacity <= 0 {
+        capacity = 1
+    }
+    return &semaphore{ch: make(chan struct{}, capacity)}
+}
+
+
+func (s *semaphore) Lock() {
+    s.ch <- struct{}{}
+}
+
+func  (s *semaphore) UnLock() {
+    <- s.ch
+}
+```
+
+
+
+还可以扩展方法，比如在请求资源的时候使用Context参数（Acquire(ctx)）、实现TryLock等功能
+
+
+
+![image-20220127235154386](typora-user-images/image-20220127235154386.png)
