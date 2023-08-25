@@ -1293,3 +1293,208 @@ typedef struct dict {
 
 - **当负载因子大于等于 1 ，并且 Redis 没有在执行 bgsave 命令或者 bgrewiteaof 命令，也就是没有执行 RDB 快照或没有进行 AOF 重写的时候，就会进行 rehash 操作。**
 - **当负载因子大于等于 5 时，此时说明哈希冲突非常严重了，不管有没有有在执行 RDB 快照或 AOF 重写，都会强制进行 rehash 操作**
+
+### 整数集合
+
+整数集合是 Set 对象的底层实现之一。当一个 Set 对象只包含整数值元素，并且元素数量不大时，就会使用整数集这个数据结构作为底层实现
+
+整数集合本质上是一块连续内存空间，它的结构定义如下：
+
+```c
+typedef struct intset {
+    //编码方式
+    uint32_t encoding;
+    //集合包含的元素数量
+    uint32_t length;
+    //保存元素的数组
+    int8_t contents[];
+} intset;
+```
+
+保存元素的容器是一个 contents 数组，虽然 contents 被声明为 int8_t 类型的数组，但是实际上 contents 数组并不保存任何 int8_t 类型的元素，contents 数组的真正类型取决于 intset 结构体里的 encoding 属性的值。比如：
+
+- 如果 encoding 属性值为 INTSET_ENC_INT16，那么 contents 就是一个 int16_t 类型的数组，数组中每一个元素的类型都是 int16_t；
+- 如果 encoding 属性值为 INTSET_ENC_INT32，那么 contents 就是一个 int32_t 类型的数组，数组中每一个元素的类型都是 int32_t；
+- 如果 encoding 属性值为 INTSET_ENC_INT64，那么 contents 就是一个 int64_t 类型的数组，数组中每一个元素的类型都是 int64_t；
+
+不同类型的 contents 数组，意味着数组的大小也会不同
+
+![img](typora-user-images/e2e3e19fc934e70563fbdfde2af39a2b.png)
+
+整数集合会有一个升级规则，就是当我们将一个新元素加入到整数集合里面，如果新元素的类型（int32_t）比整数集合现有所有元素的类型（int16_t）都要长时，整数集合需要先进行升级，也就是按新元素的类型（int32_t）扩展 contents 数组的空间大小，然后才能将新元素加入到整数集合里，当然升级的过程中，也要维持整数集合的有序性。
+
+
+
+### 跳表
+
+Redis 只有 Zset 对象的底层实现用到了跳表，跳表的优势是能支持平均 O(logN) 复杂度的节点查找。
+
+zset 结构体里有两个数据结构：一个是跳表，一个是哈希表。这样的好处是既能进行高效的范围查询，也能进行高效单点查询。
+
+```c
+typedef struct zset {
+    dict *dict;
+    zskiplist *zsl;
+} zset;
+```
+
+Zset 对象在执行数据插入或是数据更新的过程中，会依次在跳表和哈希表中插入或更新相应的数据，从而保证了跳表和哈希表中记录的信息一致。
+
+Zset 对象能支持范围查询（如 ZRANGEBYSCORE 操作），这是因为它的数据结构设计采用了跳表，而又能以常数复杂度获取元素权重（如 ZSCORE 操作），这是因为它同时采用了哈希表进行索引。
+
+####  跳表结构设计
+
+链表在查找元素的时候，因为需要逐一查找，所以查询效率非常低，时间复杂度是O(N)，于是就出现了跳表。**跳表是在链表基础上改进过来的，实现了一种「多层」的有序链表**，这样的好处是能快读定位数据。
+
+![img](typora-user-images/2ae0ed790c7e7403f215acb2bd82e884.png)
+
+```c
+typedef struct zskiplistNode {
+    //Zset 对象的元素值
+    sds ele;
+    //元素权重值
+    double score;
+    //后向指针
+    struct zskiplistNode *backward;
+  
+    //节点的level数组，保存每层上的前向指针和跨度
+    struct zskiplistLevel {
+        struct zskiplistNode *forward;
+        unsigned long span;
+    } level[];
+} zskiplistNode;
+```
+
+Zset 对象要同时保存「元素」和「元素的权重」，对应到跳表节点结构里就是 sds 类型的 ele 变量和 double 类型的 score 变量。每个跳表节点都有一个后向指针（struct zskiplistNode *backward），指向前一个节点，目的是为了方便从跳表的尾节点开始访问节点，这样倒序查找时很方便。
+
+跳表是一个带有层级关系的链表，而且每一层级可以包含多个节点，每一个节点通过指针连接起来，实现这一特性就是靠跳表节点结构体中的**zskiplistLevel 结构体类型的 level 数组**。
+
+level 数组中的每一个元素代表跳表的一层，也就是由 zskiplistLevel 结构体表示，比如 leve[0] 就表示第一层，leve[1] 就表示第二层。zskiplistLevel 结构体里定义了「指向下一个跳表节点的指针」和「跨度」，跨度时用来记录两个节点之间的距离。
+
+比如，下面这张图，展示了各个节点的跨度。
+
+![image-20230825162035445](typora-user-images/image-20230825162035445.png)
+
+```c
+typedef struct zskiplist {
+    struct zskiplistNode *header, *tail;
+    unsigned long length;
+    int level;
+} zskiplist;
+```
+
+跳表结构里包含了：
+
+- 跳表的头尾节点，便于在O(1)时间复杂度内访问跳表的头节点和尾节点；
+- 跳表的长度，便于在O(1)时间复杂度获取跳表节点的数量；
+- 跳表的最大层数，便于在O(1)时间复杂度获取跳表中层高最大的那个节点的层数量
+
+#### 跳表节点查询过程
+
+查找一个跳表节点的过程时，跳表会从头节点的最高层开始，逐一遍历每一层。在遍历某一层的跳表节点时，会用跳表节点中的 SDS 类型的元素和元素的权重来进行判断，共有两个判断条件：
+
+- 如果当前节点的权重「小于」要查找的权重时，跳表就会访问该层上的下一个节点。
+- 如果当前节点的权重「等于」要查找的权重时，并且当前节点的 SDS 类型数据「小于」要查找的数据时，跳表就会访问该层上的下一个节点。
+
+如果上面两个条件都不满足，或者下一个节点为空时，跳表就会使用目前遍历到的节点的 level 数组里的下一层指针，然后沿着下一层指针继续查找，这就相当于跳到了下一层接着查找。
+
+举个例子，下图有个 3 层级的跳表。
+
+![image-20230825162631254](typora-user-images/image-20230825162631254.png)
+
+如果要查找「元素：abcd，权重：4」的节点，查找的过程是这样的：
+
+- 先从头节点的最高层开始，L2 指向了「元素：abc，权重：3」节点，这个节点的权重比要查找节点的小，所以要访问该层上的下一个节点；
+- 但是该层的下一个节点是空节点（ leve[2]指向的是空节点），于是就会跳到「元素：abc，权重：3」节点的下一层去找，也就是 leve[1];
+- 「元素：abc，权重：3」节点的 leve[1] 的下一个指针指向了「元素：abcde，权重：4」的节点，然后将其和要查找的节点比较。虽然「元素：abcde，权重：4」的节点的权重和要查找的权重相同，但是当前节点的 SDS 类型数据「大于」要查找的数据，所以会继续跳到「元素：abc，权重：3」节点的下一层去找，也就是 leve[0]；
+- 「元素：abc，权重：3」节点的 leve[0] 的下一个指针指向了「元素：abcd，权重：4」的节点，该节点正是要查找的节点，查询结束
+
+
+
+**跳表的相邻两层的节点数量最理想的比例是 2:1，查找复杂度可以降低到 O(logN)**。
+
+Redis 则采用一种巧妙的方法是，**跳表在创建节点的时候，随机生成每个节点的层数**，并没有严格维持相邻两层的节点数量比例为 2 : 1 的情况。
+
+具体的做法是，**跳表在创建节点时候，会生成范围为[0-1]的一个随机数，如果这个随机数小于 0.25（相当于概率 25%），那么层数就增加 1 层，然后继续生成下一个随机数，直到随机数的结果大于 0.25 结束，最终确定该节点的层数**。
+
+这样的做法，相当于每增加一层的概率不超过 25%，层数越高，概率越低，层高最大限制是 64。
+
+虽然我前面讲解跳表的时候，图中的跳表的「头节点」都是 3 层高，但是其实**如果层高最大限制是 64，那么在创建跳表「头节点」的时候，就会直接创建 64 层高的头节点**。
+
+
+
+#### 为什么用跳表而不用平衡树？
+
+- **从内存占用上来比较，跳表比平衡树更灵活一些**。平衡树每个节点包含 2 个指针（分别指向左右子树），而跳表每个节点包含的指针数目平均为 1/(1-p)，具体取决于参数 p 的大小。如果像 Redis里的实现一样，取 p=1/4，那么平均每个节点包含 1.33 个指针，比平衡树更有优势。
+- **在做范围查找的时候，跳表比平衡树操作要简单**。在平衡树上，我们找到指定范围的小值之后，还需要以中序遍历的顺序继续寻找其它不超过大值的节点。如果不对平衡树进行一定的改造，这里的中序遍历并不容易实现。而在跳表上进行范围查找就非常简单，只需要在找到小值之后，对第 1 层链表进行若干步的遍历就可以实现。
+- **从算法实现难度上来比较，跳表比平衡树要简单得多**。平衡树的插入和删除操作可能引发子树的调整，逻辑复杂，而跳表的插入和删除只需要修改相邻节点的指针，操作简单又快速
+
+### quicklist
+
+quicklist 就是「双向链表 + 压缩列表」组合，因为一个 quicklist 就是一个链表，而链表中的每个元素又是一个压缩列表。
+
+quicklist 解决办法，**通过控制每个链表节点中的压缩列表的大小或者元素个数，来规避连锁更新的问题。因为压缩列表元素越少或越小，连锁更新带来的影响就越小，从而提供了更好的访问性能**
+
+```c
+typedef struct quicklist {
+    //quicklist的链表头
+    quicklistNode *head;      //quicklist的链表头
+    //quicklist的链表尾
+    quicklistNode *tail; 
+    //所有压缩列表中的总元素个数
+    unsigned long count;
+    //quicklistNodes的个数
+    unsigned long len;       
+    ...
+} quicklist;
+```
+
+```c
+typedef struct quicklistNode {
+    //前一个quicklistNode
+    struct quicklistNode *prev;     //前一个quicklistNode
+    //下一个quicklistNode
+    struct quicklistNode *next;     //后一个quicklistNode
+    //quicklistNode指向的压缩列表
+    unsigned char *zl;              
+    //压缩列表的的字节大小
+    unsigned int sz;                
+    //压缩列表的元素个数
+    unsigned int count : 16;        //ziplist中的元素个数 
+    ....
+} quicklistNode;
+```
+
+![img](typora-user-images/f46cbe347f65ded522f1cc3fd8dba549.png)
+
+在向 quicklist 添加一个元素的时候，不会像普通的链表那样，直接新建一个链表节点。而是会检查插入位置的压缩列表是否能容纳该元素，如果能容纳就直接保存到 quicklistNode 结构里的压缩列表，如果不能容纳，才会新建一个新的 quicklistNode 结构。
+
+quicklist 会控制 quicklistNode 结构里的压缩列表的大小或者元素个数，来规避潜在的连锁更新的风险，但是这并没有完全解决连锁更新的问题
+
+### listpack
+
+目的是替代压缩列表，它最大特点是 listpack 中每个节点不再包含前一个节点的长度了，压缩列表每个节点正因为需要保存前一个节点的长度字段，就会有连锁更新的隐患。
+
+![img](typora-user-images/4d2dc376b5fd68dae70d9284ae82b73a.png)
+
+listpack 头包含两个属性，分别记录了 listpack 总字节数和元素数量，然后 listpack 末尾也有个结尾标识。图中的 listpack entry 就是 listpack 的节点了。
+
+![img](typora-user-images/c5fb0a602d4caaca37ff0357f05b0abf.png)
+
+主要包含三个方面内容：
+
+- encoding，定义该元素的编码类型，会对不同长度的整数和字符串进行编码；
+- data，实际存放的数据；
+- len，encoding+data的总长度；
+
+可以看到，**listpack 没有压缩列表中记录前一个节点长度的字段了，listpack 只记录当前节点的长度，当我们向 listpack 加入一个新元素的时候，不会影响其他节点的长度字段的变化，从而避免了压缩列表的连锁更新问题**。
+
+
+
+
+
+> 压缩列表的entry为什么要保存prevlen呢？listpack改成len之后不会影响功能吗？
+
+压缩列表的 entry 保存 prevlen 是为了实现节点从后往前遍历，知道前一个节点的长度，就可以计算前一个节点的偏移量。
+
+listpack 一样可以支持从后往前遍历的。详细的算法可以看：https://github.com/antirez/listpack/blob/master/listpack.c 里的lpDecodeBacklen函数，lpDecodeBacklen 函数就可以从当前列表项起始位置的指针开始，向左逐个字节解析，得到前一项的 entry-len 值。
