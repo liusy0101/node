@@ -629,3 +629,78 @@ bucket&h.oldbucketmask() 这行代码，如源码注释里说的，是为了确�
 对于条件 2，从老的 buckets 搬迁到新的 buckets，由于 bucktes 数量不变，因此可以按序号来搬，比如原来在 0 号 bucktes，到新的地方后，仍然放在 0 号 buckets。
 
 对于条件 1，就没这么简单了。要重新计算 key 的哈希，才能决定它到底落在哪个 bucket。例如，原来 B = 5，计算出 key 的哈希后，只用看它的低 5 位，就能决定它落在哪个 bucket。扩容后，B 变成了 6，因此需要多看一位，它的低 6 位决定 key 落在哪个 bucket。这称为 rehash。
+
+## Channel
+### Channel 简要说明
+Channel(一般简写为 chan) 管道提供了一种机制，它在两个并发执行的协程之间进行同步，并通过传递与该管道元素类型相符的值来进行通信。Channel 是用来在不同的 goroutine 中交换数据的，千万不要把 Channel 拿来在同一个 goroutine 中的不同函数之间间交换数据，chan 可以理解为一个管道或者先进先出的队列。
+
+### Channel 类型定义
+最简单形式： chan elementType，通过这个类型的值，你可以发送和接收elementType 类型的元素。Channel 是引用类型，如果将一个 chan 变量赋值给另外一个，则这两个变量访问的是相同的 chann。
+当然，我们可以用 make 分配一个channel：var c = make(chan int)
+
+### Channel 有无缓冲 & 同步、异步
+channel 分为有缓冲 channel 和无缓冲 channel，两种 channel 的创建方法如下:
+
+var ch = make(chan int) //无缓冲 channel,等同于make(chan int ,0)，是一个同步的 Channel
+
+无缓冲 channel 在读和写的过程中是都会阻塞，由于阻塞的存在，所以使用 channel 时特别注意使用方法，防止死锁和协程泄漏的产生。
+无缓冲 channel 的发送动作一直要到有一个接收者接收这个值才算完成，否则都是阻塞着的，也就是说，发送的数据需要被读取后，发送才会完成
+一般要配合 select + timeout 处理，然后再在这里添加超时时间
+
+
+var ch = make(chan int,10) //有缓冲channel,缓冲大小是10，是一个异步的Channel
+
+带缓存的 channel 实际上是一个阻塞队列。队列满时写协程会阻塞，队列空时读协程阻塞。
+有缓冲的时候，写操作是写完之后直接返回的。相对于不带缓存 channel，带缓存 channel 不易造成死锁。
+
+
+### Channel 各种操作导致阻塞和协程泄漏的场景
+写操作，什么时候会被阻塞？
+
+- 向 nil 通道发送数据会被阻塞
+- 向无缓冲 channel 写数据，如果读协程没有准备好，会阻塞
+  - 无缓冲 channel ，必须要有读有写，写了数据之后，必须要读出来，否则导致 channel 阻塞，从而使得协程阻塞而使得协程泄漏
+  - 一个无缓冲 channel，如果每次来一个请求就开一个 go 协程往里面写数据，但是一直没有被读取，那么就会导致这个 chan 一直阻塞，使得写这个 chan 的 go 协程一直无法释放从而协程泄漏。
+- 向有缓冲 channel 写数据，如果缓冲已满，会阻塞
+  - 有缓冲的 channel，在缓冲 buffer 之内，不读取也不会导致阻塞，当然也就不会使得协程泄漏，但是如果写数据超过了 buffer 还没有读取，那么继续写的时候就会阻塞了。如果往有缓冲的 channel 写了数据但是一直没有读取就直接退出协程的话，一样会导致 channel 阻塞，从而使得协程阻塞并泄漏。
+
+
+
+读操作，什么时候会被阻塞？
+
+- 从 nil 通道接收数据会被阻塞
+- 从无缓冲 channel 读数据，如果写协程没有准备好，会阻塞
+- 从有缓冲 channel 读数据，如果缓冲为空，会阻塞
+
+close 操作，什么时候会被阻塞？
+
+close channel 对 channel 阻塞是没有任何效果的，写了数据但是不读，直接 close，还是会阻塞的。
+
+
+### Channel 的缺点：
+
+Channel 可能会导致循环阻塞或者协程泄漏，这个是最最最要重点关注的。
+Channel 中传递指针会导致数据竞态问题（data race/ race conditions）
+Channel 中传递的都是数据的拷贝，可能会影响性能，但是就目前我们的机器性能来看，这点数据拷贝所带来的 CPU 消耗，大多数的情况下可以忽略。
+
+### Go Channel 实现协程同步
+channel 实现并发同步的说明
+channel 作为 Go 并发模型的核心思想：不要通过共享内存来通信，而应该通过通信来共享内存，那么在 Go 里面，当然也可以很方便通过 channel 来实现协程的并发和同步了，并且 channel 本身还可以支持有缓冲和无缓冲的，通过 channel + timeout 实现并发协程之间的同步也是常见的一种使用姿势。
+
+### 注意
+- channel接收操作两种写法
+```go
+// entry points for <- c from compiled code
+func chanrecv1(c *hchan, elem unsafe.Pointer) {
+	chanrecv(c, elem, true)
+}
+
+// 如果是false，说明channle已经被关闭，这时候就可以判断nil值是元素为nil还是channle是否关闭	
+func chanrecv2(c *hchan, elem unsafe.Pointer) (received bool) {
+	_, received = chanrecv(c, elem, true)
+	return
+}
+```
+
+- channle元素传递方式
+channel 的发送和接收操作本质上都是 “值的拷贝”，无论是从 sender goroutine 的栈到 chan buf，还是从 chan buf 到 receiver goroutine，或者是直接从 sender goroutine 到 receiver goroutine。
