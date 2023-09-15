@@ -704,3 +704,125 @@ func chanrecv2(c *hchan, elem unsafe.Pointer) (received bool) {
 
 - channle元素传递方式
 channel 的发送和接收操作本质上都是 “值的拷贝”，无论是从 sender goroutine 的栈到 chan buf，还是从 chan buf 到 receiver goroutine，或者是直接从 sender goroutine 到 receiver goroutine。
+
+
+## Context
+context 用来解决 goroutine 之间退出通知、元数据传递的功能。
+
+**传递共享数据**
+例如：
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+)
+
+func main() {
+	ctx := context.Background()
+	process(ctx)
+
+	ctx = context.WithValue(ctx, "traceId", "qcrao-2019")
+	process(ctx)
+}
+
+func process(ctx context.Context) {
+	traceId, ok := ctx.Value("traceId").(string)
+	if ok {
+		fmt.Printf("process over. trace_id=%s\n", traceId)
+	} else {
+		fmt.Printf("process over. no trace_id\n")
+	}
+}
+```
+
+**取消gorouting**
+```go
+func Perform(ctx context.Context) {
+    for {
+        calculatePos()
+        sendResult()
+
+        select {
+        case <-ctx.Done():
+            // 被取消，直接返回
+            return
+        case <-time.After(time.Second):
+            // block 1 秒钟 
+        }
+    }
+}
+
+func main(){
+	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
+	go Perform(ctx)
+
+	// ……
+	// app 端返回页面，调用cancel 函数
+	cancel()
+}
+```
+
+**防止gorouting泄漏**
+
+```go
+func gen() <-chan int {
+	ch := make(chan int)
+	go func() {
+		var n int
+		for {
+			ch <- n
+			n++
+			time.Sleep(time.Second)
+		}
+	}()
+	return ch
+}
+
+func main() {
+	for n := range gen() {
+		fmt.Println(n)
+		if n == 5 {
+			break
+		}
+	}
+	// ……
+}
+```
+
+这样在break掉之后，那么 gen 函数的协程就会执行无限循环，永远不会停下来。发生了 goroutine 泄漏。
+
+改进：
+```go
+func gen(ctx context.Context) <-chan int {
+	ch := make(chan int)
+	go func() {
+		var n int
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case ch <- n:
+				n++
+				time.Sleep(time.Second)
+			}
+		}
+	}()
+	return ch
+}
+
+func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel() // 避免其他地方忘记 cancel，且重复调用不影响
+
+	for n := range gen(ctx) {
+		fmt.Println(n)
+		if n == 5 {
+			cancel()
+			break
+		}
+	}
+	// ……
+}
+```
