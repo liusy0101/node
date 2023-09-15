@@ -826,3 +826,83 @@ func main() {
 	// ……
 }
 ```
+
+
+## Unsafe
+- 任何类型的指针和unsafe.Pointer可以相互转换
+- uintptr类型和unsafe.Pointer可以相互转换
+
+![](typora-user-images/2023-09-15-03-14-31.png)
+pointer不能直接进行数学运算，可以将它转换成uintptr，对uintptr类型进行数学运算，再转成pointer类型
+
+uintptr 并没有指针的语义，意思就是 uintptr 所指向的对象会被 gc 无情地回收。而 unsafe.Pointer 有指针语义，可以保护它所指向的对象在“有用”的时候不会被垃圾回收。
+
+**unsafe可以修改结构体成员变量**
+对于一个结构体，通过 offset 函数可以获取结构体成员的偏移量，进而获取成员的地址，读写该地址的内存，就可以达到改变成员值的目的。
+
+## 编译
+
+### GOPATH、GOROOT
+GOROOT是go的安装目录，例如是：/usr/local/go
+
+GOPATH的作用在于提供一个可查找 `.go`源码的路径，是一个工作空间的概念，可以设置多个目录
+GOPATH下必须包含三个目录：
+- bin：存放可执行文件
+- pkg：存放源文件编译后的库文件
+- src：存放源文件
+
+
+## GOROUTING
+
+**gorouting和线程有什么区别？**
+
+从三个方面可以解释：内存消耗、创建与销毁、切换
+- 内存占用
+  - 创建一个gorouting的栈内存消耗为2kb，如果空间不够用，会自动进行扩容
+  - 创建一个线程则需要消耗1MB空间
+- 创建与销毁
+  - Thread 创建和销毀都会有巨大的消耗，因为要和操作系统打交道，是内核级的，通常解决的办法就是线程池。
+  - 而 goroutine 因为是由 Go runtime 负责管理的，创建和销毁的消耗非常小，是用户级。
+- 切换
+  - thread切换时，需要保存各种寄存器，便于将来恢复
+  - 而 goroutines 切换只需保存三个寄存器：Program Counter, Stack Pointer and BP。
+
+
+### Scheduler
+Go scheduler 可以说是 Go 运行时的一个最重要的部分了。Runtime 维护所有的 goroutines，并通过 scheduler 来进行调度。Goroutines 和 threads 是独立的，但是 goroutines 要依赖 threads 才能执行。
+
+Go 程序执行的高效和 scheduler 的调度是分不开的。
+
+**Go scheduler 的核心思想是：**
+- reuse threads；
+- 限制同时运行（不包含阻塞）的线程数为 N，N 等于 CPU 的核心数目；
+- 线程私有的 runqueues，并且可以从其他线程 stealing goroutine 来运行，线程阻塞后，可以将 runqueues 传递给其他线程。
+
+![](typora-user-images/2023-09-15-04-20-24.png)
+
+
+**M:N模型**
+Go runtime 会负责 goroutine 的生老病死，从创建到销毁，都一手包办。Runtime 会在程序启动的时候，创建 M 个线程（CPU 执行调度的单位），之后创建的 N 个 goroutine 都会依附在这 M 个线程上执行。这就是 M:N 模型：
+![](typora-user-images/2023-09-15-04-24-40.png)
+
+在同一时刻，一个线程上只能跑一个 goroutine。当 goroutine 发生阻塞（例如上篇文章提到的向一个 channel 发送数据，被阻塞）时，runtime 会把当前 goroutine 调度走，让其他 goroutine 来执行。目的就是不让一个线程闲着，榨干 CPU 的每一滴油水
+
+**GMP**
+有三个基础的结构体来实现 goroutines 的调度。g，m，p。
+
+g 代表一个 goroutine，它包含：表示 goroutine 栈的一些字段，指示当前 goroutine 的状态，指示当前运行到的指令地址，也就是 PC 值。
+
+m 表示内核线程，包含正在运行的 goroutine ， 与之绑定的P等信息，G需要调度到M上才能运行， 当M被阻塞时，整个P会被其他M接管。
+
+p 代表一个虚拟的 Processor，它维护一个处于 Runnable 状态的 g 队列，m 需要获得 p 才能运行 g。
+
+当然还有一个核心的结构体：sched，它总览全局。
+
+Runtime 起始时会启动一些 G：垃圾回收的 G，执行调度的 G，运行用户代码的 G；并且会创建一个 M 用来开始 G 的运行。随着时间的推移，更多的 G 会被创建出来，更多的 M 也会被创建出来。
+
+GPM 三足鼎力，共同成就 Go scheduler。G 需要在 M 上才能运行，M 依赖 P 提供的资源，P 则持有待运行的 G。
+
+![](typora-user-images/2023-09-15-04-37-18.png)
+
+Go scheduler 使用 M:N 模型，在任一时刻，M 个 goroutines（G） 要分配到 N 个内核线程（M），这些 M 跑在个数最多为 GOMAXPROCS 的逻辑处理器（P）上。每个 M 必须依附于一个 P，每个 P 在同一时刻只能运行一个 M。如果 P 上的 M 阻塞了，那它就需要其他的 M 来运行 P 的 LRQ 里的 goroutines。
+![](typora-user-images/2023-09-15-04-41-02.png)
