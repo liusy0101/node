@@ -1,6 +1,40 @@
-# GO
+<!-- vscode-markdown-toc -->
+* 1. [数组与切片](#)
+	* 1.1. [扩容机制](#-1)
+	* 1.2. [切片作为函数参数](#-1)
+* 2. [Map](#Map)
+	* 2.1. [创建map](#map)
+	* 2.2. [哈希函数](#-1)
+	* 2.3. [key的定位过程](#key)
+	* 2.4. [扩容机制](#-1)
+* 3. [Channel](#Channel)
+	* 3.1. [Channel 简要说明](#Channel-1)
+	* 3.2. [Channel 类型定义](#Channel-1)
+	* 3.3. [Channel 有无缓冲 & 同步、异步](#Channel-1)
+	* 3.4. [Channel 各种操作导致阻塞和协程泄漏的场景](#Channel-1)
+	* 3.5. [Channel 的缺点：](#Channel-1)
+	* 3.6. [Go Channel 实现协程同步](#GoChannel)
+	* 3.7. [注意](#-1)
+* 4. [Context](#Context)
+* 5. [Unsafe](#Unsafe)
+* 6. [编译](#-1)
+	* 6.1. [GOPATH、GOROOT](#GOPATHGOROOT)
+* 7. [GOROUTING](#GOROUTING)
+	* 7.1. [Scheduler](#Scheduler)
+* 8. [垃圾回收](#-1)
+	* 8.1. [根对象](#-1)
+	* 8.2. [三色标记法](#-1)
+		* 8.2.1. [强三色不变式](#-1)
+		* 8.2.2. [弱三色不变式](#-1)
+		* 8.2.3. [屏障机制](#-1)
 
-## 数组与切片
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc --># GO
+
+##  1. <a name=''></a>数组与切片
 slice的底层数据是数组，slice是对数组的封装， 描述一个数组的片段。
 数组是定长的，长度定义好之后，不能再更改。在 Go 中，数组是不常见的，因为其长度是类型的一部分，限制了它的表达能力，比如 [3]int 和 [4]int 就是不同的类型。
 
@@ -55,7 +89,7 @@ func main() {
 [0 1 2 3 20 5 6 7 100 9]
 
 
-### 扩容机制
+###  1.1. <a name='-1'></a>扩容机制
 使用 append 可以向 slice 追加元素，实际上是往底层数组添加元素。但是底层数组的长度是固定的，如果索引 len-1 所指向的元素已经是底层数组的最后一个元素，就没法再添加了。
 
 这时，slice 会迁移到新的内存位置，新底层数组的长度也会增加，这样就可以放置新增的元素。同时，为了应对未来可能再次发生的 append 操作，新的底层数组的长度，也就是新 slice 的容量是留了一定的 buffer 的。否则，每次添加元素的时候，都会发生迁移，成本太高。
@@ -150,7 +184,7 @@ func main() {
 len=5, cap=6
 
 
-### 切片作为函数参数
+###  1.2. <a name='-1'></a>切片作为函数参数
 当 slice 作为函数参数时，就是一个普通的结构体。其实很好理解：若直接传 slice，在调用者看来，实参 slice 并不会被函数中的操作改变；若传的是 slice 的指针，在调用者看来，是会被改变原 slice 的。
 
 值得注意的是，不管传的是 slice 还是 slice 指针，如果改变了 slice 底层数组的数据，会反应到实参 slice 的底层数据。为什么能改变底层数组的数据？很好理解：底层数据在 slice 结构体里是一个指针，尽管 slice 结构体自身不会被改变，也就是说底层数据地址不会被改变。 但是通过指向底层数据的指针，可以改变切片的底层数据，没有问题。
@@ -234,7 +268,7 @@ myAppend 函数里，虽然改变了 s，但它只是一个值传递，并不会
 最后，将 newS 赋值给了 s，s 这时才真正变成了一个新的slice。之后，再给 myAppendPtr 函数传入一个 s 指针，这回它真的被改变了：[1 1 1 100 100]。
 
 
-## Map
+##  2. <a name='Map'></a>Map
 map底层采用哈希查找表，并且使用链表解决哈希冲突。
 
 ```go
@@ -301,7 +335,7 @@ key和value各自放在一起，可以省略掉padding字段，节省内存空�
 
 每个 bucket 设计成最多只能放 8 个 key-value 对，如果有第 9 个 key-value 落入当前的 bucket，那就需要再构建一个 bucket ，通过 overflow 指针连接起来。
 
-### 创建map
+###  2.1. <a name='map'></a>创建map
 ```go
 ageMp := make(map[string]int)
 // 指定 map 长度
@@ -312,7 +346,7 @@ var ageMp map[string]int
 ```
 实际上底层调用的是 makemap 函数，主要做的工作就是初始化 hmap 结构体的各种字段，例如计算 B 的大小，设置哈希种子 hash0 等等
 
-### 哈希函数
+###  2.2. <a name='-1'></a>哈希函数
 hash 函数，有加密型和非加密型。 加密型的一般用于加密数据、数字摘要等，典型代表就是 md5、sha1、sha256、aes256 这种； 非加密型的一般就是查找。在 map 的应用场景中，用的是查找。 选择 hash 函数主要考察的是两点：性能、碰撞概率。
 ```go
 type _type struct {
@@ -356,7 +390,7 @@ func strequal(p, q unsafe.Pointer) bool {
 ```
 根据 key 的类型，_type 结构体的 alg 字段会被设置对应类型的 hash 和 equal 函数。
 
-### key的定位过程
+###  2.3. <a name='key'></a>key的定位过程
 key 经过哈希计算后得到哈希值，共 64 个 bit 位（64位机，32位机就不讨论了，现在主流都是64位机），计算它到底要落在哪个桶时，只会用到最后 B 个 bit 位。还记得前面提到过的 B 吗？如果 B = 5，那么桶的数量，也就是 buckets 数组的长度是 2^5 = 32。
 
 例如，现在有一个 key 经过哈希函数计算后，得到的哈希结果是：
@@ -499,7 +533,7 @@ func evacuated(b *bmap) bool {
 ```
 只取了 tophash 数组的第一个值，判断它是否在 0-4 之间。对比上面的常量，当 top hash 是 evacuatedEmpty、evacuatedX、evacuatedY 这三个值之一，说明此 bucket 中的 key 全部被搬迁到了新 bucket。
 
-### 扩容机制
+###  2.4. <a name='-1'></a>扩容机制
 loadFactor := count / (2^B)
 count 就是 map 的元素个数，2^B 表示 bucket 数量。
 
@@ -630,15 +664,15 @@ bucket&h.oldbucketmask() 这行代码，如源码注释里说的，是为了确�
 
 对于条件 1，就没这么简单了。要重新计算 key 的哈希，才能决定它到底落在哪个 bucket。例如，原来 B = 5，计算出 key 的哈希后，只用看它的低 5 位，就能决定它落在哪个 bucket。扩容后，B 变成了 6，因此需要多看一位，它的低 6 位决定 key 落在哪个 bucket。这称为 rehash。
 
-## Channel
-### Channel 简要说明
+##  3. <a name='Channel'></a>Channel
+###  3.1. <a name='Channel-1'></a>Channel 简要说明
 Channel(一般简写为 chan) 管道提供了一种机制，它在两个并发执行的协程之间进行同步，并通过传递与该管道元素类型相符的值来进行通信。Channel 是用来在不同的 goroutine 中交换数据的，千万不要把 Channel 拿来在同一个 goroutine 中的不同函数之间间交换数据，chan 可以理解为一个管道或者先进先出的队列。
 
-### Channel 类型定义
+###  3.2. <a name='Channel-1'></a>Channel 类型定义
 最简单形式： chan elementType，通过这个类型的值，你可以发送和接收elementType 类型的元素。Channel 是引用类型，如果将一个 chan 变量赋值给另外一个，则这两个变量访问的是相同的 chann。
 当然，我们可以用 make 分配一个channel：var c = make(chan int)
 
-### Channel 有无缓冲 & 同步、异步
+###  3.3. <a name='Channel-1'></a>Channel 有无缓冲 & 同步、异步
 channel 分为有缓冲 channel 和无缓冲 channel，两种 channel 的创建方法如下:
 
 var ch = make(chan int) //无缓冲 channel,等同于make(chan int ,0)，是一个同步的 Channel
@@ -654,7 +688,7 @@ var ch = make(chan int,10) //有缓冲channel,缓冲大小是10，是一个异�
 有缓冲的时候，写操作是写完之后直接返回的。相对于不带缓存 channel，带缓存 channel 不易造成死锁。
 
 
-### Channel 各种操作导致阻塞和协程泄漏的场景
+###  3.4. <a name='Channel-1'></a>Channel 各种操作导致阻塞和协程泄漏的场景
 写操作，什么时候会被阻塞？
 
 - 向 nil 通道发送数据会被阻塞
@@ -677,17 +711,17 @@ close 操作，什么时候会被阻塞？
 close channel 对 channel 阻塞是没有任何效果的，写了数据但是不读，直接 close，还是会阻塞的。
 
 
-### Channel 的缺点：
+###  3.5. <a name='Channel-1'></a>Channel 的缺点：
 
 Channel 可能会导致循环阻塞或者协程泄漏，这个是最最最要重点关注的。
 Channel 中传递指针会导致数据竞态问题（data race/ race conditions）
 Channel 中传递的都是数据的拷贝，可能会影响性能，但是就目前我们的机器性能来看，这点数据拷贝所带来的 CPU 消耗，大多数的情况下可以忽略。
 
-### Go Channel 实现协程同步
+###  3.6. <a name='GoChannel'></a>Go Channel 实现协程同步
 channel 实现并发同步的说明
 channel 作为 Go 并发模型的核心思想：不要通过共享内存来通信，而应该通过通信来共享内存，那么在 Go 里面，当然也可以很方便通过 channel 来实现协程的并发和同步了，并且 channel 本身还可以支持有缓冲和无缓冲的，通过 channel + timeout 实现并发协程之间的同步也是常见的一种使用姿势。
 
-### 注意
+###  3.7. <a name='-1'></a>注意
 - channel接收操作两种写法
 ```go
 // entry points for <- c from compiled code
@@ -706,7 +740,7 @@ func chanrecv2(c *hchan, elem unsafe.Pointer) (received bool) {
 channel 的发送和接收操作本质上都是 “值的拷贝”，无论是从 sender goroutine 的栈到 chan buf，还是从 chan buf 到 receiver goroutine，或者是直接从 sender goroutine 到 receiver goroutine。
 
 
-## Context
+##  4. <a name='Context'></a>Context
 context 用来解决 goroutine 之间退出通知、元数据传递的功能。
 
 **传递共享数据**
@@ -828,7 +862,7 @@ func main() {
 ```
 
 
-## Unsafe
+##  5. <a name='Unsafe'></a>Unsafe
 - 任何类型的指针和unsafe.Pointer可以相互转换
 - uintptr类型和unsafe.Pointer可以相互转换
 
@@ -840,9 +874,9 @@ uintptr 并没有指针的语义，意思就是 uintptr 所指向的对象会被
 **unsafe可以修改结构体成员变量**
 对于一个结构体，通过 offset 函数可以获取结构体成员的偏移量，进而获取成员的地址，读写该地址的内存，就可以达到改变成员值的目的。
 
-## 编译
+##  6. <a name='-1'></a>编译
 
-### GOPATH、GOROOT
+###  6.1. <a name='GOPATHGOROOT'></a>GOPATH、GOROOT
 GOROOT是go的安装目录，例如是：/usr/local/go
 
 GOPATH的作用在于提供一个可查找 `.go`源码的路径，是一个工作空间的概念，可以设置多个目录
@@ -852,7 +886,7 @@ GOPATH下必须包含三个目录：
 - src：存放源文件
 
 
-## GOROUTING
+##  7. <a name='GOROUTING'></a>GOROUTING
 
 **gorouting和线程有什么区别？**
 
@@ -868,7 +902,7 @@ GOPATH下必须包含三个目录：
   - 而 goroutines 切换只需保存三个寄存器：Program Counter, Stack Pointer and BP。
 
 
-### Scheduler
+###  7.1. <a name='Scheduler'></a>Scheduler
 Go scheduler 可以说是 Go 运行时的一个最重要的部分了。Runtime 维护所有的 goroutines，并通过 scheduler 来进行调度。Goroutines 和 threads 是独立的，但是 goroutines 要依赖 threads 才能执行。
 
 Go 程序执行的高效和 scheduler 的调度是分不开的。
@@ -908,19 +942,19 @@ Go scheduler 使用 M:N 模型，在任一时刻，M 个 goroutines（G） 要�
 ![](typora-user-images/2023-09-15-04-41-02.png)
 
 
-## 垃圾回收
+##  8. <a name='-1'></a>垃圾回收
 
 - 赋值器：指用户态的代码，在程序执行的过程中，可能会改变对象的引用关系，或者创建新的引用。
 - 回收器：回收内存中不被引用的对象。
 
-### 根对象
+###  8.1. <a name='-1'></a>根对象
 根对象是指赋值器不需要通过其他对象就可以直接访问到的对象，通过Root对象，可以追踪到其他存活的对象
 
 Root对象有：
 - 全局变量：程序在编译器就能确定那些存在于程序整个生命周期的变量
 - 执行栈：每个 goroutine (包括main函数)都拥有自己的执行栈，这些执行栈上包含栈上的变量及堆内存指针。【堆内存指针即在gorouine中申请或者引用了在堆内存的变量】
 
-### 三色标记法
+###  8.2. <a name='-1'></a>三色标记法
 ![](typora-user-images/2023-09-19-04-02-21.png)
 ![](typora-user-images/2023-09-19-04-02-43.png)
 
@@ -943,14 +977,14 @@ Root对象有：
 
 为了解决上述问题，有两种破坏条件的方式：**强三色不变式**和**弱三色不变式**
 
-#### 强三色不变式
+####  8.2.1. <a name='-1'></a>强三色不变式
 规则：不允许黑色对象引用白色对象
 
-#### 弱三色不变式
+####  8.2.2. <a name='-1'></a>弱三色不变式
 规则：黑色对象可以引用白色对象，但是白色对象的上游必须存在灰色对象
 
 
-#### 屏障机制
+####  8.2.3. <a name='-1'></a>屏障机制
 对于上述的两种不变式，分别有两种不同的实现机制：`插入写屏障`和`删除写屏障`
 
 **插入写屏障**
