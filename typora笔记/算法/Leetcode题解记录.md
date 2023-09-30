@@ -1,4 +1,197 @@
-[toc]
+<!-- vscode-markdown-toc -->
+* 1. [一、数组](#)
+	* 1.1. [（1）[两数之和](https://leetcode-cn.com/problems/two-sum/)](#1https:leetcode-cn.comproblemstwo-sum)
+	* 1.2. [（2）[三数之和 ](https://leetcode-cn.com/problems/3sum/)](#2https:leetcode-cn.comproblems3sum)
+	* 1.3. [（3）[多数元素](https://leetcode-cn.com/problems/majority-element/)](#3https:leetcode-cn.comproblemsmajority-element)
+	* 1.4. [（4）[求缺失的第一个正数](https://leetcode-cn.com/problems/first-missing-positive/)](#4https:leetcode-cn.comproblemsfirst-missing-positive)
+	* 1.5. [（5）[把数组中的 0 移到末尾](https://leetcode-cn.com/problems/move-zeroes/)](#50https:leetcode-cn.comproblemsmove-zeroes)
+	* 1.6. [（6）[改变矩阵维度](https://leetcode-cn.com/problems/reshape-the-matrix/)](#6https:leetcode-cn.comproblemsreshape-the-matrix)
+	* 1.7. [（7）[找出数组中最长的连续 1](https://leetcode-cn.com/problems/max-consecutive-ones/)](#71https:leetcode-cn.comproblemsmax-consecutive-ones)
+	* 1.8. [（8）[有序矩阵查找](https://leetcode-cn.com/problems/search-a-2d-matrix/)](#8https:leetcode-cn.comproblemssearch-a-2d-matrix)
+	* 1.9. [（9）[有序矩阵的 Kth Element](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)](#9KthElementhttps:leetcode-cn.comproblemskth-smallest-element-in-a-sorted-matrix)
+	* 1.10. [（10）[一个数组元素在 [1, n] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](https://leetcode-cn.com/problems/set-mismatch/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)](#101nhttps:leetcode-cn.comproblemsset-mismatchdescriptionutm_sourceLCUSutm_mediumip_redirectutm_campaigntransfer2china)
+	* 1.11. [（11）[找出数组中重复的数，数组值在 [1, n] 之间](https://leetcode-cn.com/problems/find-the-duplicate-number/)](#111nhttps:leetcode-cn.comproblemsfind-the-duplicate-number)
+	* 1.12. [（12）[数组相邻差值的个数](github/Leetcode 题解 数组与矩阵.md#8-数组相邻差值的个数)](#12githubLeetcode.md8-)
+	* 1.13. [（13）[数组的度](github/Leetcode 题解 数组与矩阵.md#9-数组的度)](#13githubLeetcode.md9-)
+	* 1.14. [（14）[对角元素相等的矩阵](github/Leetcode 题解 数组与矩阵.md#10-对角元素相等的矩阵)](#14githubLeetcode.md10-)
+	* 1.15. [（15）[嵌套数组](github/Leetcode 题解 数组与矩阵.md#11-嵌套数组)](#15githubLeetcode.md11-)
+	* 1.16. [（16）[分隔数组](github/Leetcode 题解 数组与矩阵.md#12-分隔数组)](#16githubLeetcode.md12-)
+	* 1.17. [（17）[盛最多水的容器](https://leetcode-cn.com/problems/container-with-most-water/)](#17https:leetcode-cn.comproblemscontainer-with-most-water)
+	* 1.18. [（18）[寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays/)](#18https:leetcode.cnproblemsmedian-of-two-sorted-arrays)
+* 2. [二、链表](#-1)
+	* 2.1. [（1）[环形链表](https://leetcode-cn.com/problems/linked-list-cycle/)](#1https:leetcode-cn.comproblemslinked-list-cycle)
+	* 2.2. [（2）[合并 k 个排序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/)](#2khttps:leetcode-cn.comproblemsmerge-k-sorted-lists)
+	* 2.3. [（3）[单链表反转](https://leetcode-cn.com/problems/reverse-linked-list/)](#3https:leetcode-cn.comproblemsreverse-linked-list)
+	* 2.4. [（4）[求链表的中间结点](https://leetcode-cn.com/problems/middle-of-the-linked-list/)](#4https:leetcode-cn.comproblemsmiddle-of-the-linked-list)
+	* 2.5. [（5）[找出两个链表的交点](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/)](#5https:leetcode-cn.comproblemsintersection-of-two-linked-lists)
+	* 2.6. [（7）[归并两个有序的链表](https://leetcode-cn.com/problems/merge-two-sorted-lists/)](#7https:leetcode-cn.comproblemsmerge-two-sorted-lists)
+	* 2.7. [（8）[从有序链表中删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/)](#8https:leetcode-cn.comproblemsremove-duplicates-from-sorted-list)
+	* 2.8. [（9）[删除链表的倒数第 n 个节点](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/)](#9nhttps:leetcode-cn.comproblemsremove-nth-node-from-end-of-list)
+	* 2.9. [（10）[ 交换链表中的相邻结点](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)](#10https:leetcode-cn.comproblemsswap-nodes-in-pairs)
+	* 2.10. [（11）[ 链表求和](https://leetcode-cn.com/problems/sum-lists-lcci/)](#11https:leetcode-cn.comproblemssum-lists-lcci)
+	* 2.11. [（12）[ 回文链表](https://leetcode-cn.com/problems/palindrome-linked-list/)](#12https:leetcode-cn.comproblemspalindrome-linked-list)
+	* 2.12. [（13）[ 分隔链表](github/Leetcode 题解 链表.md#9-分隔链表)](#13githubLeetcode.md9--1)
+	* 2.13. [（14）[ 链表元素按奇偶聚集](github/Leetcode 题解 链表.md#10-链表元素按奇偶聚集)](#14githubLeetcode.md10--1)
+	* 2.14. [（15）[单链表部分反转](https://leetcode-cn.com/problems/reverse-linked-list-ii/)](#15https:leetcode-cn.comproblemsreverse-linked-list-ii)
+	* 2.15. [（16）[删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list-ii/)](#16https:leetcode-cn.comproblemsremove-duplicates-from-sorted-list-ii)
+	* 2.16. [（17）奇偶链表排序](#17)
+	* 2.17. [（18）[K 个一组翻转链表](https://leetcode-cn.com/problems/reverse-nodes-in-k-group/)](#18Khttps:leetcode-cn.comproblemsreverse-nodes-in-k-group)
+* 3. [三、栈](#-1)
+	* 3.1. [（1）[有效的括号](https://leetcode-cn.com/problems/valid-parentheses/)](#1https:leetcode-cn.comproblemsvalid-parentheses)
+	* 3.2. [（2）[最长有效的括号](https://leetcode-cn.com/problems/longest-valid-parentheses/)](#2https:leetcode-cn.comproblemslongest-valid-parentheses)
+	* 3.3. [（3）[逆波兰表达式求值](https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/)](#3https:leetcode-cn.comproblemsevaluate-reverse-polish-notation)
+	* 3.4. [（4）[用栈实现队列](github/Leetcode 题解 栈和队列.md#1-用栈实现队列)](#4githubLeetcode.md1-)
+	* 3.5. [（5）[用队列实现栈](github/Leetcode 题解 栈和队列.md#2-用队列实现栈)](#5githubLeetcode.md2-)
+	* 3.6. [（6）[最小值栈](https://leetcode-cn.com/problems/min-stack-lcci/)](#6https:leetcode-cn.comproblemsmin-stack-lcci)
+	* 3.7. [（7）[数组中元素与下一个比它大的元素之间的距离](ghttps://leetcode-cn.com/problems/daily-temperatures/)](#7ghttps:leetcode-cn.comproblemsdaily-temperatures)
+	* 3.8. [（8）[循环数组中比当前元素大的下一个元素](https://leetcode-cn.com/problems/next-greater-element-ii/)](#8https:leetcode-cn.comproblemsnext-greater-element-ii)
+* 4. [四、队列](#-1)
+	* 4.1. [（1）[设计一个双端队列](https://leetcode-cn.com/problems/design-circular-deque/)](#1https:leetcode-cn.comproblemsdesign-circular-deque)
+	* 4.2. [（2）[滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/)](#2https:leetcode-cn.comproblemssliding-window-maximum)
+* 5. [五、哈希表](#-1)
+	* 5.1. [（1）[判断数组是否含有重复元素](https://leetcode-cn.com/problems/contains-duplicate/submissions/)](#1https:leetcode-cn.comproblemscontains-duplicatesubmissions)
+	* 5.2. [（2）[最长和谐序列](https://leetcode-cn.com/problems/longest-harmonious-subsequence/)](#2https:leetcode-cn.comproblemslongest-harmonious-subsequence)
+	* 5.3. [（3）[最长连续序列](https://leetcode-cn.com/problems/longest-consecutive-sequence/)](#3https:leetcode-cn.comproblemslongest-consecutive-sequence)
+* 6. [六、递归](#-1)
+	* 6.1. [（1）[爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/)](#1https:leetcode-cn.comproblemsclimbing-stairs)
+* 7. [七、排序](#-1)
+	* 7.1. [（1）[归并排序](https://leetcode-cn.com/problems/sort-an-array/)](#1https:leetcode-cn.comproblemssort-an-array)
+	* 7.2. [（2）快速排序](#2)
+	* 7.3. [（3）[插入排序](https://leetcode-cn.com/problems/sort-an-array/)](#3https:leetcode-cn.comproblemssort-an-array)
+	* 7.4. [（4）冒泡排序](#4)
+	* 7.5. [（5）选择排序](#5)
+	* 7.6. [（6）O(n)时间复杂度内找到一组数据的第K大元素](#6OnK)
+	* 7.7. [（7）堆排序](#7)
+	* 7.8. [（8）桶排序](#8)
+	* 7.9. [（9） [ 按颜色进行排序](github/Leetcode 题解 排序.md#1-按颜色进行排序)](#9githubLeetcode.md1-)
+* 8. [八、二分查找](#-1)
+	* 8.1. [（1）实现一个有序数组的二分查找算法](#1)
+	* 8.2. [（2）模糊二分查找算法（比如大于等于给定值的第一个元素）](#2-1)
+	* 8.3. [（3）[x的平方根](https://leetcode-cn.com/problems/sqrtx/)](#3xhttps:leetcode-cn.comproblemssqrtx)
+	* 8.4. [（4）[大于给定元素的最小元素](https://leetcode-cn.com/problems/find-smallest-letter-greater-than-target/)](#4https:leetcode-cn.comproblemsfind-smallest-letter-greater-than-target)
+	* 8.5. [（5）[有序数组的 Single Element](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/)](#5SingleElementhttps:leetcode-cn.comproblemssingle-element-in-a-sorted-array)
+	* 8.6. [（6）[第一个错误的版本](https://leetcode-cn.com/problems/first-bad-version/)](#6https:leetcode-cn.comproblemsfirst-bad-version)
+	* 8.7. [（7）[旋转数组的最小数字](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)](#7https:leetcode-cn.comproblemsfind-minimum-in-rotated-sorted-array)
+	* 8.8. [（8）[查找区间](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)](#8https:leetcode-cn.comproblemsfind-first-and-last-position-of-element-in-sorted-array)
+* 9. [九、散列表](#-1)
+	* 9.1. [（1）实现一个基于链表法解决冲突问题的散列表](#1-1)
+	* 9.2. [（2）LRU 缓存淘汰算法](#2LRU)
+* 10. [十、字符串](#-1)
+	* 10.1. [（1）实现一个字符集，只包含 a～z 这 26 个英文字母的 Trie 树](#1az26Trie)
+	* 10.2. [（2）实现朴素的字符串匹配算法](#2-1)
+	* 10.3. [（3）[反转字符串](https://leetcode-cn.com/problems/reverse-string/)](#3https:leetcode-cn.comproblemsreverse-string)
+	* 10.4. [（4）[翻转字符串里的单词](https://leetcode-cn.com/problems/reverse-words-in-a-string/)](#4https:leetcode-cn.comproblemsreverse-words-in-a-string)
+	* 10.5. [（5）[字符串转换整数 (atoi)](https://leetcode-cn.com/problems/string-to-integer-atoi/)](#5atoihttps:leetcode-cn.comproblemsstring-to-integer-atoi)
+	* 10.6. [（6）[字符串循环移位包含]()](#6)
+	* 10.7. [（9）[两个字符串包含的字符是否完全相同](https://leetcode-cn.com/problems/valid-anagram/)](#9https:leetcode-cn.comproblemsvalid-anagram)
+	* 10.8. [（10）[最长回文串](https://leetcode-cn.com/problems/longest-palindrome/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)](#10https:leetcode-cn.comproblemslongest-palindromedescriptionutm_sourceLCUSutm_mediumip_redirectutm_campaigntransfer2china)
+	* 10.9. [（11）[字符串同构](https://leetcode-cn.com/problems/isomorphic-strings/)](#11https:leetcode-cn.comproblemsisomorphic-strings)
+	* 10.10. [（12）[回文子字符串个数](https://leetcode-cn.com/problems/palindromic-substrings/)](#12https:leetcode-cn.comproblemspalindromic-substrings)
+	* 10.11. [（13）[判断一个整数是否是回文数](https://leetcode-cn.com/problems/palindrome-number/)](#13https:leetcode-cn.comproblemspalindrome-number)
+	* 10.12. [（14）[计数二进制子串](https://leetcode-cn.com/problems/count-binary-substrings/)](#14https:leetcode-cn.comproblemscount-binary-substrings)
+	* 10.13. [（15）从字符串中找出最长不重复子字符串长度](#15)
+* 11. [十一、位运算](#-1)
+	* 11.1. [（1）[统计两个数的二进制表示有多少位不同](https://leetcode-cn.com/problems/hamming-distance/)](#1https:leetcode-cn.comproblemshamming-distance)
+	* 11.2. [（2）[数组中唯一一个不重复的元素](https://leetcode-cn.com/problems/single-number/)](#2https:leetcode-cn.comproblemssingle-number)
+	* 11.3. [（3）[找出数组中缺失的那个数](https://leetcode-cn.com/problems/missing-number/)](#3https:leetcode-cn.comproblemsmissing-number)
+	* 11.4. [（4）[只出现一次的数字](https://leetcode-cn.com/problems/single-number-iii/)](#4https:leetcode-cn.comproblemssingle-number-iii)
+	* 11.5. [（5）[翻转一个数的比特位](https://leetcode-cn.com/problems/reverse-bits/)](#5https:leetcode-cn.comproblemsreverse-bits)
+	* 11.6. [（6）[不用额外变量交换两个整数](github/Leetcode 题解 位运算.md#6-不用额外变量交换两个整数)](#6githubLeetcode.md6-)
+	* 11.7. [（7）[判断一个数是不是 2 的 n 次方](https://leetcode-cn.com/problems/power-of-two/)](#72nhttps:leetcode-cn.comproblemspower-of-two)
+	* 11.8. [（8）[判断一个数是不是 4 的 n 次方](https://leetcode-cn.com/problems/power-of-four/)](#84nhttps:leetcode-cn.comproblemspower-of-four)
+		* 11.8.1. [二进制表示中 1 的位置](#1-1)
+	* 11.9. [（9）[判断一个数的位级表示是否不会出现连续的 0 和 1](github/Leetcode 题解 位运算.md#9-判断一个数的位级表示是否不会出现连续的-0-和-1)](#901githubLeetcode.md9--0--1)
+	* 11.10. [（10）[求一个数的补码](https://leetcode-cn.com/problems/number-complement/)](#10https:leetcode-cn.comproblemsnumber-complement)
+	* 11.11. [（11）[实现整数的加法](https://leetcode-cn.com/problems/sum-of-two-integers/)](#11https:leetcode-cn.comproblemssum-of-two-integers)
+	* 11.12. [（12）[字符串数组最大乘积](github/Leetcode 题解 位运算.md#12-字符串数组最大乘积)](#12githubLeetcode.md12-)
+	* 11.13. [（13）[统计从 0 ~ n 每个数的二进制表示中 1 的个数](github/Leetcode 题解 位运算.md#13-统计从-0-~-n-每个数的二进制表示中-1-的个数)](#130n1githubLeetcode.md13--0--n--1-)
+* 12. [十二、双指针](#-1)
+	* 12.1. [（1）[有序数组的 Two Sum](https://leetcode-cn.com/problems/two-sum-ii-input-array-is-sorted/)](#1TwoSumhttps:leetcode-cn.comproblemstwo-sum-ii-input-array-is-sorted)
+	* 12.2. [（2）[两数平方和](https://leetcode-cn.com/problems/sum-of-square-numbers/)](#2https:leetcode-cn.comproblemssum-of-square-numbers)
+	* 12.3. [（3）[反转字符串中的元音字符](https://leetcode-cn.com/problems/reverse-vowels-of-a-string/)](#3https:leetcode-cn.comproblemsreverse-vowels-of-a-string)
+	* 12.4. [（4）[回文字符串](https://leetcode-cn.com/problems/valid-palindrome-ii/)](#4https:leetcode-cn.comproblemsvalid-palindrome-ii)
+	* 12.5. [（5）[归并两个有序数组](https://leetcode-cn.com/problems/merge-sorted-array/)](#5https:leetcode-cn.comproblemsmerge-sorted-array)
+	* 12.6. [（6）[判断链表是否存在环](https://leetcode-cn.com/problems/linked-list-cycle/)](#6https:leetcode-cn.comproblemslinked-list-cycle)
+	* 12.7. [（7）[最长子序列](https://leetcode-cn.com/problems/longest-word-in-dictionary-through-deleting/)](#7https:leetcode-cn.comproblemslongest-word-in-dictionary-through-deleting)
+* 13. [十三、树](#-1)
+	* 13.1. [（1）实现一个二叉查找树，并且支持插入、删除、查找操作](#1-1)
+	* 13.2. [（2）实现查找二叉查找树中某个节点的后继、前驱节点](#2-1)
+	* 13.3. [（3）实现二叉树前、中、后序以及按层遍历](#3)
+	* 13.4. [（4）[翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/)](#4https:leetcode-cn.comproblemsinvert-binary-tree)
+	* 13.5. [（5）[二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)](#5https:leetcode-cn.comproblemsmaximum-depth-of-binary-tree)
+	* 13.6. [（6）[验证二叉查找树](https://leetcode-cn.com/problems/validate-binary-search-tree/)](#6https:leetcode-cn.comproblemsvalidate-binary-search-tree)
+	* 13.7. [（7）[路径总和](https://leetcode-cn.com/problems/path-sum/)](#7https:leetcode-cn.comproblemspath-sum)
+	* 13.8. [（8）递归](#8-1)
+	* 13.9. [（9）层次遍历](#9)
+	* 13.10. [（10）前中后序遍历](#10)
+	* 13.11. [（11）BST](#11BST)
+	* 13.12. [（12）Trie](#12Trie)
+* 14. [十四、堆](#-1)
+	* 14.1. [（1）实现一个小顶堆、大顶堆、优先级队列](#1-1)
+	* 14.2. [（2）实现堆排序](#2-1)
+	* 14.3. [（3）利用优先级队列合并 K 个有序数组](#3K)
+	* 14.4. [（4）求一组动态数据集合的最大 Top K](#4TopK)
+* 15. [十五、图](#-1)
+	* 15.1. [（1）实现有向图、无向图、有权图、无权图的邻接矩阵和邻接表表示方法](#1-1)
+	* 15.2. [（2）实现图的深度优先搜索、广度优先搜索](#2-1)
+	* 15.3. [（3）实现 Dijkstra 算法、A* 算法](#3DijkstraA)
+	* 15.4. [（4）实现拓扑排序的 Kahn 算法、DFS 算法](#4KahnDFS)
+	* 15.5. [（5）[岛屿的个数](https://leetcode-cn.com/problems/number-of-islands/description/)](#5https:leetcode-cn.comproblemsnumber-of-islandsdescription)
+	* 15.6. [（6）[有效的数独](https://leetcode-cn.com/problems/valid-sudoku/)](#6https:leetcode-cn.comproblemsvalid-sudoku)
+	* 15.7. [（7）二分图](#7-1)
+	* 15.8. [（8）拓扑排序](#8-1)
+	* 15.9. [（9）并查集](#9-1)
+* 16. [十六、贪心](#-1)
+	* 16.1. [（1）[分配饼干](https://leetcode-cn.com/problems/assign-cookies/)](#1https:leetcode-cn.comproblemsassign-cookies)
+	* 16.2. [（2）[不重叠的区间个数](https://leetcode-cn.com/problems/non-overlapping-intervals/)](#2https:leetcode-cn.comproblemsnon-overlapping-intervals)
+	* 16.3. [（3）[用最少数量的箭引爆气球](https://leetcode-cn.com/problems/minimum-number-of-arrows-to-burst-balloons/)](#3https:leetcode-cn.comproblemsminimum-number-of-arrows-to-burst-balloons)
+	* 16.4. [（4）[根据身高重建队列](https://leetcode-cn.com/problems/queue-reconstruction-by-height/)](#4https:leetcode-cn.comproblemsqueue-reconstruction-by-height)
+	* 16.5. [（5）[买卖股票最大的收益](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)](#5https:leetcode-cn.comproblemsbest-time-to-buy-and-sell-stock)
+	* 16.6. [（6）[买卖股票的最大收益 II](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)](#6IIhttps:leetcode-cn.comproblemsbest-time-to-buy-and-sell-stock-ii)
+	* 16.7. [（7）[种植花朵](https://leetcode-cn.com/problems/can-place-flowers/)](#7https:leetcode-cn.comproblemscan-place-flowers)
+	* 16.8. [（8）[判断是否为子序列](https://leetcode-cn.com/problems/is-subsequence/)](#8https:leetcode-cn.comproblemsis-subsequence)
+	* 16.9. [（9）[修改一个数成为非递减数组](https://leetcode-cn.com/problems/non-decreasing-array/)](#9https:leetcode-cn.comproblemsnon-decreasing-array)
+	* 16.10. [（10）[子数组最大的和](https://leetcode-cn.com/problems/maximum-subarray/)](#10https:leetcode-cn.comproblemsmaximum-subarray)
+	* 16.11. [（11）[分隔字符串使同种字符出现在一起](github/Leetcode 题解 贪心思想.md#11-分隔字符串使同种字符出现在一起)](#11githubLeetcode.md11-)
+* 17. [十七、分治](#-1)
+	* 17.1. [（1）利用分治算法求一组数据的逆序对个数](#1-1)
+	* 17.2. [（2）[给表达式加括号](github/Leetcode 题解 分治.md#1-给表达式加括号)](#2githubLeetcode.md1-)
+	* 17.3. [（3）[不同的二叉搜索树](github/Leetcode 题解 分治.md#2-不同的二叉搜索树)](#3githubLeetcode.md2-)
+* 18. [十八、回溯](#-1)
+	* 18.1. [（1）利用回溯算法求解八皇后问题](#1-1)
+	* 18.2. [（2）利用回溯算法求解 0-1 背包问题](#20-1)
+	* 18.3. [（3）[正则表达式匹配](https://leetcode-cn.com/problems/regular-expression-matching/)](#3https:leetcode-cn.comproblemsregular-expression-matching)
+* 19. [十九、动态规划](#-1)
+	* 19.1. [（1）斐波那契数列](#1-1)
+		* 19.1.1. [3.[打家劫舍 II](https://leetcode-cn.com/problems/house-robber-ii/)](#IIhttps:leetcode-cn.comproblemshouse-robber-ii)
+	* 19.2. [（2）矩阵路径](#2-1)
+	* 19.3. [（3）数组区间](#3-1)
+	* 19.4. [（4）分割整数](#4-1)
+	* 19.5. [（5）最长递增子序列](#5-1)
+	* 19.6. [（6）最长公共子序列](#6-1)
+	* 19.7. [（7）0-1 背包](#70-1)
+	* 19.8. [（8）股票交易](#8-1)
+	* 19.9. [（9）字符串编辑](#9-1)
+* 20. [二十、搜索](#-1)
+	* 20.1. [（1）BFS](#1BFS)
+	* 20.2. [（2）DFS](#2DFS)
+	* 20.3. [（3）Backtracking](#3Backtracking)
+* 21. [二一、数学](#-1)
+	* 21.1. [（1）[素数分解](github/Leetcode 题解 数学.md#素数分解)](#1githubLeetcode.md)
+	* 21.2. [（2）[整除](github/Leetcode 题解 数学.md#整除)](#2githubLeetcode.md)
+	* 21.3. [（3）最大公约数最小公倍数](#3-1)
+	* 21.4. [（4）进制转换](#4-1)
+	* 21.5. [（5）阶乘](#5-1)
+	* 21.6. [（6）字符串加法减法](#6-1)
+	* 21.7. [（7）相遇问题](#7-1)
+	* 21.8. [（8）多数投票问题](#8-1)
+	* 21.9. [（9）其它](#9-1)
+
+<!-- vscode-markdown-toc-config
+	numbering=true
+	autoSave=true
+	/vscode-markdown-toc-config -->
+<!-- /vscode-markdown-toc -->[toc]
 
 
 
@@ -26,9 +219,9 @@
 
 
 
-## 一、数组
+##  1. <a name=''></a>一、数组
 
-### （1）[两数之和](https://leetcode-cn.com/problems/two-sum/)
+###  1.1. <a name='1https:leetcode-cn.comproblemstwo-sum'></a>（1）[两数之和](https://leetcode-cn.com/problems/two-sum/)
 
 给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target  的那 两个 整数，并返回它们的数组下标。
 
@@ -65,7 +258,7 @@ public int[] twoSum(int[] nums, int target) {
 
 
 
-### （2）[三数之和 ](https://leetcode-cn.com/problems/3sum/)
+###  1.2. <a name='2https:leetcode-cn.comproblems3sum'></a>（2）[三数之和 ](https://leetcode-cn.com/problems/3sum/)
 
 给你一个包含 n 个整数的数组 nums，判断 nums 中是否存在三个元素 a，b，c ，使得 a + b + c = 0 ？请你找出所有和为 0 且不重复的三元组。
 
@@ -137,7 +330,7 @@ public List<List<Integer>> threeSum(int[] nums) {
 
 
 
-### （3）[多数元素](https://leetcode-cn.com/problems/majority-element/)
+###  1.3. <a name='3https:leetcode-cn.comproblemsmajority-element'></a>（3）[多数元素](https://leetcode-cn.com/problems/majority-element/)
 
 给定一个大小为 n 的数组，找到其中的多数元素。多数元素是指在数组中出现次数 大于 ⌊ n/2 ⌋ 的元素。
 
@@ -239,7 +432,7 @@ class Solution {
 
 
 
-### （4）[求缺失的第一个正数](https://leetcode-cn.com/problems/first-missing-positive/)
+###  1.4. <a name='4https:leetcode-cn.comproblemsfirst-missing-positive'></a>（4）[求缺失的第一个正数](https://leetcode-cn.com/problems/first-missing-positive/)
 
 给你一个未排序的整数数组 nums ，请你找出其中没有出现的最小的正整数。
 
@@ -344,7 +537,7 @@ public class Solution {
 
 
 
-### （5）[把数组中的 0 移到末尾](https://leetcode-cn.com/problems/move-zeroes/)
+###  1.5. <a name='50https:leetcode-cn.comproblemsmove-zeroes'></a>（5）[把数组中的 0 移到末尾](https://leetcode-cn.com/problems/move-zeroes/)
 
 给定一个数组 `nums`，编写一个函数将所有 `0` 移动到数组的末尾，同时保持非零元素的相对顺序。
 
@@ -440,7 +633,7 @@ public void moveZeroes(int[] nums) {
 
 
 
-### （6）[改变矩阵维度](https://leetcode-cn.com/problems/reshape-the-matrix/)
+###  1.6. <a name='6https:leetcode-cn.comproblemsreshape-the-matrix'></a>（6）[改变矩阵维度](https://leetcode-cn.com/problems/reshape-the-matrix/)
 
 在MATLAB中，有一个非常有用的函数 reshape，它可以将一个矩阵重塑为另一个大小不同的新矩阵，但保留其原始数据。
 
@@ -521,7 +714,7 @@ class Solution {
 
 
 
-### （7）[找出数组中最长的连续 1](https://leetcode-cn.com/problems/max-consecutive-ones/)
+###  1.7. <a name='71https:leetcode-cn.comproblemsmax-consecutive-ones'></a>（7）[找出数组中最长的连续 1](https://leetcode-cn.com/problems/max-consecutive-ones/)
 
 给定一个二进制数组， 计算其中最大连续 1 的个数。
 
@@ -576,7 +769,7 @@ public int findMaxConsecutiveOnes(int[] nums) {
 
 
 
-### （8）[有序矩阵查找](https://leetcode-cn.com/problems/search-a-2d-matrix/)
+###  1.8. <a name='8https:leetcode-cn.comproblemssearch-a-2d-matrix'></a>（8）[有序矩阵查找](https://leetcode-cn.com/problems/search-a-2d-matrix/)
 
 编写一个高效的算法来判断 m x n 矩阵中，是否存在一个目标值。该矩阵具有如下特性：
 
@@ -738,7 +931,7 @@ class Solution {
 
 
 
-### （9）[有序矩阵的 Kth Element](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
+###  1.9. <a name='9KthElementhttps:leetcode-cn.comproblemskth-smallest-element-in-a-sorted-matrix'></a>（9）[有序矩阵的 Kth Element](https://leetcode-cn.com/problems/kth-smallest-element-in-a-sorted-matrix/)
 
 给你一个 n x n 矩阵 matrix ，其中每行和每列元素均按升序排序，找到矩阵中第 k 小的元素。
 请注意，它是 排序后 的第 k 小元素，而不是第 k 个 不同 的元素。
@@ -870,9 +1063,9 @@ public int kthSmallest(int[][] matrix, int k) {
 
 
 
-### （10）[一个数组元素在 [1, n] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](https://leetcode-cn.com/problems/set-mismatch/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)
+###  1.10. <a name='101nhttps:leetcode-cn.comproblemsset-mismatchdescriptionutm_sourceLCUSutm_mediumip_redirectutm_campaigntransfer2china'></a>（10）[一个数组元素在 [1, n] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](https://leetcode-cn.com/problems/set-mismatch/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)
 
-### （11）[找出数组中重复的数，数组值在 [1, n] 之间](https://leetcode-cn.com/problems/find-the-duplicate-number/)
+###  1.11. <a name='111nhttps:leetcode-cn.comproblemsfind-the-duplicate-number'></a>（11）[找出数组中重复的数，数组值在 [1, n] 之间](https://leetcode-cn.com/problems/find-the-duplicate-number/)
 
 给定一个包含 n + 1 个整数的数组 nums ，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。
 
@@ -1009,23 +1202,23 @@ public int findDuplicate(int[] nums) {
 
 
 
-### （12）[数组相邻差值的个数](github/Leetcode 题解 数组与矩阵.md#8-数组相邻差值的个数)
+###  1.12. <a name='12githubLeetcode.md8-'></a>（12）[数组相邻差值的个数](github/Leetcode 题解 数组与矩阵.md#8-数组相邻差值的个数)
 
-### （13）[数组的度](github/Leetcode 题解 数组与矩阵.md#9-数组的度)
+###  1.13. <a name='13githubLeetcode.md9-'></a>（13）[数组的度](github/Leetcode 题解 数组与矩阵.md#9-数组的度)
 
-### （14）[对角元素相等的矩阵](github/Leetcode 题解 数组与矩阵.md#10-对角元素相等的矩阵)
+###  1.14. <a name='14githubLeetcode.md10-'></a>（14）[对角元素相等的矩阵](github/Leetcode 题解 数组与矩阵.md#10-对角元素相等的矩阵)
 
-### （15）[嵌套数组](github/Leetcode 题解 数组与矩阵.md#11-嵌套数组)
+###  1.15. <a name='15githubLeetcode.md11-'></a>（15）[嵌套数组](github/Leetcode 题解 数组与矩阵.md#11-嵌套数组)
 
-### （16）[分隔数组](github/Leetcode 题解 数组与矩阵.md#12-分隔数组)
-
-
+###  1.16. <a name='16githubLeetcode.md12-'></a>（16）[分隔数组](github/Leetcode 题解 数组与矩阵.md#12-分隔数组)
 
 
 
-### （17）[盛最多水的容器](https://leetcode-cn.com/problems/container-with-most-water/)
 
-### （18）[寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays/)
+
+###  1.17. <a name='17https:leetcode-cn.comproblemscontainer-with-most-water'></a>（17）[盛最多水的容器](https://leetcode-cn.com/problems/container-with-most-water/)
+
+###  1.18. <a name='18https:leetcode.cnproblemsmedian-of-two-sorted-arrays'></a>（18）[寻找两个正序数组的中位数](https://leetcode.cn/problems/median-of-two-sorted-arrays/)
 
 给定两个大小分别为 `m` 和 `n` 的正序（从小到大）数组 `nums1` 和 `nums2`。请你找出并返回这两个正序数组的 **中位数** 。
 
@@ -1236,11 +1429,11 @@ class Solution {
 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
 ```
 
-## 二、链表
+##  2. <a name='-1'></a>二、链表
 
 
 
-### （1）[环形链表](https://leetcode-cn.com/problems/linked-list-cycle/)
+###  2.1. <a name='1https:leetcode-cn.comproblemslinked-list-cycle'></a>（1）[环形链表](https://leetcode-cn.com/problems/linked-list-cycle/)
 
 给定一个链表，判断链表中是否有环。
 
@@ -1313,7 +1506,7 @@ public boolean hasCycle(ListNode head) {
 
 
 
-### （2）[合并 k 个排序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/)
+###  2.2. <a name='2khttps:leetcode-cn.comproblemsmerge-k-sorted-lists'></a>（2）[合并 k 个排序链表](https://leetcode-cn.com/problems/merge-k-sorted-lists/)
 
 给你一个链表数组，每个链表都已经按升序排列。
 
@@ -1437,7 +1630,7 @@ public ListNode mergeKLists(ListNode[] lists) {
 
 
 
-### （3）[单链表反转](https://leetcode-cn.com/problems/reverse-linked-list/)
+###  2.3. <a name='3https:leetcode-cn.comproblemsreverse-linked-list'></a>（3）[单链表反转](https://leetcode-cn.com/problems/reverse-linked-list/)
 
 给你单链表的头节点 `head` ，请你反转链表，并返回反转后的链表。
 
@@ -1560,7 +1753,7 @@ public ListNode reverseList(ListNode head) {
 
 
 
-### （4）[求链表的中间结点](https://leetcode-cn.com/problems/middle-of-the-linked-list/)
+###  2.4. <a name='4https:leetcode-cn.comproblemsmiddle-of-the-linked-list'></a>（4）[求链表的中间结点](https://leetcode-cn.com/problems/middle-of-the-linked-list/)
 
 给定一个头结点为 head 的非空单链表，返回链表的中间结点。
 
@@ -1640,7 +1833,7 @@ public ListNode middleNode(ListNode head) {
 
 ![image-20210711233732744](../typora-user-images/image-20210711233732744.png)
 
-### （5）[找出两个链表的交点](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/)
+###  2.5. <a name='5https:leetcode-cn.comproblemsintersection-of-two-linked-lists'></a>（5）[找出两个链表的交点](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/)
 
 给你两个单链表的头节点 headA 和 headB ，请你找出并返回两个单链表相交的起始节点。如果两个链表没有交点，返回 null 。
 
@@ -1720,7 +1913,7 @@ public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
 
 
 
-### （7）[归并两个有序的链表](https://leetcode-cn.com/problems/merge-two-sorted-lists/)
+###  2.6. <a name='7https:leetcode-cn.comproblemsmerge-two-sorted-lists'></a>（7）[归并两个有序的链表](https://leetcode-cn.com/problems/merge-two-sorted-lists/)
 
 将两个升序链表合并为一个新的 升序 链表并返回。新链表是通过拼接给定的两个链表的所有节点组成的。 
 
@@ -1825,7 +2018,7 @@ public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
 
 
 
-### （8）[从有序链表中删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/)
+###  2.7. <a name='8https:leetcode-cn.comproblemsremove-duplicates-from-sorted-list'></a>（8）[从有序链表中删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list/)
 
 存在一个按升序排列的链表，给你这个链表的头节点 head ，请你删除所有重复的元素，使每个元素 只出现一次 。
 
@@ -1872,7 +2065,7 @@ public ListNode deleteDuplicates(ListNode head) {
 
 
 
-### （9）[删除链表的倒数第 n 个节点](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/)
+###  2.8. <a name='9nhttps:leetcode-cn.comproblemsremove-nth-node-from-end-of-list'></a>（9）[删除链表的倒数第 n 个节点](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/)
 
 给你一个链表，删除链表的倒数第 n 个结点，并且返回链表的头结点。
 
@@ -1981,7 +2174,7 @@ public ListNode removeNthFromEnd(ListNode head, int n) {
 
 
 
-### （10）[ 交换链表中的相邻结点](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)
+###  2.9. <a name='10https:leetcode-cn.comproblemsswap-nodes-in-pairs'></a>（10）[ 交换链表中的相邻结点](https://leetcode-cn.com/problems/swap-nodes-in-pairs/)
 
 给定一个链表，两两交换其中相邻的节点，并返回交换后的链表。
 
@@ -2081,7 +2274,7 @@ class Solution {
 
 
 
-### （11）[ 链表求和](https://leetcode-cn.com/problems/sum-lists-lcci/)
+###  2.10. <a name='11https:leetcode-cn.comproblemssum-lists-lcci'></a>（11）[ 链表求和](https://leetcode-cn.com/problems/sum-lists-lcci/)
 
 给定两个用链表表示的整数，每个节点包含一个数位。
 
@@ -2245,7 +2438,7 @@ public ListNode addTwoNumbers2(ListNode l1, ListNode l2) {
 
 
 
-### （12）[ 回文链表](https://leetcode-cn.com/problems/palindrome-linked-list/)
+###  2.11. <a name='12https:leetcode-cn.comproblemspalindrome-linked-list'></a>（12）[ 回文链表](https://leetcode-cn.com/problems/palindrome-linked-list/)
 
 请判断一个链表是否为回文链表。
 
@@ -2317,13 +2510,13 @@ public boolean isPalindrome(ListNode head) {
 
 
 
-### （13）[ 分隔链表](github/Leetcode 题解 链表.md#9-分隔链表)
+###  2.12. <a name='13githubLeetcode.md9--1'></a>（13）[ 分隔链表](github/Leetcode 题解 链表.md#9-分隔链表)
 
-### （14）[ 链表元素按奇偶聚集](github/Leetcode 题解 链表.md#10-链表元素按奇偶聚集)
+###  2.13. <a name='14githubLeetcode.md10--1'></a>（14）[ 链表元素按奇偶聚集](github/Leetcode 题解 链表.md#10-链表元素按奇偶聚集)
 
 
 
-### （15）[单链表部分反转](https://leetcode-cn.com/problems/reverse-linked-list-ii/)
+###  2.14. <a name='15https:leetcode-cn.comproblemsreverse-linked-list-ii'></a>（15）[单链表部分反转](https://leetcode-cn.com/problems/reverse-linked-list-ii/)
 
 给你单链表的头指针 head 和两个整数 left 和 right ，其中 left <= right 。请你反转从位置 left 到位置 right 的链表节点，返回 反转后的链表 。
 
@@ -2474,7 +2667,7 @@ class Solution {
 
 
 
-### （16）[删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list-ii/)
+###  2.15. <a name='16https:leetcode-cn.comproblemsremove-duplicates-from-sorted-list-ii'></a>（16）[删除重复节点](https://leetcode-cn.com/problems/remove-duplicates-from-sorted-list-ii/)
 
 存在一个按升序排列的链表，给你这个链表的头节点 head ，请你删除链表中所有存在数字重复情况的节点，只保留原始链表中 没有重复出现 的数字。
 
@@ -2532,7 +2725,7 @@ public static Node removeRepeatNode (Node head) {
 
 
 
-### （17）奇偶链表排序
+###  2.16. <a name='17'></a>（17）奇偶链表排序
 
 奇偶链表排序
 
@@ -2640,7 +2833,7 @@ public class Main {
 
 
 
-### （18）[K 个一组翻转链表](https://leetcode-cn.com/problems/reverse-nodes-in-k-group/)
+###  2.17. <a name='18Khttps:leetcode-cn.comproblemsreverse-nodes-in-k-group'></a>（18）[K 个一组翻转链表](https://leetcode-cn.com/problems/reverse-nodes-in-k-group/)
 
 
 
@@ -2767,9 +2960,9 @@ public static ListNode reverseKGroup (ListNode head, int k) {
 
 
 
-## 三、栈
+##  3. <a name='-1'></a>三、栈
 
-### （1）[有效的括号](https://leetcode-cn.com/problems/valid-parentheses/)
+###  3.1. <a name='1https:leetcode-cn.comproblemsvalid-parentheses'></a>（1）[有效的括号](https://leetcode-cn.com/problems/valid-parentheses/)
 
 给定一个只包括 '('，')'，'{'，'}'，'['，']' 的字符串 s ，判断字符串是否有效。
 
@@ -2816,7 +3009,7 @@ public static boolean isValid(String s) {
 
 ![1626425352970](../typora-user-images/1626425352970.png)
 
-### （2）[最长有效的括号](https://leetcode-cn.com/problems/longest-valid-parentheses/)
+###  3.2. <a name='2https:leetcode-cn.comproblemslongest-valid-parentheses'></a>（2）[最长有效的括号](https://leetcode-cn.com/problems/longest-valid-parentheses/)
 
 给你一个只包含 '(' 和 ')' 的字符串，找出最长有效（格式正确且连续）括号子串的长度。
 
@@ -2931,7 +3124,7 @@ class Solution {
 
 
 
-### （3）[逆波兰表达式求值](https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/)
+###  3.3. <a name='3https:leetcode-cn.comproblemsevaluate-reverse-polish-notation'></a>（3）[逆波兰表达式求值](https://leetcode-cn.com/problems/evaluate-reverse-polish-notation/)
 
 根据 逆波兰表示法，求表达式的值。
 
@@ -3013,11 +3206,11 @@ public int evalRPN(String[] tokens) {
 
 ![image-20210718002801329](../typora-user-images/image-20210718002801329.png)
 
-### （4）[用栈实现队列](github/Leetcode 题解 栈和队列.md#1-用栈实现队列)
+###  3.4. <a name='4githubLeetcode.md1-'></a>（4）[用栈实现队列](github/Leetcode 题解 栈和队列.md#1-用栈实现队列)
 
-### （5）[用队列实现栈](github/Leetcode 题解 栈和队列.md#2-用队列实现栈)
+###  3.5. <a name='5githubLeetcode.md2-'></a>（5）[用队列实现栈](github/Leetcode 题解 栈和队列.md#2-用队列实现栈)
 
-### （6）[最小值栈](https://leetcode-cn.com/problems/min-stack-lcci/)
+###  3.6. <a name='6https:leetcode-cn.comproblemsmin-stack-lcci'></a>（6）[最小值栈](https://leetcode-cn.com/problems/min-stack-lcci/)
 
 请设计一个栈，除了常规栈支持的pop与push函数以外，还支持min函数，该函数返回栈元素中的最小值。执行push、pop和min操作的时间复杂度必须为O(1)。
 
@@ -3113,7 +3306,7 @@ class MinStack {
 
 
 
-### （7）[数组中元素与下一个比它大的元素之间的距离](ghttps://leetcode-cn.com/problems/daily-temperatures/)
+###  3.7. <a name='7ghttps:leetcode-cn.comproblemsdaily-temperatures'></a>（7）[数组中元素与下一个比它大的元素之间的距离](ghttps://leetcode-cn.com/problems/daily-temperatures/)
 
 请根据每日 气温 列表 temperatures ，请计算在每一天需要等几天才会有更高的温度。如果气温在这之后都不会升高，请在该位置用 0 来代替。
 
@@ -3194,7 +3387,7 @@ public int[] dailyTemperatures(int[] temperatures) {
 
 
 
-### （8）[循环数组中比当前元素大的下一个元素](https://leetcode-cn.com/problems/next-greater-element-ii/)
+###  3.8. <a name='8https:leetcode-cn.comproblemsnext-greater-element-ii'></a>（8）[循环数组中比当前元素大的下一个元素](https://leetcode-cn.com/problems/next-greater-element-ii/)
 
 给定一个循环数组（最后一个元素的下一个元素是数组的第一个元素），输出每个元素的下一个更大元素。数字 x 的下一个更大的元素是按数组遍历顺序，这个数字之后的第一个比它更大的数，这意味着你应该循环地搜索它的下一个更大的数。如果不存在，则输出 -1。
 
@@ -3293,11 +3486,11 @@ public int[] nextGreaterElements(int[] nums) {
 
 
 
-## 四、队列
+##  4. <a name='-1'></a>四、队列
 
 
 
-### （1）[设计一个双端队列](https://leetcode-cn.com/problems/design-circular-deque/)
+###  4.1. <a name='1https:leetcode-cn.comproblemsdesign-circular-deque'></a>（1）[设计一个双端队列](https://leetcode-cn.com/problems/design-circular-deque/)
 
 设计实现双端队列。
 你的实现需要支持以下操作：
@@ -3462,7 +3655,7 @@ class MyCircularDeque {
 
 
 
-### （2）[滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/)
+###  4.2. <a name='2https:leetcode-cn.comproblemssliding-window-maximum'></a>（2）[滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/)
 
 给你一个整数数组 nums，有一个大小为 k 的滑动窗口从数组的最左侧移动到数组的最右侧。你只可以看到在滑动窗口内的 k 个数字。滑动窗口每次只向右移动一位。
 
@@ -3596,9 +3789,9 @@ public int[] maxSlidingWindow(int[] nums, int k) {
 
 
 
-## 五、哈希表
+##  5. <a name='-1'></a>五、哈希表
 
-### （1）[判断数组是否含有重复元素](https://leetcode-cn.com/problems/contains-duplicate/submissions/)
+###  5.1. <a name='1https:leetcode-cn.comproblemscontains-duplicatesubmissions'></a>（1）[判断数组是否含有重复元素](https://leetcode-cn.com/problems/contains-duplicate/submissions/)
 
 给定一个整数数组，判断是否存在重复元素。
 
@@ -3644,7 +3837,7 @@ public boolean containsDuplicate(int[] nums) {
 
 
 
-### （2）[最长和谐序列](https://leetcode-cn.com/problems/longest-harmonious-subsequence/)
+###  5.2. <a name='2https:leetcode-cn.comproblemslongest-harmonious-subsequence'></a>（2）[最长和谐序列](https://leetcode-cn.com/problems/longest-harmonious-subsequence/)
 
 和谐数组是指一个数组里元素的最大值和最小值之间的差别 正好是 1 。
 
@@ -3696,7 +3889,7 @@ public int findLHS(int[] nums) {
 
 
 
-### （3）[最长连续序列](https://leetcode-cn.com/problems/longest-consecutive-sequence/)
+###  5.3. <a name='3https:leetcode-cn.comproblemslongest-consecutive-sequence'></a>（3）[最长连续序列](https://leetcode-cn.com/problems/longest-consecutive-sequence/)
 
 给定一个未排序的整数数组 nums ，找出数字连续的最长序列（不要求序列元素在原数组中连续）的长度。
 
@@ -3811,9 +4004,9 @@ public int longestConsecutive(int[] nums) {
 
 
 
-## 六、递归
+##  6. <a name='-1'></a>六、递归
 
-### （1）[爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/)
+###  6.1. <a name='1https:leetcode-cn.comproblemsclimbing-stairs'></a>（1）[爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/)
 
 假设你正在爬楼梯。需要 n 阶你才能到达楼顶。
 
@@ -3918,9 +4111,9 @@ public int climbStairs(int n) {
 
 
 
-## 七、排序
+##  7. <a name='-1'></a>七、排序
 
-### （1）[归并排序](https://leetcode-cn.com/problems/sort-an-array/)
+###  7.1. <a name='1https:leetcode-cn.comproblemssort-an-array'></a>（1）[归并排序](https://leetcode-cn.com/problems/sort-an-array/)
 
 给你一个整数数组 nums，请你将该数组升序排列。
 
@@ -3985,7 +4178,7 @@ https://leetcode-cn.com/problems/sort-list/
 
 
 
-### （2）快速排序
+###  7.2. <a name='2'></a>（2）快速排序
 
 
 
@@ -4077,7 +4270,7 @@ class Solution {
 
 
 
-### （3）[插入排序](https://leetcode-cn.com/problems/sort-an-array/)
+###  7.3. <a name='3https:leetcode-cn.comproblemssort-an-array'></a>（3）[插入排序](https://leetcode-cn.com/problems/sort-an-array/)
 
 
 
@@ -4107,7 +4300,7 @@ public int[] sortArray(int[] nums) {
 
 
 
-### （4）冒泡排序
+###  7.4. <a name='4'></a>（4）冒泡排序
 
 当某次冒泡操作已经没数据交换时，说明已经达到完全有序，就不用继续执行后续的冒泡操作了。
 
@@ -4138,7 +4331,7 @@ public int[] sortArray(int[] nums) {
 
 
 
-### （5）选择排序
+###  7.5. <a name='5'></a>（5）选择排序
 
 每次选择剩余元素最小的一个进行排序
 
@@ -4169,9 +4362,9 @@ public static int[] sortArray(int[] nums) {
 
 
 
-### （6）O(n)时间复杂度内找到一组数据的第K大元素
+###  7.6. <a name='6OnK'></a>（6）O(n)时间复杂度内找到一组数据的第K大元素
 
-### （7）堆排序
+###  7.7. <a name='7'></a>（7）堆排序
 
 
 
@@ -4220,12 +4413,12 @@ public static void sort(int[] a) {
 
 	-  [Kth Element](github/Leetcode 题解 排序.md#1-kth-element)
 
-### （8）桶排序
+###  7.8. <a name='8'></a>（8）桶排序
 
 -  [出现频率最多的 k 个元素](github/Leetcode 题解 排序.md#1-出现频率最多的-k-个元素)
 - [按照字符出现次数对字符串排序](github/Leetcode 题解 排序.md#2-按照字符出现次数对字符串排序)
 
-### （9） [ 按颜色进行排序](github/Leetcode 题解 排序.md#1-按颜色进行排序)
+###  7.9. <a name='9githubLeetcode.md1-'></a>（9） [ 按颜色进行排序](github/Leetcode 题解 排序.md#1-按颜色进行排序)
 
 
 
@@ -4233,15 +4426,15 @@ public static void sort(int[] a) {
 
 
 
-## 八、二分查找
+##  8. <a name='-1'></a>八、二分查找
 
 
 
-### （1）实现一个有序数组的二分查找算法
+###  8.1. <a name='1'></a>（1）实现一个有序数组的二分查找算法
 
-### （2）模糊二分查找算法（比如大于等于给定值的第一个元素）
+###  8.2. <a name='2-1'></a>（2）模糊二分查找算法（比如大于等于给定值的第一个元素）
 
-### （3）[x的平方根](https://leetcode-cn.com/problems/sqrtx/)
+###  8.3. <a name='3xhttps:leetcode-cn.comproblemssqrtx'></a>（3）[x的平方根](https://leetcode-cn.com/problems/sqrtx/)
 
 实现 int sqrt(int x) 函数。
 
@@ -4334,7 +4527,7 @@ public int mySqrt(int x) {
 
 
 
-### （4）[大于给定元素的最小元素](https://leetcode-cn.com/problems/find-smallest-letter-greater-than-target/)
+###  8.4. <a name='4https:leetcode-cn.comproblemsfind-smallest-letter-greater-than-target'></a>（4）[大于给定元素的最小元素](https://leetcode-cn.com/problems/find-smallest-letter-greater-than-target/)
 
 给你一个排序后的字符列表 letters ，列表中只包含小写英文字母。另给出一个目标字母 target，请你寻找在这一有序列表里比目标字母大的最小字母。
 
@@ -4396,7 +4589,7 @@ public char nextGreatestLetter(char[] letters, char target) {
 
 
 
-### （5）[有序数组的 Single Element](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/)
+###  8.5. <a name='5SingleElementhttps:leetcode-cn.comproblemssingle-element-in-a-sorted-array'></a>（5）[有序数组的 Single Element](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/)
 
 给定一个只包含整数的有序数组，每个元素都会出现两次，唯有一个数只会出现一次，找出这个数。
 
@@ -4537,7 +4730,7 @@ public int singleNonDuplicate(int[] nums) {
 
 
 
-### （6）[第一个错误的版本](https://leetcode-cn.com/problems/first-bad-version/)
+###  8.6. <a name='6https:leetcode-cn.comproblemsfirst-bad-version'></a>（6）[第一个错误的版本](https://leetcode-cn.com/problems/first-bad-version/)
 
 你是产品经理，目前正在带领一个团队开发新的产品。不幸的是，你的产品的最新版本没有通过质量检测。由于每个版本都是基于之前的版本开发的，所以错误的版本之后的所有版本都是错的。
 
@@ -4596,7 +4789,7 @@ public class Solution extends VersionControl {
 
 ![image-20210728233224416](../typora-user-images/image-20210728233224416.png)
 
-### （7）[旋转数组的最小数字](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
+###  8.7. <a name='7https:leetcode-cn.comproblemsfind-minimum-in-rotated-sorted-array'></a>（7）[旋转数组的最小数字](https://leetcode-cn.com/problems/find-minimum-in-rotated-sorted-array/)
 
 已知一个长度为 n 的数组，预先按照升序排列，经由 1 到 n 次 旋转 后，得到输入数组。例如，原数组 nums = [0,1,2,4,5,6,7] 在变化后可能得到：
 若旋转 4 次，则可以得到 [4,5,6,7,0,1,2]
@@ -4679,7 +4872,7 @@ public int findMin(int[] nums) {
 
 
 
-### （8）[查找区间](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
+###  8.8. <a name='8https:leetcode-cn.comproblemsfind-first-and-last-position-of-element-in-sorted-array'></a>（8）[查找区间](https://leetcode-cn.com/problems/find-first-and-last-position-of-element-in-sorted-array/)
 
 给定一个按照升序排列的整数数组 nums，和一个目标值 target。找出给定目标值在数组中的开始位置和结束位置。
 
@@ -4910,25 +5103,25 @@ public int search(int[] nums, int target) {
 
 
 
-## 九、散列表
+##  9. <a name='-1'></a>九、散列表
 
-### （1）实现一个基于链表法解决冲突问题的散列表
+###  9.1. <a name='1-1'></a>（1）实现一个基于链表法解决冲突问题的散列表
 
-### （2）LRU 缓存淘汰算法
-
-
+###  9.2. <a name='2LRU'></a>（2）LRU 缓存淘汰算法
 
 
 
 
 
-## 十、字符串
 
-### （1）实现一个字符集，只包含 a～z 这 26 个英文字母的 Trie 树
 
-### （2）实现朴素的字符串匹配算法
+##  10. <a name='-1'></a>十、字符串
 
-### （3）[反转字符串](https://leetcode-cn.com/problems/reverse-string/)
+###  10.1. <a name='1az26Trie'></a>（1）实现一个字符集，只包含 a～z 这 26 个英文字母的 Trie 树
+
+###  10.2. <a name='2-1'></a>（2）实现朴素的字符串匹配算法
+
+###  10.3. <a name='3https:leetcode-cn.comproblemsreverse-string'></a>（3）[反转字符串](https://leetcode-cn.com/problems/reverse-string/)
 
 写一个函数，其作用是将输入的字符串反转过来。输入字符串以字符数组 char[] 的形式给出。
 
@@ -4976,7 +5169,7 @@ public void reverseString(char[] s) {
 
 
 
-### （4）[翻转字符串里的单词](https://leetcode-cn.com/problems/reverse-words-in-a-string/)
+###  10.4. <a name='4https:leetcode-cn.comproblemsreverse-words-in-a-string'></a>（4）[翻转字符串里的单词](https://leetcode-cn.com/problems/reverse-words-in-a-string/)
 
 给你一个字符串 s ，逐个翻转字符串中的所有 单词 。
 
@@ -5139,7 +5332,7 @@ class Solution {
 
 
 
-### （5）[字符串转换整数 (atoi)](https://leetcode-cn.com/problems/string-to-integer-atoi/)
+###  10.5. <a name='5atoihttps:leetcode-cn.comproblemsstring-to-integer-atoi'></a>（5）[字符串转换整数 (atoi)](https://leetcode-cn.com/problems/string-to-integer-atoi/)
 
 请你来实现一个 myAtoi(string s) 函数，使其能将字符串转换成一个 32 位有符号整数（类似 C/C++ 中的 atoi 函数）。
 
@@ -5338,7 +5531,7 @@ public int myAtoi(String str) {
 
 
 
-### （6）[字符串循环移位包含]()
+###  10.6. <a name='6'></a>（6）[字符串循环移位包含]()
 
 ```php
 s1 = AABCD, s2 = CDAA
@@ -5356,7 +5549,7 @@ public static boolean solution(String s1,String s2) {
 
 
 
-### （9）[两个字符串包含的字符是否完全相同](https://leetcode-cn.com/problems/valid-anagram/)
+###  10.7. <a name='9https:leetcode-cn.comproblemsvalid-anagram'></a>（9）[两个字符串包含的字符是否完全相同](https://leetcode-cn.com/problems/valid-anagram/)
 
 给定两个字符串 s 和 t ，编写一个函数来判断 t 是否是 s 的字母异位词。
 
@@ -5416,7 +5609,7 @@ public boolean isAnagram(String s, String t) {
 
 
 
-### （10）[最长回文串](https://leetcode-cn.com/problems/longest-palindrome/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)
+###  10.8. <a name='10https:leetcode-cn.comproblemslongest-palindromedescriptionutm_sourceLCUSutm_mediumip_redirectutm_campaigntransfer2china'></a>（10）[最长回文串](https://leetcode-cn.com/problems/longest-palindrome/description/?utm_source=LCUS&utm_medium=ip_redirect&utm_campaign=transfer2china)
 
 给定一个包含大写字母和小写字母的字符串，找到通过这些字母构造成的最长的回文串。
 
@@ -5501,7 +5694,7 @@ public int longestPalindrome(String s) {
 
 
 
-### （11）[字符串同构](https://leetcode-cn.com/problems/isomorphic-strings/)
+###  10.9. <a name='11https:leetcode-cn.comproblemsisomorphic-strings'></a>（11）[字符串同构](https://leetcode-cn.com/problems/isomorphic-strings/)
 
 给定两个字符串 s 和 t，判断它们是否是同构的。
 
@@ -5566,7 +5759,7 @@ public boolean isIsomorphic(String s, String t) {
 
 
 
-### （12）[回文子字符串个数](https://leetcode-cn.com/problems/palindromic-substrings/)
+###  10.10. <a name='12https:leetcode-cn.comproblemspalindromic-substrings'></a>（12）[回文子字符串个数](https://leetcode-cn.com/problems/palindromic-substrings/)
 
 给定一个字符串，你的任务是计算这个字符串中有多少个回文子串。
 
@@ -5630,7 +5823,7 @@ public int countSubstrings(String s) {
 
 
 
-### （13）[判断一个整数是否是回文数](https://leetcode-cn.com/problems/palindrome-number/)
+###  10.11. <a name='13https:leetcode-cn.comproblemspalindrome-number'></a>（13）[判断一个整数是否是回文数](https://leetcode-cn.com/problems/palindrome-number/)
 
 给你一个整数 x ，如果 x 是一个回文整数，返回 true ；否则，返回 false 。
 
@@ -5717,7 +5910,7 @@ public boolean isPalindrome(int x) {
 
 
 
-### （14）[计数二进制子串](https://leetcode-cn.com/problems/count-binary-substrings/)
+###  10.12. <a name='14https:leetcode-cn.comproblemscount-binary-substrings'></a>（14）[计数二进制子串](https://leetcode-cn.com/problems/count-binary-substrings/)
 
 给定一个字符串 s，计算具有相同数量 0 和 1 的非空（连续）子字符串的数量，并且这些子字符串中的所有 0 和所有 1 都是连续的。
 
@@ -5819,7 +6012,7 @@ public int countBinarySubstrings(String s) {
 
 
 
-### （15）从字符串中找出最长不重复子字符串长度
+###  10.13. <a name='15'></a>（15）从字符串中找出最长不重复子字符串长度
 
 比如  abcdabcddd，那么最长不重复子串就是 abcd，也就是4
 
@@ -5881,9 +6074,9 @@ public class StrTest {
 
 
 
-## 十一、位运算
+##  11. <a name='-1'></a>十一、位运算
 
-### （1）[统计两个数的二进制表示有多少位不同](https://leetcode-cn.com/problems/hamming-distance/)
+###  11.1. <a name='1https:leetcode-cn.comproblemshamming-distance'></a>（1）[统计两个数的二进制表示有多少位不同](https://leetcode-cn.com/problems/hamming-distance/)
 
 两个整数之间的 汉明距离 指的是这两个数字对应二进制位不同的位置的数目。
 
@@ -6003,7 +6196,7 @@ class Solution {
 
 
 
-### （2）[数组中唯一一个不重复的元素](https://leetcode-cn.com/problems/single-number/)
+###  11.2. <a name='2https:leetcode-cn.comproblemssingle-number'></a>（2）[数组中唯一一个不重复的元素](https://leetcode-cn.com/problems/single-number/)
 
 给定一个非空整数数组，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现了一次的元素。
 
@@ -6066,7 +6259,7 @@ public int singleNumber(int[] nums) {
 
 
 
-### （3）[找出数组中缺失的那个数](https://leetcode-cn.com/problems/missing-number/)
+###  11.3. <a name='3https:leetcode-cn.comproblemsmissing-number'></a>（3）[找出数组中缺失的那个数](https://leetcode-cn.com/problems/missing-number/)
 
 给定一个包含 [0, n] 中 n 个数的数组 nums ，找出 [0, n] 这个范围内没有出现在数组中的那个数。
 
@@ -6182,7 +6375,7 @@ public int missingNumber(int[] nums) {
 
 
 
-### （4）[只出现一次的数字](https://leetcode-cn.com/problems/single-number-iii/)
+###  11.4. <a name='4https:leetcode-cn.comproblemssingle-number-iii'></a>（4）[只出现一次的数字](https://leetcode-cn.com/problems/single-number-iii/)
 
 给定一个整数数组 nums，其中恰好有两个元素只出现一次，其余所有元素均出现两次。 找出只出现一次的那两个元素。你可以按 任意顺序 返回答案。
 
@@ -6281,7 +6474,7 @@ public int[] singleNumber(int[] nums) {
 
 ![image-20210808211911195](../typora-user-images/image-20210808211911195.png)
 
-### （5）[翻转一个数的比特位](https://leetcode-cn.com/problems/reverse-bits/)
+###  11.5. <a name='5https:leetcode-cn.comproblemsreverse-bits'></a>（5）[翻转一个数的比特位](https://leetcode-cn.com/problems/reverse-bits/)
 
 颠倒给定的 32 位无符号整数的二进制位。
 
@@ -6389,7 +6582,7 @@ public int reverseBits(int n) {
 
 
 
-### （6）[不用额外变量交换两个整数](github/Leetcode 题解 位运算.md#6-不用额外变量交换两个整数)
+###  11.6. <a name='6githubLeetcode.md6-'></a>（6）[不用额外变量交换两个整数](github/Leetcode 题解 位运算.md#6-不用额外变量交换两个整数)
 
 ```java
 public void exchange2Nums(int num1,int num2) {
@@ -6405,7 +6598,7 @@ public void exchange2Nums(int num1,int num2) {
 
 
 
-### （7）[判断一个数是不是 2 的 n 次方](https://leetcode-cn.com/problems/power-of-two/)
+###  11.7. <a name='72nhttps:leetcode-cn.comproblemspower-of-two'></a>（7）[判断一个数是不是 2 的 n 次方](https://leetcode-cn.com/problems/power-of-two/)
 
 给你一个整数 n，请你判断该整数是否是 2 的幂次方。如果是，返回 true ；否则，返回 false 。
 
@@ -6500,7 +6693,7 @@ public boolean isPowerOfTwo(int n) {
 
 
 
-### （8）[判断一个数是不是 4 的 n 次方](https://leetcode-cn.com/problems/power-of-four/)
+###  11.8. <a name='84nhttps:leetcode-cn.comproblemspower-of-four'></a>（8）[判断一个数是不是 4 的 n 次方](https://leetcode-cn.com/problems/power-of-four/)
 
 给定一个整数，写一个函数来判断它是否是 4 的幂次方。如果是，返回 true ；否则，返回 false 。
 
@@ -6565,7 +6758,7 @@ public boolean isPowerOfFour(int n) {
 
 
 
-#### 二进制表示中 1 的位置
+####  11.8.1. <a name='1-1'></a>二进制表示中 1 的位置
 
 如果是4的幂，那么二进制串只能由一个1，并且1在偶数位置上
 
@@ -6595,9 +6788,9 @@ public boolean isPowerOfFour(int n) {
 
 
 
-### （9）[判断一个数的位级表示是否不会出现连续的 0 和 1](github/Leetcode 题解 位运算.md#9-判断一个数的位级表示是否不会出现连续的-0-和-1)
+###  11.9. <a name='901githubLeetcode.md9--0--1'></a>（9）[判断一个数的位级表示是否不会出现连续的 0 和 1](github/Leetcode 题解 位运算.md#9-判断一个数的位级表示是否不会出现连续的-0-和-1)
 
-### （10）[求一个数的补码](https://leetcode-cn.com/problems/number-complement/)
+###  11.10. <a name='10https:leetcode-cn.comproblemsnumber-complement'></a>（10）[求一个数的补码](https://leetcode-cn.com/problems/number-complement/)
 
 给你一个 **正** 整数 `num` ，输出它的补数。补数是对该数的二进制表示取反。
 
@@ -6679,7 +6872,7 @@ public int findComplement(int num) {
 
 ![image-20210811002844300](../typora-user-images/image-20210811002844300.png)
 
-### （11）[实现整数的加法](https://leetcode-cn.com/problems/sum-of-two-integers/)
+###  11.11. <a name='11https:leetcode-cn.comproblemssum-of-two-integers'></a>（11）[实现整数的加法](https://leetcode-cn.com/problems/sum-of-two-integers/)
 
 不使用运算符 + 和 - ，计算两整数 a 、b 之和。
 
@@ -6778,17 +6971,17 @@ public int getSum(int a, int b) {
 
 
 
-### （12）[字符串数组最大乘积](github/Leetcode 题解 位运算.md#12-字符串数组最大乘积)
+###  11.12. <a name='12githubLeetcode.md12-'></a>（12）[字符串数组最大乘积](github/Leetcode 题解 位运算.md#12-字符串数组最大乘积)
 
-### （13）[统计从 0 ~ n 每个数的二进制表示中 1 的个数](github/Leetcode 题解 位运算.md#13-统计从-0-~-n-每个数的二进制表示中-1-的个数)
-
-
+###  11.13. <a name='130n1githubLeetcode.md13--0--n--1-'></a>（13）[统计从 0 ~ n 每个数的二进制表示中 1 的个数](github/Leetcode 题解 位运算.md#13-统计从-0-~-n-每个数的二进制表示中-1-的个数)
 
 
 
-## 十二、双指针
 
-### （1）[有序数组的 Two Sum](https://leetcode-cn.com/problems/two-sum-ii-input-array-is-sorted/)
+
+##  12. <a name='-1'></a>十二、双指针
+
+###  12.1. <a name='1TwoSumhttps:leetcode-cn.comproblemstwo-sum-ii-input-array-is-sorted'></a>（1）[有序数组的 Two Sum](https://leetcode-cn.com/problems/two-sum-ii-input-array-is-sorted/)
 
 给定一个已按照 升序排列  的整数数组 numbers ，请你从数组中找出两个数满足相加之和等于目标数 target 。
 
@@ -6870,7 +7063,7 @@ public int[] twoSum(int[] numbers, int target) {
 
 
 
-### （2）[两数平方和](https://leetcode-cn.com/problems/sum-of-square-numbers/)
+###  12.2. <a name='2https:leetcode-cn.comproblemssum-of-square-numbers'></a>（2）[两数平方和](https://leetcode-cn.com/problems/sum-of-square-numbers/)
 
 给定一个非负整数 c ，你要判断是否存在两个整数 a 和 b，使得 a^2 + b^2 = c 。
 
@@ -6991,7 +7184,7 @@ public boolean judgeSquareSum(int c) {
 
 
 
-### （3）[反转字符串中的元音字符](https://leetcode-cn.com/problems/reverse-vowels-of-a-string/)
+###  12.3. <a name='3https:leetcode-cn.comproblemsreverse-vowels-of-a-string'></a>（3）[反转字符串中的元音字符](https://leetcode-cn.com/problems/reverse-vowels-of-a-string/)
 
 编写一个函数，以字符串作为输入，反转该字符串中的元音字母。
 
@@ -7076,7 +7269,7 @@ Set<Character> temSet = new HashSet<>();
 
 
 
-### （4）[回文字符串](https://leetcode-cn.com/problems/valid-palindrome-ii/)
+###  12.4. <a name='4https:leetcode-cn.comproblemsvalid-palindrome-ii'></a>（4）[回文字符串](https://leetcode-cn.com/problems/valid-palindrome-ii/)
 
 给定一个非空字符串 s，最多删除一个字符。判断是否能成为回文字符串。
 
@@ -7152,7 +7345,7 @@ public boolean validPalindrome(String s) {
 
 ![image-20210811231948020](../typora-user-images/image-20210811231948020.png)
 
-### （5）[归并两个有序数组](https://leetcode-cn.com/problems/merge-sorted-array/)
+###  12.5. <a name='5https:leetcode-cn.comproblemsmerge-sorted-array'></a>（5）[归并两个有序数组](https://leetcode-cn.com/problems/merge-sorted-array/)
 
 给你两个有序整数数组 nums1 和 nums2，请你将 nums2 合并到 nums1 中，使 nums1 成为一个有序数组。
 
@@ -7237,7 +7430,7 @@ public void merge(int[] nums1, int m, int[] nums2, int n) {
 
 
 
-### （6）[判断链表是否存在环](https://leetcode-cn.com/problems/linked-list-cycle/)
+###  12.6. <a name='6https:leetcode-cn.comproblemslinked-list-cycle'></a>（6）[判断链表是否存在环](https://leetcode-cn.com/problems/linked-list-cycle/)
 
 给定一个链表，判断链表中是否有环。
 
@@ -7304,7 +7497,7 @@ public boolean hasCycle(ListNode head) {
 
 ![image-20210812235733218](../typora-user-images/image-20210812235733218.png)
 
-### （7）[最长子序列](https://leetcode-cn.com/problems/longest-word-in-dictionary-through-deleting/)
+###  12.7. <a name='7https:leetcode-cn.comproblemslongest-word-in-dictionary-through-deleting'></a>（7）[最长子序列](https://leetcode-cn.com/problems/longest-word-in-dictionary-through-deleting/)
 
 给你一个字符串 s 和一个字符串数组 dictionary 作为字典，找出并返回字典中最长的字符串，该字符串可以通过删除 s 中的某些字符得到。
 
@@ -7369,9 +7562,9 @@ public String findLongestWord(String s, List<String> dictionary) {
 
 
 
-## 十三、树
+##  13. <a name='-1'></a>十三、树
 
-### （1）实现一个二叉查找树，并且支持插入、删除、查找操作
+###  13.1. <a name='1-1'></a>（1）实现一个二叉查找树，并且支持插入、删除、查找操作
 
 
 
@@ -7500,9 +7693,9 @@ public class Bintree {
 
 
 
-### （2）实现查找二叉查找树中某个节点的后继、前驱节点
+###  13.2. <a name='2-1'></a>（2）实现查找二叉查找树中某个节点的后继、前驱节点
 
-### （3）实现二叉树前、中、后序以及按层遍历
+###  13.3. <a name='3'></a>（3）实现二叉树前、中、后序以及按层遍历
 
 经典的方法有三种，前序遍历、中序遍历和后序遍历。
 
@@ -7593,7 +7786,7 @@ private static void levelTraver(Node root) {
 
 
 
-### （4）[翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/)
+###  13.4. <a name='4https:leetcode-cn.comproblemsinvert-binary-tree'></a>（4）[翻转二叉树](https://leetcode-cn.com/problems/invert-binary-tree/)
 
 翻转一棵二叉树。
 
@@ -7674,7 +7867,7 @@ public TreeNode invertTree(TreeNode root) {
 
 
 
-### （5）[二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
+###  13.5. <a name='5https:leetcode-cn.comproblemsmaximum-depth-of-binary-tree'></a>（5）[二叉树的最大深度](https://leetcode-cn.com/problems/maximum-depth-of-binary-tree/)
 
 给定一个二叉树，找出其最大深度。
 
@@ -7747,7 +7940,7 @@ public int maxDepth2(TreeNode root) {
 
 ![image-20210818001157828](../typora-user-images/image-20210818001157828.png)
 
-### （6）[验证二叉查找树](https://leetcode-cn.com/problems/validate-binary-search-tree/)
+###  13.6. <a name='6https:leetcode-cn.comproblemsvalidate-binary-search-tree'></a>（6）[验证二叉查找树](https://leetcode-cn.com/problems/validate-binary-search-tree/)
 
 给定一个二叉树，判断其是否是一个有效的二叉搜索树。
 
@@ -7851,7 +8044,7 @@ public boolean isValidBST(TreeNode root) {
 
 
 
-### （7）[路径总和](https://leetcode-cn.com/problems/path-sum/)
+###  13.7. <a name='7https:leetcode-cn.comproblemspath-sum'></a>（7）[路径总和](https://leetcode-cn.com/problems/path-sum/)
 
 给你二叉树的根节点 root 和一个表示目标和的整数 targetSum ，判断该树中是否存在 根节点到叶子节点 的路径，这条路径上所有节点值相加等于目标和 targetSum 。
 
@@ -7943,7 +8136,7 @@ public boolean hasPathSum(TreeNode root, int sum) {
 
 
 
-### （8）递归
+###  13.8. <a name='8-1'></a>（8）递归
 
   [1. 树的高度](github/Leetcode 题解 树.md#1-树的高度)
 
@@ -8312,12 +8505,12 @@ prefixSumCount.put(currSum, prefixSumCount.getOrDefault(currSum, 0) + 1);
   [13. 间隔遍历](github/Leetcode 题解 树.md#13-间隔遍历)
   [14. 找出二叉树中第二小的节点](github/Leetcode 题解 树.md#14-找出二叉树中第二小的节点)
 
-### （9）层次遍历
+###  13.9. <a name='9'></a>（9）层次遍历
 
   [1. 一棵树每层节点的平均数](github/Leetcode 题解 树.md#1-一棵树每层节点的平均数)
   [2. 得到左下角的节点](github/Leetcode 题解 树.md#2-得到左下角的节点)
 
-### （10）前中后序遍历
+###  13.10. <a name='10'></a>（10）前中后序遍历
 
   [1. 非递归实现二叉树的前序遍历](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/)
 
@@ -8446,7 +8639,7 @@ public List<Integer> inorderTraversal(TreeNode root) {
 
 
 
-### （11）BST
+###  13.11. <a name='11BST'></a>（11）BST
 
   [1. 修剪二叉查找树](https://leetcode-cn.com/problems/trim-a-binary-search-tree/)
 
@@ -8921,16 +9114,16 @@ public TreeNode sortedArrayToBST(int[] nums) {
   [9. 在二叉查找树中查找两个节点之差的最小绝对值](github/Leetcode 题解 树.md#9-在二叉查找树中查找两个节点之差的最小绝对值)
   [10. 寻找二叉查找树中出现次数最多的值](github/Leetcode 题解 树.md#10-寻找二叉查找树中出现次数最多的值)
 
-### （12）Trie
+###  13.12. <a name='12Trie'></a>（12）Trie
 
   [1. 实现一个 Trie](github/Leetcode 题解 树.md#1-实现一个-trie)
   [2. 实现一个 Trie，用来求前缀和](github/Leetcode 题解 树.md#2-实现一个-trie，用来求前缀和)
 
 
 
-## 十四、堆
+##  14. <a name='-1'></a>十四、堆
 
-### （1）实现一个小顶堆、大顶堆、优先级队列
+###  14.1. <a name='1-1'></a>（1）实现一个小顶堆、大顶堆、优先级队列
 
 
 
@@ -9063,7 +9256,7 @@ private void heapify(int[] a, int n, int i) { // 自上往下堆化
 
 
 
-### （2）实现堆排序
+###  14.2. <a name='2-1'></a>（2）实现堆排序
 
 ```java
 public class HeapSort {
@@ -9123,36 +9316,36 @@ public class HeapSort {
 
 
 
-### （3）利用优先级队列合并 K 个有序数组
+###  14.3. <a name='3K'></a>（3）利用优先级队列合并 K 个有序数组
 
-### （4）求一组动态数据集合的最大 Top K
+###  14.4. <a name='4TopK'></a>（4）求一组动态数据集合的最大 Top K
 
 
 
-## 十五、图
+##  15. <a name='-1'></a>十五、图
 
-### （1）实现有向图、无向图、有权图、无权图的邻接矩阵和邻接表表示方法
+###  15.1. <a name='1-1'></a>（1）实现有向图、无向图、有权图、无权图的邻接矩阵和邻接表表示方法
 
-### （2）实现图的深度优先搜索、广度优先搜索
+###  15.2. <a name='2-1'></a>（2）实现图的深度优先搜索、广度优先搜索
 
-### （3）实现 Dijkstra 算法、A* 算法
+###  15.3. <a name='3DijkstraA'></a>（3）实现 Dijkstra 算法、A* 算法
 
-### （4）实现拓扑排序的 Kahn 算法、DFS 算法
+###  15.4. <a name='4KahnDFS'></a>（4）实现拓扑排序的 Kahn 算法、DFS 算法
 
-### （5）[岛屿的个数](https://leetcode-cn.com/problems/number-of-islands/description/)
+###  15.5. <a name='5https:leetcode-cn.comproblemsnumber-of-islandsdescription'></a>（5）[岛屿的个数](https://leetcode-cn.com/problems/number-of-islands/description/)
 
-### （6）[有效的数独](https://leetcode-cn.com/problems/valid-sudoku/)
+###  15.6. <a name='6https:leetcode-cn.comproblemsvalid-sudoku'></a>（6）[有效的数独](https://leetcode-cn.com/problems/valid-sudoku/)
 
-### （7）二分图
+###  15.7. <a name='7-1'></a>（7）二分图
 
   [1. 判断是否为二分图](github/Leetcode 题解 图.md#1-判断是否为二分图)
 
-### （8）拓扑排序
+###  15.8. <a name='8-1'></a>（8）拓扑排序
 
   [1. 课程安排的合法性](github/Leetcode 题解 图.md#1-课程安排的合法性)
   [2. 课程安排的顺序](github/Leetcode 题解 图.md#2-课程安排的顺序)
 
-### （9）并查集
+###  15.9. <a name='9-1'></a>（9）并查集
 
   [1. 冗余连接](github/Leetcode 题解 图.md#1-冗余连接)
 
@@ -9160,9 +9353,9 @@ public class HeapSort {
 
 
 
-## 十六、贪心
+##  16. <a name='-1'></a>十六、贪心
 
-### （1）[分配饼干](https://leetcode-cn.com/problems/assign-cookies/)
+###  16.1. <a name='1https:leetcode-cn.comproblemsassign-cookies'></a>（1）[分配饼干](https://leetcode-cn.com/problems/assign-cookies/)
 
 假设你是一位很棒的家长，想要给你的孩子们一些小饼干。但是，每个孩子最多只能给一块饼干。
 
@@ -9231,7 +9424,7 @@ public int findContentChildren(int[] grid, int[] size) {
 
 
 
-### （2）[不重叠的区间个数](https://leetcode-cn.com/problems/non-overlapping-intervals/)
+###  16.2. <a name='2https:leetcode-cn.comproblemsnon-overlapping-intervals'></a>（2）[不重叠的区间个数](https://leetcode-cn.com/problems/non-overlapping-intervals/)
 
 给定一个区间的集合，找到需要移除区间的最小数量，使剩余区间互不重叠。
 
@@ -9312,7 +9505,7 @@ public int eraseOverlapIntervals(int[][] intervals) {
 
 
 
-### （3）[用最少数量的箭引爆气球](https://leetcode-cn.com/problems/minimum-number-of-arrows-to-burst-balloons/)
+###  16.3. <a name='3https:leetcode-cn.comproblemsminimum-number-of-arrows-to-burst-balloons'></a>（3）[用最少数量的箭引爆气球](https://leetcode-cn.com/problems/minimum-number-of-arrows-to-burst-balloons/)
 
 在二维空间中有许多球形的气球。对于每个气球，提供的输入是水平方向上，气球直径的开始和结束坐标。由于它是水平的，所以纵坐标并不重要，因此只要知道开始和结束的横坐标就足够了。开始坐标总是小于结束坐标。
 
@@ -9397,7 +9590,7 @@ public int findMinArrowShots(int[][] points) {
 
 
 
-### （4）[根据身高重建队列](https://leetcode-cn.com/problems/queue-reconstruction-by-height/)
+###  16.4. <a name='4https:leetcode-cn.comproblemsqueue-reconstruction-by-height'></a>（4）[根据身高重建队列](https://leetcode-cn.com/problems/queue-reconstruction-by-height/)
 
 假设有打乱顺序的一群人站成一个队列，数组 people 表示队列中一些人的属性（不一定按顺序）。每个 people[i] = [hi, ki] 表示第 i 个人的身高为 hi ，前面 正好 有 ki 个身高大于或等于 hi 的人。
 
@@ -9477,7 +9670,7 @@ public int[][] reconstructQueue(int[][] people) {
 
 
 
-### （5）[买卖股票最大的收益](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
+###  16.5. <a name='5https:leetcode-cn.comproblemsbest-time-to-buy-and-sell-stock'></a>（5）[买卖股票最大的收益](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
 
 给定一个数组 prices ，它的第 i 个元素 prices[i] 表示一支给定股票第 i 天的价格。
 
@@ -9543,7 +9736,7 @@ public int maxProfit(int[] prices) {
 
 
 
-### （6）[买卖股票的最大收益 II](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)
+###  16.6. <a name='6IIhttps:leetcode-cn.comproblemsbest-time-to-buy-and-sell-stock-ii'></a>（6）[买卖股票的最大收益 II](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)
 
 给定一个数组 prices ，其中 prices[i] 是一支给定股票第 i 天的价格。
 
@@ -9619,7 +9812,7 @@ public int maxProfit(int[] prices) {
 
 ![image-20210912222350280](../typora-user-images/image-20210912222350280.png)
 
-### （7）[种植花朵](https://leetcode-cn.com/problems/can-place-flowers/)
+###  16.7. <a name='7https:leetcode-cn.comproblemscan-place-flowers'></a>（7）[种植花朵](https://leetcode-cn.com/problems/can-place-flowers/)
 
 假设有一个很长的花坛，一部分地块种植了花，另一部分却没有。可是，花不能种植在相邻的地块上，它们会争夺水源，两者都会死去。
 
@@ -9714,7 +9907,7 @@ public boolean canPlaceFlowers(int[] flowerbed, int n) {
 
 
 
-### （8）[判断是否为子序列](https://leetcode-cn.com/problems/is-subsequence/)
+###  16.8. <a name='8https:leetcode-cn.comproblemsis-subsequence'></a>（8）[判断是否为子序列](https://leetcode-cn.com/problems/is-subsequence/)
 
 给定字符串 s 和 t ，判断 s 是否为 t 的子序列。
 
@@ -9839,7 +10032,7 @@ public boolean isSubsequence(String s, String t) {
 
 
 
-### （9）[修改一个数成为非递减数组](https://leetcode-cn.com/problems/non-decreasing-array/)
+###  16.9. <a name='9https:leetcode-cn.comproblemsnon-decreasing-array'></a>（9）[修改一个数成为非递减数组](https://leetcode-cn.com/problems/non-decreasing-array/)
 
 给你一个长度为 n 的整数数组，请你判断在 最多 改变 1 个元素的情况下，该数组能否变成一个非递减数列。
 
@@ -9906,7 +10099,7 @@ public boolean checkPossibility(int[] nums) {
 
 
 
-### （10）[子数组最大的和](https://leetcode-cn.com/problems/maximum-subarray/)
+###  16.10. <a name='10https:leetcode-cn.comproblemsmaximum-subarray'></a>（10）[子数组最大的和](https://leetcode-cn.com/problems/maximum-subarray/)
 
 给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
 
@@ -10030,35 +10223,35 @@ public int maxSubArray(int[] nums) {
 
 
 
-### （11）[分隔字符串使同种字符出现在一起](github/Leetcode 题解 贪心思想.md#11-分隔字符串使同种字符出现在一起)
+###  16.11. <a name='11githubLeetcode.md11-'></a>（11）[分隔字符串使同种字符出现在一起](github/Leetcode 题解 贪心思想.md#11-分隔字符串使同种字符出现在一起)
 
 
 
-## 十七、分治
+##  17. <a name='-1'></a>十七、分治
 
-### （1）利用分治算法求一组数据的逆序对个数
+###  17.1. <a name='1-1'></a>（1）利用分治算法求一组数据的逆序对个数
 
-### （2）[给表达式加括号](github/Leetcode 题解 分治.md#1-给表达式加括号)
+###  17.2. <a name='2githubLeetcode.md1-'></a>（2）[给表达式加括号](github/Leetcode 题解 分治.md#1-给表达式加括号)
 
-### （3）[不同的二叉搜索树](github/Leetcode 题解 分治.md#2-不同的二叉搜索树)
-
-
-
-## 十八、回溯
-
-### （1）利用回溯算法求解八皇后问题
-
-### （2）利用回溯算法求解 0-1 背包问题
-
-### （3）[正则表达式匹配](https://leetcode-cn.com/problems/regular-expression-matching/)
+###  17.3. <a name='3githubLeetcode.md2-'></a>（3）[不同的二叉搜索树](github/Leetcode 题解 分治.md#2-不同的二叉搜索树)
 
 
 
+##  18. <a name='-1'></a>十八、回溯
+
+###  18.1. <a name='1-1'></a>（1）利用回溯算法求解八皇后问题
+
+###  18.2. <a name='20-1'></a>（2）利用回溯算法求解 0-1 背包问题
+
+###  18.3. <a name='3https:leetcode-cn.comproblemsregular-expression-matching'></a>（3）[正则表达式匹配](https://leetcode-cn.com/problems/regular-expression-matching/)
 
 
-## 十九、动态规划
 
-### （1）斐波那契数列
+
+
+##  19. <a name='-1'></a>十九、动态规划
+
+###  19.1. <a name='1-1'></a>（1）斐波那契数列
 
   [1. 爬楼梯](https://leetcode-cn.com/problems/climbing-stairs/submissions/)
 
@@ -10218,7 +10411,7 @@ public int rob(int[] nums) {
 
  
 
-#### 3.[打家劫舍 II](https://leetcode-cn.com/problems/house-robber-ii/)
+####  19.1.1. <a name='IIhttps:leetcode-cn.comproblemshouse-robber-ii'></a>3.[打家劫舍 II](https://leetcode-cn.com/problems/house-robber-ii/)
 
 你是一个专业的小偷，计划偷窃沿街的房屋，每间房内都藏有一定的现金。这个地方所有的房屋都 围成一圈 ，这意味着第一个房屋和最后一个房屋是紧挨着的。同时，相邻的房屋装有相互连通的防盗系统，如果两间相邻的房屋在同一晚上被小偷闯入，系统会自动报警 。
 
@@ -10302,7 +10495,7 @@ private int rob(int[] nums, int first, int last) {
 
 
 
-### （2）矩阵路径
+###  19.2. <a name='2-1'></a>（2）矩阵路径
 
   [1. 矩阵的最小路径和](https://leetcode-cn.com/problems/minimum-path-sum/)
 
@@ -10493,7 +10686,7 @@ public int uniquePaths(int m, int n) {
 
 
 
-### （3）数组区间
+###  19.3. <a name='3-1'></a>（3）数组区间
 
   [1. 数组区间和](https://leetcode-cn.com/problems/range-sum-query-immutable/)
 
@@ -10703,7 +10896,7 @@ public int numberOfArithmeticSlices(int[] A) {
 
 
 
-### （4）分割整数
+###  19.4. <a name='4-1'></a>（4）分割整数
 
   [1. 分割整数的最大乘积](https://leetcode-cn.com/problems/integer-break/)
 
@@ -10762,7 +10955,7 @@ public int integerBreak(int n) {
 
   [3. 分割整数构成字母字符串](github/Leetcode 题解 动态规划.md#3-分割整数构成字母字符串)
 
-### （5）最长递增子序列
+###  19.5. <a name='5-1'></a>（5）最长递增子序列
 
   [1. 最长递增子序列](https://leetcode-cn.com/problems/longest-increasing-subsequence/)
 
@@ -10844,7 +11037,7 @@ public int lengthOfLIS(int[] nums) {
   [2. 一组整数对能够构成的最长链](github/Leetcode 题解 动态规划.md#2-一组整数对能够构成的最长链)
   [3. 最长摆动子序列](github/Leetcode 题解 动态规划.md#3-最长摆动子序列)
 
-### （6）最长公共子序列
+###  19.6. <a name='6-1'></a>（6）最长公共子序列
 
   [1. 最长公共子序列](https://leetcode-cn.com/problems/longest-common-subsequence/)
 
@@ -10925,7 +11118,7 @@ public int longestCommonSubsequence(String text1, String text2) {
 
 
 
-### （7）0-1 背包
+###  19.7. <a name='70-1'></a>（7）0-1 背包
 
   [1. 划分数组为和相等的两部分](https://leetcode-cn.com/problems/partition-equal-subset-sum/)
 
@@ -11111,7 +11304,7 @@ public int coinChange(int[] coins, int amount) {
   [6. 字符串按单词列表分割](github/Leetcode 题解 动态规划.md#6-字符串按单词列表分割)
   [7. 组合总和](github/Leetcode 题解 动态规划.md#7-组合总和)
 
-### （8）股票交易
+###  19.8. <a name='8-1'></a>（8）股票交易
 
   [1. 需要冷却期的股票交易](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/)
 
@@ -11171,7 +11364,7 @@ public int maxProfit(int[] prices) {
   [3. 只能进行两次的股票交易](github/Leetcode 题解 动态规划.md#3-只能进行两次的股票交易)
   [4. 只能进行 k 次的股票交易](github/Leetcode 题解 动态规划.md#4-只能进行-k-次的股票交易)
 
-### （9）字符串编辑
+###  19.9. <a name='9-1'></a>（9）字符串编辑
 
   [1. 删除两个字符串的字符使它们相等](https://leetcode-cn.com/problems/delete-operation-for-two-strings/)
 
@@ -11360,15 +11553,15 @@ public int minDistance(String word1, String word2) {
 
 
 
-## 二十、搜索
+##  20. <a name='-1'></a>二十、搜索
 
-### （1）BFS
+###  20.1. <a name='1BFS'></a>（1）BFS
 
   [1. 计算在网格中从原点到特定点的最短路径长度](github/Leetcode 题解 搜索.md#1-计算在网格中从原点到特定点的最短路径长度)
   [2. 组成整数的最小平方数数量](github/Leetcode 题解 搜索.md#2-组成整数的最小平方数数量)
   [3. 最短单词路径](github/Leetcode 题解 搜索.md#3-最短单词路径)
 
-### （2）DFS
+###  20.2. <a name='2DFS'></a>（2）DFS
 
   [1. 查找最大的连通面积](github/Leetcode 题解 搜索.md#1-查找最大的连通面积)
   [2. 矩阵中的连通分量数目](github/Leetcode 题解 搜索.md#2-矩阵中的连通分量数目)
@@ -11376,7 +11569,7 @@ public int minDistance(String word1, String word2) {
   [4. 填充封闭区域](github/Leetcode 题解 搜索.md#4-填充封闭区域)
   [5. 能到达的太平洋和大西洋的区域](github/Leetcode 题解 搜索.md#5-能到达的太平洋和大西洋的区域)
 
-### （3）Backtracking
+###  20.3. <a name='3Backtracking'></a>（3）Backtracking
 
   [1. 数字键盘组合](github/Leetcode 题解 搜索.md#1-数字键盘组合)
   [2. IP 地址划分](github/Leetcode 题解 搜索.md#2-ip-地址划分)
@@ -11398,42 +11591,42 @@ public int minDistance(String word1, String word2) {
 
 
 
-## 二一、数学
+##  21. <a name='-1'></a>二一、数学
 
-### （1）[素数分解](github/Leetcode 题解 数学.md#素数分解)
+###  21.1. <a name='1githubLeetcode.md'></a>（1）[素数分解](github/Leetcode 题解 数学.md#素数分解)
 
-### （2）[整除](github/Leetcode 题解 数学.md#整除)
+###  21.2. <a name='2githubLeetcode.md'></a>（2）[整除](github/Leetcode 题解 数学.md#整除)
 
-### （3）最大公约数最小公倍数
+###  21.3. <a name='3-1'></a>（3）最大公约数最小公倍数
 
   [1. 生成素数序列](github/Leetcode 题解 数学.md#1-生成素数序列)
   [2. 最大公约数](github/Leetcode 题解 数学.md#2-最大公约数)
   [3. 使用位操作和减法求解最大公约数](github/Leetcode 题解 数学.md#3-使用位操作和减法求解最大公约数)
 
-### （4）进制转换
+###  21.4. <a name='4-1'></a>（4）进制转换
 
   [1. 7 进制](github/Leetcode 题解 数学.md#1-7-进制)
   [2. 16 进制](github/Leetcode 题解 数学.md#2-16-进制)
   [3. 26 进制](github/Leetcode 题解 数学.md#3-26-进制)
 
-### （5）阶乘
+###  21.5. <a name='5-1'></a>（5）阶乘
 
   [1. 统计阶乘尾部有多少个 0](github/Leetcode 题解 数学.md#1-统计阶乘尾部有多少个-0)
 
-### （6）字符串加法减法
+###  21.6. <a name='6-1'></a>（6）字符串加法减法
 
   [1. 二进制加法](github/Leetcode 题解 数学.md#1-二进制加法)
   [2. 字符串加法](github/Leetcode 题解 数学.md#2-字符串加法)
 
-### （7）相遇问题
+###  21.7. <a name='7-1'></a>（7）相遇问题
 
   [1. 改变数组元素使所有的数组元素都相等](github/Leetcode 题解 数学.md#1-改变数组元素使所有的数组元素都相等)
 
-### （8）多数投票问题
+###  21.8. <a name='8-1'></a>（8）多数投票问题
 
   [1. 数组中出现次数多于 n / 2 的元素](github/Leetcode 题解 数学.md#1-数组中出现次数多于-n--2-的元素)
 
-### （9）其它
+###  21.9. <a name='9-1'></a>（9）其它
 
   [1. 平方数](github/Leetcode 题解 数学.md#1-平方数)
   [2. 3 的 n 次方](github/Leetcode 题解 数学.md#2-3-的-n-次方)
