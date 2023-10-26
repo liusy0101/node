@@ -10,7 +10,14 @@
 		* 2.1.4. [随机遍历](#-1)
 		* 2.1.5. [经典for循环](#for)
 		* 2.1.6. [范围循环](#-1)
-	* 2.2. [select](#select)
+	* 2.2. [select、channel](#selectchannel)
+		* 2.2.1. [select](#select)
+		* 2.2.2. [Channel](#Channel)
+	* 2.3. [defer](#defer)
+	* 2.4. [panic和recover](#panicrecover)
+		* 2.4.1. [程序崩溃](#-1)
+		* 2.4.2. [崩溃恢复](#-1)
+	* 2.5. [make、new](#makenew)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -322,12 +329,12 @@ for ; hb != false; hv1, hb = <-ha {
 - 如果存在当前值，会为 v1 赋值并清除 hv1 变量中的数据，然后重新陷入阻塞等待新数据；
 
 
-###  2.2. <a name='select'></a>select、channel
+###  2.2. <a name='selectchannel'></a>select、channel
 参考： https://docs.google.com/presentation/d/18_9LcMc8u93aITZ6DqeUfRvOcHQYj2gwxhskf0XPX2U/edit#slide=id.g5ea99f63e9_0_11
 
 ![](typora-user-images/2023-10-26-11-58-09.png)
 
-#### select
+####  2.2.1. <a name='select'></a>select
 现象：
 - select 能在 Channel 上进行非阻塞的收发操作；
 - select 在遇到多个 Channel 同时响应时，会随机执行一种情况；
@@ -701,3 +708,280 @@ Go
 - 当调度器唤醒当前 Goroutine 时，会再次按照 lockOrder 遍历所有的 case，从中查找需要被处理的 runtime.sudog 对应的索引；
 
 select 关键字是 Go 语言特有的控制结构，它的实现原理比较复杂，需要编译器和运行时函数的通力合作。
+
+
+####  2.2.2. <a name='Channel'></a>Channel
+![](typora-user-images/2023-10-26-15-17-43.png)
+
+![](typora-user-images/2023-10-26-15-19-11.png)
+
+![](typora-user-images/2023-10-26-15-19-51.png)
+
+![](typora-user-images/2023-10-26-15-20-04.png)
+
+![](typora-user-images/2023-10-26-15-21-27.png)
+
+![](typora-user-images/2023-10-26-15-21-49.png)
+
+![](typora-user-images/2023-10-26-15-22-24.png)
+
+![](typora-user-images/2023-10-26-15-22-43.png)
+
+![](typora-user-images/2023-10-26-15-23-29.png)
+
+![](typora-user-images/2023-10-26-15-24-17.png)
+
+![](typora-user-images/2023-10-26-15-24-55.png)
+
+![](typora-user-images/2023-10-26-15-25-20.png)
+
+![](typora-user-images/2023-10-26-15-25-47.png)
+
+![](typora-user-images/2023-10-26-15-26-15.png)
+
+![](typora-user-images/2023-10-26-15-26-28.png)
+
+![](typora-user-images/2023-10-26-15-26-40.png)
+
+
+
+###  2.3. <a name='defer'></a>defer
+Go 语言的 defer 会在当前函数返回前执行传入的函数，它会经常被用于关闭文件描述符、关闭数据库连接以及解锁资源。
+
+每个方法中的defers会有一条调用链，符合栈的特征，后进先出，例如：
+```go
+func main() {
+	for i := 0; i < 5; i++ {
+		defer fmt.Println(i)
+	}
+}
+
+$ go run main.go
+4
+3
+2
+1
+0
+```
+
+嵌套的defer是先执行最外层的，然后再依次往里执行
+```go
+func main() {
+
+	defer fmt.Println("before recover")
+
+	defer func() {
+		if err := recover(); err != nil {
+			fmt.Println("recover")
+		}
+
+		defer func() {
+			fmt.Println("defer inner")
+		}()
+	}()
+
+	defer fmt.Println("after recover")
+
+	panic("aa")
+}
+
+after recover
+recover
+defer inner
+before recover
+```
+
+- defer 关键字的调用时机以及多次调用 defer 时执行顺序是如何确定的；
+- defer 关键字使用传值的方式传递参数时会进行预计算，导致不符合预期的结果；
+
+**预计算参数：**
+
+```go
+func main() {
+	startedAt := time.Now()
+	defer fmt.Println(time.Since(startedAt))
+	
+	time.Sleep(time.Second)
+}
+
+$ go run main.go
+0s
+```
+调用 defer 关键字会立刻拷贝函数中引用的外部参数，所以 time.Since(startedAt) 的结果不是在 main 函数退出之前计算的，而是在 defer 关键字调用时计算的，最终导致上述代码输出 0s。
+
+如果想要解决上述问题，可以给defer传入匿名参数，例如：`defer func() { fmt.Println(time.Since(startedAt)) }()`
+
+
+```go
+type _defer struct {
+	siz       int32  // 参数和结果的内存大小
+	started   bool   // 
+	openDefer bool   // 当前defer是否经过开放编码的优化
+	sp        uintptr  // 栈指针
+	pc        uintptr  // 程序计数器
+	fn        *funcval // 传入参数
+	_panic    *_panic  // 触发延迟调用的结构体
+	link      *_defer  // 
+}
+```
+runtime._defer 结构体是延迟调用链表上的一个元素，所有的结构体都会通过 link 字段串联成链表。
+![](typora-user-images/2023-10-26-16-00-06.png)
+
+
+
+堆分配、栈分配和开放编码是处理 defer 关键字的三种方法
+
+- 堆上分配 · 1.1 ~ 1.12
+  - 编译期将 defer 关键字转换成 runtime.deferproc 并在调用 defer 关键字的函数返回之前插入 runtime.deferreturn；
+  - 运行时调用 runtime.deferproc 会将一个新的 runtime._defer 结构体追加到当前 Goroutine 的链表头；
+  - 运行时调用 runtime.deferreturn 会从 Goroutine 的链表中取出 runtime._defer 结构并依次执行；
+- 栈上分配 · 1.13
+  - 当该关键字在函数体中最多执行一次时，编译期间的 cmd/compile/internal/gc.state.call 会将结构体分配到栈上并调用 runtime.deferprocStack；
+- 开放编码 · 1.14 ~ 现在
+  - 编译期间判断 defer 关键字、return 语句的个数确定是否开启开放编码优化；
+  - 通过 deferBits 和 cmd/compile/internal/gc.openDeferInfo 存储 defer 关键字的相关信息；
+  - 如果 defer 关键字的执行可以在编译期间确定，会在函数返回前直接插入相应的代码，否则会由运行时的 runtime.deferreturn 处理；
+
+
+
+###  2.4. <a name='panicrecover'></a>panic和recover
+
+- panic 能够改变程序的控制流，调用 panic 后会立刻停止执行当前函数的剩余代码，并在当前 Goroutine 中递归执行调用方的 defer；
+- recover 可以中止 panic 造成的程序崩溃。它是一个只能在 defer 中发挥作用的函数，在其他作用域中调用不会发挥作用；
+
+**现象：**
+- panic 只会触发当前 Goroutine 的 defer；
+- recover 只有在 defer 中调用才会生效；
+- panic 允许在 defer 中嵌套多次调用；
+
+（1）panic跨协程触发defer失效
+```go
+func main() {
+	defer println("in main")
+	go func() {
+		defer println("in goroutine")
+		panic("")
+	}()
+
+	time.Sleep(1 * time.Second)
+}
+
+$ go run main.go
+in goroutine
+panic:
+```
+defer 关键字对应的 runtime.deferproc 会将延迟调用函数与调用方所在 Goroutine 进行关联
+
+![](typora-user-images/2023-10-26-17-03-16.png)
+
+（2）嵌套崩溃
+
+```go
+func main() {
+	defer fmt.Println("in main")
+	defer func() {
+		defer func() {
+			panic("panic again and again")
+		}()
+		panic("panic again")
+	}()
+
+	panic("panic once")
+}
+
+$ go run main.go
+in main
+panic: panic once
+	panic: panic again
+	panic: panic again and again
+```
+
+
+```go
+type _panic struct {
+	argp      unsafe.Pointer  // 指向 defer 调用时参数的指针；
+	arg       interface{}     // 调用 panic 时传入的参数；
+	link      *_panic         // 更早调用的 runtime._panic 结构；
+	recovered bool            // 表示当前 runtime._panic 是否被 recover 恢复；
+	aborted   bool            // 表示当前的 panic 是否被强行终止；
+	pc        uintptr
+	sp        unsafe.Pointer
+	goexit    bool
+}
+```
+
+panic 函数可以被连续多次调用，它们之间通过 link 可以组成链表。
+
+####  2.4.1. <a name='-1'></a>程序崩溃
+编译器会将关键字 panic 转换成 runtime.gopanic，该函数的执行过程包含以下几个步骤：
+
+- 创建新的 runtime._panic 并添加到所在 Goroutine 的 _panic 链表的最前面；
+- 在循环中不断从当前 Goroutine 的 _defer 中链表获取 runtime._defer 并调用 runtime.reflectcall 运行延迟调用函数；
+- 调用 runtime.fatalpanic 中止整个程序；
+
+runtime.fatalpanic 实现了无法被恢复的程序崩溃，它在中止程序之前会通过 runtime.printpanics 打印出全部的 panic 消息以及调用时传入的参数：
+
+```go
+func fatalpanic(msgs *_panic) {
+	pc := getcallerpc()
+	sp := getcallersp()
+	gp := getg()
+
+	if startpanic_m() && msgs != nil {
+		atomic.Xadd(&runningPanicDefers, -1)
+		printpanics(msgs)
+	}
+	if dopanic_m(gp, pc, sp) {
+		crash()
+	}
+
+	exit(2)
+}
+Go
+```
+
+
+####  2.4.2. <a name='-1'></a>崩溃恢复
+```go
+func gorecover(argp uintptr) interface{} {
+	gp := getg()
+	p := gp._panic
+	if p != nil && !p.recovered && argp == uintptr(p.argp) {
+		p.recovered = true
+		return p.arg
+	}
+	return nil
+}
+```
+该函数的实现很简单，如果当前 Goroutine 没有调用 panic，那么该函数会直接返回 nil，这也是崩溃恢复在非 defer 中调用会失效的原因。在正常情况下，它会修改 runtime._panic 的 recovered 字段，runtime.gorecover 函数中并不包含恢复程序的逻辑，程序的恢复是由 runtime.gopanic 函数负责的：
+
+
+崩溃和恢复的过程：
+
+- 编译器会负责做转换关键字的工作；
+  - 将 panic 和 recover 分别转换成 runtime.gopanic 和 runtime.gorecover；
+  - 将 defer 转换成 runtime.deferproc 函数；
+  - 在调用 defer 的函数末尾调用 runtime.deferreturn 函数；
+- 在运行过程中遇到 runtime.gopanic 方法时，会从 Goroutine 的链表依次取出 runtime._defer 结构体并执行；
+- 如果调用延迟执行函数时遇到了 runtime.gorecover 就会将 _panic.recovered 标记成 true 并返回 panic 的参数；
+  - 在这次调用结束之后，runtime.gopanic 会从 runtime._defer 结构体中取出程序计数器 pc 和栈指针 sp 并调用 runtime.recovery 函数进行恢复程序；
+  - runtime.recovery 会根据传入的 pc 和 sp 跳转回 runtime.deferproc；
+  - 编译器自动生成的代码会发现 runtime.deferproc 的返回值不为 0，这时会跳回 runtime.deferreturn 并恢复到正常的执行流程；
+- 如果没有遇到 runtime.gorecover 就会依次遍历所有的 runtime._defer，并在最后调用 runtime.fatalpanic 中止程序、打印 panic 的参数并返回错误码 2；
+
+
+###  2.5. <a name='makenew'></a>make、new
+- make 的作用是初始化内置的数据结构，也就是我们在前面提到的切片、哈希表和 Channel2；
+- new 的作用是根据传入的类型分配一片内存空间并返回指向这片内存空间的指针3；
+![](typora-user-images/2023-10-26-17-38-07.png)
+
+
+
+
+
+
+
+
+
+
+
