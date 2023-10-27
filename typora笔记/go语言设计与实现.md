@@ -18,6 +18,21 @@
 		* 2.4.1. [程序崩溃](#-1)
 		* 2.4.2. [崩溃恢复](#-1)
 	* 2.5. [make、new](#makenew)
+* 3. [并发编程](#-1)
+	* 3.1. [同步原语与锁](#-1)
+		* 3.1.1. [Mutex](#Mutex)
+		* 3.1.2. [RWMutex](#RWMutex)
+		* 3.1.3. [WaitGroup](#WaitGroup)
+		* 3.1.4. [Once](#Once)
+		* 3.1.5. [Cond](#Cond)
+	* 3.2. [调度器](#-1)
+		* 3.2.1. [G](#G)
+		* 3.2.2. [M](#M)
+		* 3.2.3. [P](#P)
+		* 3.2.4. [调度器启动](#-1)
+		* 3.2.5. [创建goroutine](#goroutine)
+		* 3.2.6. [调度循环](#-1)
+		* 3.2.7. [触发调度](#-1)
 
 <!-- vscode-markdown-toc-config
 	numbering=true
@@ -976,12 +991,424 @@ func gorecover(argp uintptr) interface{} {
 ![](typora-user-images/2023-10-26-17-38-07.png)
 
 
+##  3. <a name='-1'></a>并发编程
+###  3.1. <a name='-1'></a>同步原语与锁
+![](typora-user-images/2023-10-26-22-01-43.png)
+
+####  3.1.1. <a name='Mutex'></a>Mutex
+sync.Mutex 由两个字段 state 和 sema 组成。其中 state 表示当前互斥锁的状态，而 sema 是用于控制锁状态的信号量。
+
+```go
+type Mutex struct {
+	state int32
+	sema  uint32
+}
+```
+
+互斥锁的状态比较复杂，如下图所示，最低三位分别表示 mutexLocked、mutexWoken 和 mutexStarving，剩下的位置用来表示当前有多少个 Goroutine 在等待互斥锁的释放：
+![](typora-user-images/2023-10-26-22-07-54.png)
+
+在默认情况下，互斥锁的所有状态位，int32 中的不同位分别表示了不同的状态：
+- mutexLocked — 表示互斥锁的锁定状态； 1
+- mutexWoken — 表示从正常模式被从唤醒； 2
+- mutexStarving — 当前的互斥锁进入饥饿状态； 4
+- waitersCount — 当前互斥锁上等待的 Goroutine 个数； 3
+
+**模式：**
+两种模式：分别是正常模式和饥饿模式
+
+在正常模式下，锁的等待者会按照先进先出的顺序获取锁。但是刚被唤起的 Goroutine 与新创建的 Goroutine 竞争时，大概率会获取不到锁，为了减少这种情况的出现，一旦 Goroutine 超过 1ms 没有获取到锁，它就会将当前互斥锁切换饥饿模式，防止部分 Goroutine 被『饿死』。
+
+在饥饿模式中，互斥锁会直接交给等待队列最前面的 Goroutine。新的 Goroutine 在该状态下不能获取锁、也不会进入自旋状态，它们只会在队列的末尾等待。如果一个 Goroutine 获得了互斥锁并且它在队列的末尾或者它等待的时间少于 1ms，那么当前的互斥锁就会切换回正常模式。
+
+与饥饿模式相比，正常模式下的互斥锁能够提供更好地性能，饥饿模式的能避免 Goroutine 由于陷入等待无法获取锁而造成的高尾延时。
+
+**加锁、解锁：**
+
+互斥锁的加锁过程比较复杂，它涉及自旋、信号量以及调度等概念：
+- 如果互斥锁处于初始化状态，会通过置位 mutexLocked 加锁；
+- 如果互斥锁处于 mutexLocked 状态并且在普通模式下工作，会进入自旋，执行 30 次 PAUSE 指令消耗 CPU 时间等待锁的释放；
+- 如果当前 Goroutine 等待锁的时间超过了 1ms，互斥锁就会切换到饥饿模式；
+- 互斥锁在正常情况下会通过 runtime.sync_runtime_SemacquireMutex 将尝试获取锁的 Goroutine 切换至休眠状态，等待锁的持有者唤醒；
+- 如果当前 Goroutine 是互斥锁上的最后一个等待的协程或者等待的时间小于 1ms，那么它会将互斥锁切换回正常模式；
+
+互斥锁的解锁过程与之相比就比较简单，其代码行数不多、逻辑清晰，也比较容易理解：
+- 当互斥锁已经被解锁时，调用 sync.Mutex.Unlock 会直接抛出异常；
+- 当互斥锁处于饥饿模式时，将锁的所有权交给队列中的下一个等待者，等待者会负责设置 mutexLocked 标志位；
+- 当互斥锁处于普通模式时，如果没有 Goroutine 等待锁的释放或者已经有被唤醒的 Goroutine 获得了锁，会直接返回；在其他情况下会通过 sync.runtime_Semrelease 唤醒对应的 Goroutine；
+
+
+####  3.1.2. <a name='RWMutex'></a>RWMutex
+读写互斥锁 sync.RWMutex 是细粒度的互斥锁，它不限制资源的并发读，但是读写、写写操作无法并行执行。
+
+```go
+type RWMutex struct {
+	w           Mutex
+	writerSem   uint32 //写等待读
+	readerSem   uint32 //读等待写
+	readerCount int32  //正在读的数量
+	readerWait  int32  //当写操作被阻塞时等待的读操作个数；
+}
+```
+
+- 调用 sync.RWMutex.Lock 尝试获取写锁时；
+  - 每次 sync.RWMutex.RUnlock 都会将 readerCount 其减一，当它归零时该 Goroutine 会获得写锁；
+  - 将 readerCount 减少 rwmutexMaxReaders 个数以阻塞后续的读操作；
+- 调用 sync.RWMutex.Unlock 释放写锁时，会先通知所有的读操作，然后才会释放持有的互斥锁；
+
+
+####  3.1.3. <a name='WaitGroup'></a>WaitGroup
+可以等待一组 Goroutine 的返回
+
+```go
+type WaitGroup struct {
+	noCopy noCopy // 保证 sync.WaitGroup 不会被开发者通过再赋值的方式拷贝
+	state1 [3]uint32 // 存储着状态和信号量
+}
+```
+
+![](typora-user-images/2023-10-26-22-50-42.png)
+
+- sync.WaitGroup 必须在 sync.WaitGroup.Wait 方法返回之后才能被重新使用；
+- sync.WaitGroup.Done 只是对 sync.WaitGroup.Add 方法的简单封装，我们可以向 sync.WaitGroup.Add 方法传入任意负数（需要保证计数器非负）快速将计数器归零以唤醒等待的 Goroutine；
+- 可以同时有多个 Goroutine 等待当前 sync.WaitGroup 计数器的归零，这些 Goroutine 会被同时唤醒；
 
 
 
+####  3.1.4. <a name='Once'></a>Once
+```go
+type Once struct {
+	done uint32
+	m    Mutex
+}
+```
+
+
+sync.Once.Do 是 sync.Once 结构体对外唯一暴露的方法，该方法会接收一个入参为空的函数：
+
+- 如果传入的函数已经执行过，会直接返回；
+- 如果传入的函数没有执行过，会调用 sync.Once.doSlow 执行传入的函数：
+```go
+func (o *Once) Do(f func()) {
+	if atomic.LoadUint32(&o.done) == 0 {
+		o.doSlow(f)
+	}
+}
+
+func (o *Once) doSlow(f func()) {
+	o.m.Lock()
+	defer o.m.Unlock()
+	if o.done == 0 {
+		defer atomic.StoreUint32(&o.done, 1)
+		f()
+	}
+}
+```
+
+1. 为当前 Goroutine 获取互斥锁；
+2. 执行传入的无入参函数；
+3. 运行延迟函数调用，将成员变量 done 更新成 1；
+
+sync.Once 会通过成员变量 done 确保函数不会执行第二次。
 
 
 
+####  3.1.5. <a name='Cond'></a>Cond
+可以让一组的 Goroutine 都在满足特定条件时被唤醒。每一个 sync.Cond 结构体在初始化时都需要传入一个互斥锁
+
+```go
+var status int64
+
+func main() {
+	c := sync.NewCond(&sync.Mutex{})
+	for i := 0; i < 10; i++ {
+		go listen(c)
+	}
+	time.Sleep(1 * time.Second)
+	go broadcast(c)
+
+	ch := make(chan os.Signal, 1)
+	signal.Notify(ch, os.Interrupt)
+	<-ch
+}
+
+func broadcast(c *sync.Cond) {
+	c.L.Lock()
+	atomic.StoreInt64(&status, 1)
+	c.Broadcast()
+	c.L.Unlock()
+}
+
+func listen(c *sync.Cond) {
+	c.L.Lock()
+	for atomic.LoadInt64(&status) != 1 {
+		c.Wait()
+	}
+	fmt.Println("listen")
+	c.L.Unlock()
+}
+
+$ go run main.go
+listen
+...
+listen
+```
+
+上述代码同时运行了 11 个 Goroutine，这 11 个 Goroutine 分别做了不同事情：
+- 10 个 Goroutine 通过 sync.Cond.Wait 等待特定条件的满足；
+- 1 个 Goroutine 会调用 sync.Cond.Broadcast 唤醒所有陷入等待的 Goroutine；
+
+```go
+type Cond struct {
+	noCopy  noCopy
+	L       Locker
+	notify  notifyList // 一个 Goroutine 的链表，它是实现同步机制的核心结构
+	checker copyChecker // 用于禁止运行期间发生的拷贝；
+}
+
+type notifyList struct {
+	wait uint32 // wait 和 notify 分别表示当前正在等待的和已经通知到的 Goroutine 的索引。
+	notify uint32
+
+	lock mutex
+	head *sudog
+	tail *sudog
+}
+```
+
+sync.Cond.Wait 方法会将当前 Goroutine 陷入休眠状态，它的执行过程分成以下两个步骤：
+- 调用 runtime.notifyListAdd 将等待计数器加一并解锁；
+- 调用 runtime.notifyListWait 等待其他 Goroutine 的唤醒并加锁：
+
+sync.Cond.Signal 和 sync.Cond.Broadcast 就是用来唤醒陷入休眠的 Goroutine 的方法，它们的实现有一些细微的差别：
+- sync.Cond.Signal 方法会唤醒队列最前面的 Goroutine；
+- sync.Cond.Broadcast 方法会唤醒队列中全部的 Goroutine；
 
 
+sync.Cond 不是一个常用的同步机制，但是在条件长时间无法满足时，与使用 for {} 进行忙碌等待相比，sync.Cond 能够让出处理器的使用权，提高 CPU 的利用率。使用时我们也需要注意以下问题：
+- sync.Cond.Wait 在调用之前一定要使用获取互斥锁，否则会触发程序崩溃；
+- sync.Cond.Signal 唤醒的 Goroutine 都是队列最前面、等待最久的 Goroutine；
+- sync.Cond.Broadcast 会按照一定顺序广播通知等待的全部 Goroutine；
+
+
+###  3.2. <a name='-1'></a>调度器
+由三个部分组成，分别是线程M、处理器P、Goroutine G
+- G表示Goroutine，表示代执行的任务
+- M表示系统线程，由操作系统进行调度和管理
+- P表示处理器，可以看作是运行在线程上的本地调度器
+
+####  3.2.1. <a name='G'></a>G
+Goroutine 是 Go 语言调度器中待执行的任务，它在运行时调度器中的地位与线程在操作系统中差不多，但是它占用了更小的内存空间，也降低了上下文切换的开销。
+
+```go
+type g struct {
+	stack       stack    // 栈内存范围
+	stackguard0 uintptr  // 调度器抢占式调度
+    preempt       bool   // 抢占信号
+	preemptStop   bool   // 抢占时将状态修改成 `_Gpreempted`
+	preemptShrink bool   // 在同步安全点收缩栈
+    _panic       *_panic // 最内侧的 panic 结构体
+	_defer       *_defer // 最内侧的延迟函数结构体
+
+    m              *m    // 当前占用的线程，可能为空
+	sched          gobuf // 存储调度相关的数据
+	atomicstatus   uint32 // Goroutine 的状态；
+	goid           int64  // goroutine id
+}
+
+type gobuf struct {
+	sp   uintptr    // 栈指针
+	pc   uintptr    // 程序计数器
+	g    guintptr   // 当前goroutine
+	ret  sys.Uintreg // 系统调用的返回值
+}
+```
+
+Goroutine 可能处于以下 9 种状态：
+
+![](typora-user-images/2023-10-27-16-34-45.png)
+
+可以将这些不同的状态聚合成三种：等待中、可运行、运行中，运行期间会在这三种状态来回切换：
+
+- 等待中：Goroutine 正在等待某些条件满足，例如：系统调用结束等，包括 _Gwaiting、_Gsyscall 和 _Gpreempted 几个状态；
+- 可运行：Goroutine 已经准备就绪，可以在线程运行，如果当前程序中有非常多的 Goroutine，每个 Goroutine 就可能会等待更多的时间，即 _Grunnable；
+- 运行中：Goroutine 正在某个线程上运行，即 _Grunning；
+
+![](typora-user-images/2023-10-27-16-36-06.png)
+
+####  3.2.2. <a name='M'></a>M
+M 是操作系统线程，在默认情况下，运行时会将 GOMAXPROCS 设置成当前机器的核数，也可以在程序中使用 runtime.GOMAXPROCS 来改变最大的活跃线程数。
+
+![](typora-user-images/2023-10-27-16-37-30.png)
+
+使用默认系统线程数量不会频繁触发操作系统的线程调度和上下文切换，所有的调度都会发生在用户态，由 Go 语言调度器触发，能够减少很多额外开销。
+
+```go
+type m struct {
+	g0   *g      // 持有调度栈的goroutine
+	curg *g      // 当前线程上运行的用户 Goroutine
+	...
+
+    p             puintptr  // 正在运行代码的处理器
+	nextp         puintptr  // 暂存的处理器
+	oldp          puintptr  // 执行系统调用之前使用线程的处理器
+}
+```
+
+g0 是一个运行时中比较特殊的 Goroutine，它会深度参与运行时的调度过程，包括 Goroutine 的创建、大内存分配和 CGO 函数的执行
+
+####  3.2.3. <a name='P'></a>P
+调度器中的处理器 P 是线程和 Goroutine 的中间层，它能提供线程需要的上下文环境，也会负责调度线程上的等待队列，通过处理器 P 的调度，每一个内核线程都能够执行多个 Goroutine，它能在 Goroutine 进行一些 I/O 操作时及时让出计算资源，提高线程的利用率。
+
+因为调度器在启动时就会创建 GOMAXPROCS 个处理器，所以 Go 语言程序的处理器数量一定会等于 GOMAXPROCS，这些处理器会绑定到不同的内核线程上。
+
+```go
+type p struct {
+	m           muintptr   // 持有该处理器的线程
+
+	runqhead uint32    
+	runqtail uint32
+	runq     [256]guintptr  // 有的运行队列
+	runnext guintptr
+	...
+}
+```
+
+![](typora-user-images/2023-10-27-16-42-44.png)
+
+
+####  3.2.4. <a name='-1'></a>调度器启动
+```go
+func schedinit() {
+	_g_ := getg()
+	...
+
+	sched.maxmcount = 10000
+
+	...
+	sched.lastpoll = uint64(nanotime())
+	procs := ncpu
+	if n, ok := atoi32(gogetenv("GOMAXPROCS")); ok && n > 0 {
+		procs = n
+	}
+    // 更新程序中处理器的数量
+	if procresize(procs) != nil {
+		throw("unknown runnable goroutine during bootstrap")
+	}
+}
+```
+
+调用 runtime.procresize 是调度器启动的最后一步，在这一步过后调度器会完成相应数量处理器的启动，等待用户创建运行新的 Goroutine 并为 Goroutine 调度处理器资源。
+
+
+####  3.2.5. <a name='goroutine'></a>创建goroutine
+runtime.newproc 的入参是参数大小和表示函数的指针 funcval，它会获取 Goroutine 以及调用方的程序计数器，然后调用 runtime.newproc1 函数获取新的 Goroutine 结构体、将其加入处理器的运行队列并在满足条件时调用 runtime.wakep 唤醒新的处理执行 Goroutine：
+
+
+runtime.newproc1 会根据传入参数初始化一个 g 结构体，我们可以将该函数分成以下几个部分介绍它的实现：
+- 获取或者创建新的 Goroutine 结构体；
+- 将传入的参数移到 Goroutine 的栈上；
+- 更新 Goroutine 调度相关的属性；
+
+
+先从处理器的 gFree 列表中查找空闲的 Goroutine，如果不存在空闲的 Goroutine，会通过 runtime.malg 创建一个栈大小足够的新结构体。
+
+调用 runtime.memmove 将 fn 函数的所有参数拷贝到栈上
+
+（1）初始化结构体
+
+1. 从 Goroutine 所在处理器的 gFree 列表或者调度器的 sched.gFree 列表中获取 runtime.g；
+2. 调用 runtime.malg 生成一个新的 runtime.g 并将结构体追加到全局的 Goroutine 列表 allgs 中。
+
+![](typora-user-images/2023-10-27-17-36-56.png)
+
+
+runtime.gfget 中包含两部分逻辑，它会根据处理器中 gFree 列表中 Goroutine 的数量做出不同的决策：
+
+- 当处理器的 Goroutine 列表为空时，会将调度器持有的空闲 Goroutine 转移到当前处理器上，直到 gFree 列表中的 Goroutine 数量达到 32；
+- 当处理器的 Goroutine 数量充足时，会从列表头部返回一个新的 Goroutine；
+
+
+当调度器的 gFree 和处理器的 gFree 列表都不存在结构体时，运行时会调用 runtime.malg 初始化新的 runtime.g 结构，如果申请的堆栈大小大于 0，这里会通过 runtime.stackalloc 分配 2KB 的栈空间：runtime.malg 返回的 Goroutine 会存储到全局变量 allgs 中。
+
+
+（2）运行队列
+
+处理器本地的运行队列是一个使用数组构成的环形链表，它最多可以存储 256 个待执行任务。
+
+Go 语言有两个运行队列，其中一个是处理器本地的运行队列，另一个是调度器持有的全局运行队列，只有在本地运行队列没有剩余空间时才会使用全局队列。
+
+
+（3）调度信息
+
+调度信息的 sp 中存储了 runtime.goexit 函数的程序计数器，而 pc 中存储了传入函数的程序计数器。因为 pc 寄存器的作用就是存储程序接下来运行的位置，
+
+
+####  3.2.6. <a name='-1'></a>调度循环
+![](typora-user-images/2023-10-27-17-47-16.png)
+
+（1）查找goroutine
+
+runtime.schedule 函数会从下面几个地方查找待执行的 Goroutine：
+
+- 为了保证公平，当全局运行队列中有待执行的 Goroutine 时，通过 schedtick 保证有一定几率会从全局的运行队列中查找对应的 Goroutine；
+- 从处理器本地的运行队列中查找待执行的 Goroutine；
+- 如果前两种方法都没有找到 Goroutine，会通过 runtime.findrunnable 进行阻塞地查找 Goroutine；
+  - 从本地运行队列、全局运行队列中查找；
+  - 从网络轮询器中查找是否有 Goroutine 等待运行；
+  - 通过 runtime.runqsteal 尝试从其他随机的处理器中窃取待运行的 Goroutine，该函数还可能窃取处理器的计时器；
+
+
+（2）execute
+
+通过 runtime.gogo 将 Goroutine 调度到当前线程上。
+
+从 runtime.gobuf 中取出了 runtime.goexit 的程序计数器和待执行函数的程序计数器，其中：
+- runtime.goexit 的程序计数器被放到了栈 SP 上；
+- 待执行函数的程序计数器被放到了寄存器 BX 上；
+
+（3）goexit
+
+当 Goroutine 中运行的函数返回时，程序会跳转到 runtime.goexit 所在位置执行该函数：
+
+最终在当前线程的 g0 的栈上调用 runtime.goexit0 函数，该函数会将 Goroutine 转换会 _Gdead 状态、清理其中的字段、移除 Goroutine 和线程的关联并调用 runtime.gfput 重新加入处理器的 Goroutine 空闲列表 gFree：
+
+
+在最后 runtime.goexit0 会重新调用 runtime.schedule 触发新一轮的 Goroutine 调度，Go 语言中的运行时调度循环会从 runtime.schedule 开始，最终又回到 runtime.schedule，我们可以认为调度循环永远都不会返回。
+
+
+####  3.2.7. <a name='-1'></a>触发调度
+![](typora-user-images/2023-10-27-17-51-33.png)
+
+- 主动挂起 — runtime.gopark -> runtime.park_m
+- 系统调用 — runtime.exitsyscall -> runtime.exitsyscall0
+- 协作式调度 — runtime.Gosched -> runtime.gosched_m -> runtime.goschedImpl
+- 系统监控 — runtime.sysmon -> runtime.retake -> runtime.preemptone
+
+
+#### 总结
+- Goroutines (G):
+  - Goroutines 是 Go 中的轻量级线程，允许并行执行代码块。
+  - 每个 Goroutine 都有自己的栈，用于保存局部变量和函数调用信息。
+  - Goroutines 由 Go 运行时系统管理，而不是由操作系统线程来管理。
+  - Go 具有大量的 Goroutines，因为它们非常轻量级，创建和销毁非常快。
+- OS 线程 (M):
+  - OS 线程是操作系统级别的线程，由操作系统管理。
+  - Go 运行时系统将 Goroutines 调度到 OS 线程上执行。
+  - 每个 OS 线程都包含一个执行队列，用于执行 Goroutines。
+  - OS 线程数量由 Go 运行时系统动态管理，可以根据需要创建或销毁。
+- 处理器 (P):
+  - 处理器是 Go 运行时系统的组成部分，它负责调度 Goroutines 到 OS 线程上执行。
+  - 每个处理器都有一个本地队列（Local Queue）来保存即将执行的 Goroutines。
+  - 处理器负责管理 Goroutines 的调度，包括 Goroutines 的创建、销毁、阻塞、唤醒等。
+- 调度 (Scheduling):
+  - GMP 模型的核心任务是 Goroutine 调度，将 Goroutines 映射到 OS 线程上执行。
+  - Go 运行时系统使用一种自适应的方法来调整 Goroutines 到 OS 线程的映射，以充分利用多核处理器的性能。
+  - 调度器还负责在 Goroutines 阻塞时，将处理器与其他可运行的 Goroutines 连接起来。
+- 并发性:
+  - GMP 模型通过并发性实现高性能。多个 Goroutines 可以同时运行，通过利用多核处理器，提高了并发任务的执行效率。
+  - 调度器在不同的处理器和 OS 线程之间分配 Goroutines，确保它们能够充分利用系统资源。
+- 并行性:
+  - GMP 模型允许并行执行，因为它将 Goroutines 映射到多个 OS 线程上，从而允许多个 Goroutines 同时执行。
+  - 这实现了真正的并行处理，而不仅仅是并发处理。
 
