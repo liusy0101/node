@@ -1,48 +1,8 @@
-<!-- vscode-markdown-toc -->
-* 1. [数据结构](#)
-	* 1.1. [数组](#-1)
-	* 1.2. [切片](#-1)
-* 2. [常用关键字](#-1)
-	* 2.1. [for和range](#forrange)
-		* 2.1.1. [循环永动机](#-1)
-		* 2.1.2. [神奇的指针](#-1)
-		* 2.1.3. [遍历清空数组](#-1)
-		* 2.1.4. [随机遍历](#-1)
-		* 2.1.5. [经典for循环](#for)
-		* 2.1.6. [范围循环](#-1)
-	* 2.2. [select、channel](#selectchannel)
-		* 2.2.1. [select](#select)
-		* 2.2.2. [Channel](#Channel)
-	* 2.3. [defer](#defer)
-	* 2.4. [panic和recover](#panicrecover)
-		* 2.4.1. [程序崩溃](#-1)
-		* 2.4.2. [崩溃恢复](#-1)
-	* 2.5. [make、new](#makenew)
-* 3. [并发编程](#-1)
-	* 3.1. [同步原语与锁](#-1)
-		* 3.1.1. [Mutex](#Mutex)
-		* 3.1.2. [RWMutex](#RWMutex)
-		* 3.1.3. [WaitGroup](#WaitGroup)
-		* 3.1.4. [Once](#Once)
-		* 3.1.5. [Cond](#Cond)
-	* 3.2. [调度器](#-1)
-		* 3.2.1. [G](#G)
-		* 3.2.2. [M](#M)
-		* 3.2.3. [P](#P)
-		* 3.2.4. [调度器启动](#-1)
-		* 3.2.5. [创建goroutine](#goroutine)
-		* 3.2.6. [调度循环](#-1)
-		* 3.2.7. [触发调度](#-1)
-
-<!-- vscode-markdown-toc-config
-	numbering=true
-	autoSave=true
-	/vscode-markdown-toc-config -->
-<!-- /vscode-markdown-toc -->
+[toc]
 
 
-##  1. <a name=''></a>数据结构
-###  1.1. <a name='-1'></a>数组
+##  数据结构
+###  数组
 数组初始化：
 ```go
 [10]int
@@ -67,7 +27,7 @@ Elem和Bound是数组的两个属性。
 如果数组中元素的个数小于或者等于 4 个，那么所有的变量会直接在栈上初始化，如果数组元素大于 4 个，变量就会在静态存储区初始化然后拷贝到栈上
 
 
-###  1.2. <a name='-1'></a>切片
+###  切片
 切片的长度是动态的，所以声明时只需要指定切片中的元素类型：
 
 ```go
@@ -165,10 +125,10 @@ func growslice(et *_type, old slice, cap int) slice {
 
 
 
-##  2. <a name='-1'></a>常用关键字
-###  2.1. <a name='forrange'></a>for和range
+##  常用关键字
+###  for和range
 
-####  2.1.1. <a name='-1'></a>循环永动机
+####  循环永动机
 在遍历数组的同时修改数组的元素，能否一直循环打印遍历呢？
 ```go
 func main() {
@@ -198,7 +158,7 @@ for ; hv1 < hn; hv1++ {
 }
 ```
 
-####  2.1.2. <a name='-1'></a>神奇的指针
+####  神奇的指针
 在遍历一个数组时，如果获取 range 返回变量的地址并保存到另一个数组或者哈希时，保存的都是最后一个元素
 ```go
 func main() {
@@ -221,7 +181,7 @@ $ go run main.go
 不应该直接获取 range 返回的变量地址 &v2，而应该使用 &a[index] 这种形式。
 
 
-####  2.1.3. <a name='-1'></a>遍历清空数组
+####  遍历清空数组
 一般使用方法，使用遍历依次将元素置为空值
 
 ```go
@@ -238,15 +198,15 @@ func main() {
 编译器会直接使用 runtime.memclrNoHeapPointers 清空切片中的数据
 
 
-####  2.1.4. <a name='-1'></a>随机遍历
+####  随机遍历
 在遍历Map的时候，每次遍历的结果顺序都不一样，是因为go在遍历map的时候会引入随机数，随机选择一个bucket开始遍历。
 
 
-####  2.1.5. <a name='for'></a>经典for循环
+####  经典for循环
 ![](typora-user-images/2023-10-26-10-23-15.png)
 
 
-####  2.1.6. <a name='-1'></a>范围循环
+####  范围循环
 编译器会在编译期间将所有 for-range 循环变成经典循环。从编译器的视角来看，就是将 ORANGE 类型的节点转换成 OFOR 节点:
 
 ![](typora-user-images/2023-10-26-10-24-31.png)
@@ -344,12 +304,12 @@ for ; hb != false; hv1, hb = <-ha {
 - 如果存在当前值，会为 v1 赋值并清除 hv1 变量中的数据，然后重新陷入阻塞等待新数据；
 
 
-###  2.2. <a name='selectchannel'></a>select、channel
+###  select、channel
 参考： https://docs.google.com/presentation/d/18_9LcMc8u93aITZ6DqeUfRvOcHQYj2gwxhskf0XPX2U/edit#slide=id.g5ea99f63e9_0_11
 
 ![](typora-user-images/2023-10-26-11-58-09.png)
 
-####  2.2.1. <a name='select'></a>select
+####  select
 现象：
 - select 能在 Channel 上进行非阻塞的收发操作；
 - select 在遇到多个 Channel 同时响应时，会随机执行一种情况；
@@ -725,7 +685,7 @@ Go
 select 关键字是 Go 语言特有的控制结构，它的实现原理比较复杂，需要编译器和运行时函数的通力合作。
 
 
-####  2.2.2. <a name='Channel'></a>Channel
+####  Channel
 ![](typora-user-images/2023-10-26-15-17-43.png)
 
 ![](typora-user-images/2023-10-26-15-19-11.png)
@@ -760,7 +720,7 @@ select 关键字是 Go 语言特有的控制结构，它的实现原理比较复
 
 
 
-###  2.3. <a name='defer'></a>defer
+###  defer
 Go 语言的 defer 会在当前函数返回前执行传入的函数，它会经常被用于关闭文件描述符、关闭数据库连接以及解锁资源。
 
 每个方法中的defers会有一条调用链，符合栈的特征，后进先出，例如：
@@ -859,7 +819,7 @@ runtime._defer 结构体是延迟调用链表上的一个元素，所有的结�
 
 
 
-###  2.4. <a name='panicrecover'></a>panic和recover
+###  panic和recover
 
 - panic 能够改变程序的控制流，调用 panic 后会立刻停止执行当前函数的剩余代码，并在当前 Goroutine 中递归执行调用方的 defer；
 - recover 可以中止 panic 造成的程序崩溃。它是一个只能在 defer 中发挥作用的函数，在其他作用域中调用不会发挥作用；
@@ -927,7 +887,7 @@ type _panic struct {
 
 panic 函数可以被连续多次调用，它们之间通过 link 可以组成链表。
 
-####  2.4.1. <a name='-1'></a>程序崩溃
+####  程序崩溃
 编译器会将关键字 panic 转换成 runtime.gopanic，该函数的执行过程包含以下几个步骤：
 
 - 创建新的 runtime._panic 并添加到所在 Goroutine 的 _panic 链表的最前面；
@@ -956,7 +916,7 @@ Go
 ```
 
 
-####  2.4.2. <a name='-1'></a>崩溃恢复
+####  崩溃恢复
 ```go
 func gorecover(argp uintptr) interface{} {
 	gp := getg()
@@ -985,14 +945,14 @@ func gorecover(argp uintptr) interface{} {
 - 如果没有遇到 runtime.gorecover 就会依次遍历所有的 runtime._defer，并在最后调用 runtime.fatalpanic 中止程序、打印 panic 的参数并返回错误码 2；
 
 
-###  2.5. <a name='makenew'></a>make、new
+###  make、new
 - make 的作用是初始化内置的数据结构，也就是我们在前面提到的切片、哈希表和 Channel2；
 - new 的作用是根据传入的类型分配一片内存空间并返回指向这片内存空间的指针3；
 ![](typora-user-images/2023-10-26-17-38-07.png)
 
 
-##  3. <a name='-1'></a>并发编程
-###  3.1. <a name='-1'></a>同步原语与锁
+##  并发编程
+###  同步原语与锁
 
 sync.Map 的实现原理可概括为：
 
@@ -1002,7 +962,7 @@ sync.Map 的实现原理可概括为：
 
 ![](typora-user-images/2023-10-26-22-01-43.png)
 
-####  3.1.1. <a name='Mutex'></a>Mutex
+####  Mutex
 sync.Mutex 由两个字段 state 和 sema 组成。其中 state 表示当前互斥锁的状态，而 sema 是用于控制锁状态的信号量。
 
 ```go
@@ -1045,7 +1005,7 @@ type Mutex struct {
 - 当互斥锁处于普通模式时，如果没有 Goroutine 等待锁的释放或者已经有被唤醒的 Goroutine 获得了锁，会直接返回；在其他情况下会通过 sync.runtime_Semrelease 唤醒对应的 Goroutine；
 
 
-####  3.1.2. <a name='RWMutex'></a>RWMutex
+####  RWMutex
 读写互斥锁 sync.RWMutex 是细粒度的互斥锁，它不限制资源的并发读，但是读写、写写操作无法并行执行。
 
 ```go
@@ -1064,7 +1024,7 @@ type RWMutex struct {
 - 调用 sync.RWMutex.Unlock 释放写锁时，会先通知所有的读操作，然后才会释放持有的互斥锁；
 
 
-####  3.1.3. <a name='WaitGroup'></a>WaitGroup
+####  WaitGroup
 可以等待一组 Goroutine 的返回
 
 ```go
@@ -1082,7 +1042,7 @@ type WaitGroup struct {
 
 
 
-####  3.1.4. <a name='Once'></a>Once
+####  Once
 ```go
 type Once struct {
 	done uint32
@@ -1120,7 +1080,7 @@ sync.Once 会通过成员变量 done 确保函数不会执行第二次。
 
 
 
-####  3.1.5. <a name='Cond'></a>Cond
+####  Cond
 可以让一组的 Goroutine 都在满足特定条件时被唤醒。每一个 sync.Cond 结构体在初始化时都需要传入一个互斥锁
 
 ```go
@@ -1198,13 +1158,13 @@ sync.Cond 不是一个常用的同步机制，但是在条件长时间无法满�
 - sync.Cond.Broadcast 会按照一定顺序广播通知等待的全部 Goroutine；
 
 
-###  3.2. <a name='-1'></a>调度器
+###  调度器
 由三个部分组成，分别是线程M、处理器P、Goroutine G
 - G表示Goroutine，表示代执行的任务
 - M表示系统线程，由操作系统进行调度和管理
 - P表示处理器，可以看作是运行在线程上的本地调度器
 
-####  3.2.1. <a name='G'></a>G
+####  G
 Goroutine 是 Go 语言调度器中待执行的任务，它在运行时调度器中的地位与线程在操作系统中差不多，但是它占用了更小的内存空间，也降低了上下文切换的开销。
 
 ```go
@@ -1243,7 +1203,7 @@ Goroutine 可能处于以下 9 种状态：
 
 ![](typora-user-images/2023-10-27-16-36-06.png)
 
-####  3.2.2. <a name='M'></a>M
+####  M
 M 是操作系统线程，在默认情况下，运行时会将 GOMAXPROCS 设置成当前机器的核数，也可以在程序中使用 runtime.GOMAXPROCS 来改变最大的活跃线程数。
 
 ![](typora-user-images/2023-10-27-16-37-30.png)
@@ -1264,7 +1224,7 @@ type m struct {
 
 g0 是一个运行时中比较特殊的 Goroutine，它会深度参与运行时的调度过程，包括 Goroutine 的创建、大内存分配和 CGO 函数的执行
 
-####  3.2.3. <a name='P'></a>P
+####  P
 调度器中的处理器 P 是线程和 Goroutine 的中间层，它能提供线程需要的上下文环境，也会负责调度线程上的等待队列，通过处理器 P 的调度，每一个内核线程都能够执行多个 Goroutine，它能在 Goroutine 进行一些 I/O 操作时及时让出计算资源，提高线程的利用率。
 
 因为调度器在启动时就会创建 GOMAXPROCS 个处理器，所以 Go 语言程序的处理器数量一定会等于 GOMAXPROCS，这些处理器会绑定到不同的内核线程上。
@@ -1284,7 +1244,7 @@ type p struct {
 ![](typora-user-images/2023-10-27-16-42-44.png)
 
 
-####  3.2.4. <a name='-1'></a>调度器启动
+####  调度器启动
 ```go
 func schedinit() {
 	_g_ := getg()
@@ -1308,7 +1268,7 @@ func schedinit() {
 调用 runtime.procresize 是调度器启动的最后一步，在这一步过后调度器会完成相应数量处理器的启动，等待用户创建运行新的 Goroutine 并为 Goroutine 调度处理器资源。
 
 
-####  3.2.5. <a name='goroutine'></a>创建goroutine
+####  创建goroutine
 runtime.newproc 的入参是参数大小和表示函数的指针 funcval，它会获取 Goroutine 以及调用方的程序计数器，然后调用 runtime.newproc1 函数获取新的 Goroutine 结构体、将其加入处理器的运行队列并在满足条件时调用 runtime.wakep 唤醒新的处理执行 Goroutine：
 
 
@@ -1351,7 +1311,7 @@ Go 语言有两个运行队列，其中一个是处理器本地的运行队列�
 调度信息的 sp 中存储了 runtime.goexit 函数的程序计数器，而 pc 中存储了传入函数的程序计数器。因为 pc 寄存器的作用就是存储程序接下来运行的位置，
 
 
-####  3.2.6. <a name='-1'></a>调度循环
+####  调度循环
 ![](typora-user-images/2023-10-27-17-47-16.png)
 
 （1）查找goroutine
@@ -1384,7 +1344,7 @@ runtime.schedule 函数会从下面几个地方查找待执行的 Goroutine：
 在最后 runtime.goexit0 会重新调用 runtime.schedule 触发新一轮的 Goroutine 调度，Go 语言中的运行时调度循环会从 runtime.schedule 开始，最终又回到 runtime.schedule，我们可以认为调度循环永远都不会返回。
 
 
-####  3.2.7. <a name='-1'></a>触发调度
+####  触发调度
 ![](typora-user-images/2023-10-27-17-51-33.png)
 
 - 主动挂起 — runtime.gopark -> runtime.park_m
@@ -1418,4 +1378,101 @@ runtime.schedule 函数会从下面几个地方查找待执行的 Goroutine：
 - 并行性:
   - GMP 模型允许并行执行，因为它将 Goroutines 映射到多个 OS 线程上，从而允许多个 Goroutines 同时执行。
   - 这实现了真正的并行处理，而不仅仅是并发处理。
+
+
+### 调度器2
+参考： https://blog.fengxianhub.top/#/GoLang/golang大杀器GMP模型
+![](typora-user-images/2023-11-14-19-42-00.png)
+
+**为什么会有本地队列和全局队列？**
+因为都放在全局队列的话，会有资源竞争问题，m获取g的时候需要加锁。
+
+**GMP模型**
+GMP是goalng的线程模型，包含三个概念：内核线程(M)，goroutine(G)，G的上下文环境（P）
+
+G：goroutine协程，基于协程建立的用户态线程
+M：machine，它直接关联一个os内核线程，用于执行G
+P：processor处理器，P里面一般会存当前goroutine运行的上下文环境（函数指针，堆栈地址及地址边界），P会对自己管理的goroutine队列做一些调度
+
+![](typora-user-images/2023-11-14-19-49-25.png)
+在Go中，线程是运行goroutine的实体，调度器的功能是把可运行的goroutine分配到工作线程上
+
+- 全局队列（Global Queue）：存放等待运行的G
+- P的本地队列：同全局队列类似，存放的也是等待运行的G，存的数量有限，`不超过256个`。新建G'时，G'优先加入到P的本地队列，`如果队列满了，则会把本地队列中一半的G移动到全局队列`
+- P列表：所有的P都在程序启动时创建，并保存在数组中，最多有GOMAXPROCS(可配置)个
+- M：线程想运行任务就得获取P，从P的本地队列获取G，P队列为空时，M也会尝试从全局队列拿一批G放到P的本地队列，或从`其他P的本地队列一半`放到自己P的本地队列。M运行G，G执行之后，M会从P获取下一个G，不断重复下去
+
+
+**P和M的数量问题**
+
+P的数量：环境变量$GOMAXPROCS；在程序中通过runtime.GOMAXPROCS()来设置
+M的数量：GO语言本身限定一万 (但是操作系统达不到)；通过runtime/debug包中的SetMaxThreads函数来设置；`有一个M阻塞，会创建一个新的M`；如果有M空闲，那么就会回收或者休眠
+M与P的数量没有绝对关系，一个M阻塞，P就会去创建或者切换另一个M，所以，即使P的默认数量是1，也有可能会创建很多个M出来
+
+**阻塞问题：**
+如果一个g阻塞了，那么对应的M也会阻塞，此时p会创建或者获取到空闲的M，然后进行绑定，让新的m去运行其他g，避免饥饿
+
+当M执行某一个G时候如果发生了syscall或者其他阻塞操作，M会阻塞，如果当前有一些G在执行，runtime会把这个线程M从P中摘除(detach)，然后再创建一个新的操作系统的线程(如果有空闲的线程可用就复用空闲线程)来服务于这个P
+
+当M系统调用结束时候，这个G会尝试获取一个空闲的P执行，并放入到这个P的本地队列。如果获取不到P，那么这个线程M变成休眠状态， 加入到空闲线程中，然后这个G会被放入全局队列中
+
+**调度策略：**
+golang调度器的设计策略思想主要有以下几点：
+
+- 复用线程
+  - 当本地队列没有可用的g时，会先去全局队列获取一定数量（均衡获取）的g，如果全局队列中没有，从其他m的队列中获取一半的g执行
+  - 当本线程因为G进行系统调用阻塞时，线程释放绑定的P，把P转移给其他空闲的线程执行，此时M1如果长时间阻塞，可能会执行睡眠或销毁
+- 利用并行
+  - 使用GOMAXPROCS设置P的数量
+- 抢占
+  - 如果一个g运行时间超过10ms，cpu资源就会让给其他的g
+- 全局G队列
+  - 全局G队列其实是复用线程的补充，当工作窃取时，优先从全局队列去取，取不到才从别的p本地队列取（1.17版本）
+  - 在新的调度器中依然有全局G队列，但功能已经被弱化了，当M执行work stealing从其他P偷不到G时，它可以从全局G队列获取G
+
+**整体进程：**
+![](typora-user-images/2023-11-14-19-59-31.png)
+
+
+**M0和G0**
+
+M0（跟进程数量绑定，一比一）：
+
+- 启动程序后编号为0的主线程
+- 在全局变量runtime.m0中，不需要在heap上分配
+- 负责执行初始化操作和启动第一个G
+- 启动第一个G之后，M0就和其他的M一样了
+
+G0（每个M都会有一个G0）：
+
+- 每次启动一个M，都会第一个创建的gourtine，就是G0
+- G0仅用于负责调度G
+- G0不指向任何可执行的函数
+- 每个M都会有一个自己的G0
+- 在调度或系统调用时会使用M切换到G0，再通过G0进行调度
+
+
+M0和G0都是放在全局空间的
+
+![](typora-user-images/2023-11-14-20-04-31.png)
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("Hello world")
+}
+
+- runtime创建最初的线程m0和goroutine g0，并把2者关联。
+- 调度器初始化：初始化m0、栈、垃圾回收，以及创建和初始化由GOMAXPROCS个P构成的P列表。
+- 示例代码中的main函数是main.main，runtime中也有1个main函数——runtime.main，代码经过编译后，runtime.main会调用main.main，程序启动时会为runtime.main创建goroutine，称它为main goroutine吧，然后把main goroutine加入到P的本地队列。
+- 启动m0，m0已经绑定了P，会从P的本地队列获取G，获取到main goroutine。
+- G拥有栈，M根据G中的栈信息和调度信息设置运行环境
+- M运行G
+- G退出，再次回到M获取可运行的G，这样重复下去，直到main.main退出，runtime.main执行Defer和Panic处理，或调用runtime.exit退出程序。
+```
+
+
 
