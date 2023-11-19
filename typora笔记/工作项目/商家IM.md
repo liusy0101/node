@@ -194,7 +194,7 @@ app：
 - 长期方案
   - 热点问题都是因为混链mq都是用户都到同一个partition，那么这里如果有阻塞的话或者快速发送消息的或者单机故障也会在这里堵住了
   - 优化方式
-    - 一个consumer可以消费多个partition，并行消费，那么就会有乱序问题，这里是使用到rmq5.0的特性，**不顺序消费，乱序消费**
+    - 一个consumer可以消费多个partition，并行消费，那么就会有乱序问题，这里是使用到rmq5.0（pop消费模式）的特性，**不顺序消费，乱序消费**
     - 保证有序：
       - 由于之前是发送到单链后才确定index，本地生成，一个partition只给一个consumer消费，但是乱序消费消费就需要给一个全局的递增index的id，以会话纬度单调递增。
       - 由于乱序消费，所以需要分布式生成 index，保证单调递增，使用redis的lua，同一个会话的index，取本地时间戳，看redis有没有缓存上一个消息的index，如果没有就使用当前时间戳，如果有，就比较一下，如果本地时间戳比上一个时间戳大，就用当前时间戳，否则给上一个时间戳加一个随机数，去保证它单调递增
@@ -206,3 +206,4 @@ app：
 可参考：
 - https://learn.lianglianglee.com/%E6%96%87%E7%AB%A0/%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E4%BA%BF%E7%BA%A7%E6%B6%88%E6%81%AF%E9%87%8F%E7%9A%84%20IM%20%E7%B3%BB%E7%BB%9F.md
 - https://cloud.tencent.com/developer/article/1849308
+- https://juejin.cn/post/7156570668161564679
