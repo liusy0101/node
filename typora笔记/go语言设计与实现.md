@@ -958,7 +958,16 @@ sync.Map 的实现原理可概括为：
 
 通过 read 和 dirty 两个字段实现数据的读写分离，读的数据存在只读字段 read 上，将最新写入的数据则存在 dirty 字段上读取时会先查询 read，不存在再查询 dirty，写入时则只写入 dirty
 读取 read 并不需要加锁，而读或写 dirty 则需要加锁
-另外有 misses 字段来统计 read 被穿透的次数（被穿透指需要读 dirty 的情况），超过一定次数则将 dirty 数据更新到 read 中（触发条件：misses=len(dirt
+另外有 misses 字段来统计 read 被穿透的次数（被穿透指需要读 dirty 的情况），超过一定次数则将 dirty 数据更新到 read 中（触发条件：misses=len(dirt)
+![](typora-user-images/2023-12-04-18-28-23.png)
+
+优缺点
+- 优点：Go官方所出；通过读写分离，降低锁时间来提高效率；
+- 缺点：不适用于大量写的场景，这样会导致 read map 读不到数据而进一步加锁读取，同时dirty map也会一直晋升为read map，整体性能较差，甚至没有单纯的 map+metux 高。
+- 适用场景：读多写少的场景。
+
+可参考：https://developer.aliyun.com/article/1172753
+
 
 ![](typora-user-images/2023-10-26-22-01-43.png)
 
